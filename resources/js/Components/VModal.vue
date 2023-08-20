@@ -19,7 +19,7 @@ const modal = ref(null);
     <button :class="buttonClass"
             @click="modal.showModal()"
     >
-        <slot name="button"></slot>
+        <slot></slot>
     </button>
 
     <teleport to="body">
@@ -28,7 +28,7 @@ const modal = ref(null);
                  :class="modalBoxClass"
                  v-bind="$attrs"
             >
-                <slot></slot>
+                <slot name="content"></slot>
             </div>
             <form method="dialog" class="modal-backdrop">
                 <button></button>
