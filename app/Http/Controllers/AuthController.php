@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\LogoutRequest;
 use App\Http\Requests\Auth\RegisterRequest;
+use App\Http\Requests\Auth\VerifyRequest;
 use App\Models\User;
+use App\Models\VerificationToken;
 use App\Services\AuthService;
 use App\Services\MailService;
 use Illuminate\Http\Request;
@@ -49,5 +51,32 @@ class AuthController extends Controller
 
     public function cabinet(): \Inertia\Response {
         return Inertia::render('Auth/Cabinet');
+    }
+
+    public function verify(VerifyRequest $request) {
+        [ 'token' => $token ] = $request->validated();
+
+        $token = VerificationToken::whereToken($token)->first();
+        if (!$token) {
+            Session::flash('message', ['type' => 'error', 'message' => 'Токен не найден']);
+            return redirect()->route('main');
+        }
+        $user = $token->user;
+        $token->delete();
+
+        foreach (VerificationToken::whereUserId($user->id)->get() as $token) {
+            $token->delete();
+        }
+
+        $time = date('Y-m-d H:i:s');
+        $user->email_verified_at = $time;
+        $user->save();
+
+        Session::flash('message', ['type' => 'success', 'message' => 'Успешно подтверждено']);
+
+        if (Auth::id() == $user->id){
+            return redirect()->route('cabinet');
+        }
+        return redirect()->route('main');
     }
 }

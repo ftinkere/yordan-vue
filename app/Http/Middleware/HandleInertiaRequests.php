@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Session;
 use Inertia\Middleware;
 use Tightenco\Ziggy\Ziggy;
 
@@ -36,6 +37,7 @@ class HandleInertiaRequests extends Middleware
             ],
             'ziggy' => static fn () => [...(new Ziggy)->toArray(), 'location' => $request->url()],
             'csrf_token' => static fn () => csrf_token(),
+            'message' => static fn () => Session::pull('message'),
         ];
     }
 }

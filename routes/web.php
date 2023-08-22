@@ -31,4 +31,6 @@ Route::prefix('auth')->group(static function() {
    Route::name('logout')->get('/logout', [AuthController::class, 'logout'])->middleware('auth');
 
    Route::name('cabinet')->get('/cabinet', [AuthController::class, 'cabinet'])->middleware('auth');
+
+   Route::name('verify')->get('/verify', [AuthController::class, 'verify']);
 });

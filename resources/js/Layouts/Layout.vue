@@ -1,6 +1,7 @@
 <script setup>
 import { Head } from '@inertiajs/vue3';
 import LayoutHeader from "@/Layouts/partials/LayoutHeader.vue";
+import FlashMessge from "@/Layouts/partials/FlashMessge.vue";
 
 defineProps({
     title: {
@@ -16,8 +17,9 @@ defineProps({
     </Head>
 
     <LayoutHeader />
+    <FlashMessge class="py-2" />
 
-    <div class="container mx-auto px-6">
+    <div class="container mx-auto m-4 px-6">
         <slot></slot>
     </div>
 </template>

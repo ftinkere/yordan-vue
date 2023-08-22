@@ -17,4 +17,6 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware(['web', 'auth:sanctum'])->group(static function () {
     Route::name('api.user.update')->post('/user', [UserController::class, 'update']);
+    Route::name('api.user.resend_confirmation')->post('/user/resend_confirmation', [UserController::class, 'resend_confirmation']);
+    Route::name('api.user.push_avatar')->post('/user/avatar', [UserController::class, 'push_avatar']);
 });

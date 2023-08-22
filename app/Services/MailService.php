@@ -12,6 +12,6 @@ class MailService
     public function sendVerificationMail(User $user) {
         $token = VerificationToken::new($user);
 
-        Mail::to($user->email)->send(new VerifyMail($token));
+        return Mail::to($user->email)->send(new VerifyMail($token));
     }
 }
