@@ -13,18 +13,16 @@ const form = useForm({
 </script>
 
 <template>
-<Layout title="Логин">
+    <Layout title="Логин">
+        <form class="mx-auto flex flex-col items-start max-w-md" @submit.prevent="form.post(route('login'))">
+            <VInput v-model="form.email" class="w-full max-w-md" label="Почта" name="email" :errors="form.errors.email" required/>
+            <VInput v-model="form.password" class="w-full max-w-md" type="password" label="Пароль" name="password" :errors="form.errors.password" required/>
 
-    <form class="mx-auto flex flex-col items-start max-w-md" @submit.prevent="form.post(route('login'))">
-        <VInput class="w-full max-w-md" label="Почта" name="email" v-model="form.email" :errors="form.errors.email" required/>
-        <VInput class="w-full max-w-md" type="password" label="Пароль" name="password" v-model="form.password" :errors="form.errors.password" required/>
+            <VCheckbox v-model="form.remember" name="check" :errors="form.errors.remember">Запомнить</VCheckbox>
 
-        <VCheckbox name="check" :errors="form.errors.remember" v-model="form.remember">Запомнить</VCheckbox>
-
-        <button type="submit" class="mt-4 btn">Логин</button>
-    </form>
-
-</Layout>
+            <button type="submit" class="mt-4 btn">Логин</button>
+        </form>
+    </Layout>
 </template>
 
 <style scoped>

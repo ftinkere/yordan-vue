@@ -1,25 +1,30 @@
 <script setup>
-import { usePage } from "@inertiajs/vue3";
+
 import { ref } from "vue";
+import { router } from "@inertiajs/vue3";
+
+const { message } = defineProps({
+    message: {
+        type: Object,
+        default: null,
+    }
+});
 
 const isShow = ref(true);
 
-const { type, message } = usePage().props.message ? usePage().props.message : { type: null, message: null };
-
-if (message === null || type === null) {
-    isShow.value = false;
-}
-
+router.on('success', () => {
+    isShow.value = true;
+})
 </script>
 
 <template>
     <div
-        v-if="isShow"
+        v-if="message && isShow"
         class="container-fluid rounded-b-lg"
-        :class="{ 'bg-green-900': type === 'success', 'bg-red-900': type === 'error' }"
+        :class="{ 'bg-green-900': message.type === 'success', 'bg-red-900': message.type === 'error' }"
     >
         <div class="container px-6 flex flex-row justify-between items-center">
-            <span>{{ message }}</span>
+            <span>{{ message.message }}</span>
             <button
                 class="float-right btn btn-ghost btn-sm btn-circle fill-white"
                 @click="isShow = false"

@@ -13,6 +13,7 @@ use App\Services\MailService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Session;
 use Inertia\Inertia;
 
@@ -35,11 +36,14 @@ class AuthController extends Controller
         return Inertia::render('Auth/Login');
     }
 
-    public function login_post(LoginRequest $request): \Illuminate\Http\RedirectResponse {
+    public function login_post(LoginRequest $request) {
         $data = $request->validated();
 
-        $res = Auth::attempt(['email' => $data['email'], 'password' => $data['password']], $data['remember']);
-
+        $isLogged = Auth::attempt(['email' => $data['email'], 'password' => $data['password']], $data['remember']);
+        if (!$isLogged) {
+            Session::flash('message', ['type' => 'error', 'message' => 'Неправильные почта или пароль']);
+            return redirect()->route('login');
+        }
         return redirect()->route('main');
     }
 

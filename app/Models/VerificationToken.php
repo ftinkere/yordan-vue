@@ -47,6 +47,7 @@ class VerificationToken extends Model
     }
 
     public function user() {
+//        return User::whereId($this->user_id)->first();
         return $this->belongsTo(User::class);
     }
 }
