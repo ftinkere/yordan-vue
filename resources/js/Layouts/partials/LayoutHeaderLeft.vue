@@ -1,9 +1,10 @@
 <script setup>
 import VModal from "@/Components/VModal.vue";
 import { Link } from "@inertiajs/vue3";
+/* global route */
 
 const links = [
-    {label: "Все языки", route: "route('languages.index')"},
+    {label: "Все языки", route: route('languages')},
     {label: "Справка", route: "route('info')"},
     {label: "О нас", route: "route('about')"},
 ];

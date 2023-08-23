@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\LanguagesController;
 use App\Http\Controllers\MainController;
 use Illuminate\Support\Facades\Route;
 
@@ -29,4 +30,10 @@ Route::prefix('auth')->group(static function() {
    Route::name('cabinet')->get('/cabinet', [AuthController::class, 'cabinet'])->middleware('auth');
 
    Route::name('verify')->get('/verify', [AuthController::class, 'verify']);
+});
+
+Route::name('languages')->get('/languages', [LanguagesController::class, 'index']);
+Route::name('languages.')->group(static function() {
+    Route::name('view')->get('/languages/{code}', [LanguagesController::class, 'view']);
+    Route::name('store')->post('/languages', [LanguagesController::class, 'store']);
 });

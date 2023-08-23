@@ -1,6 +1,9 @@
 <script setup>
 import Layout from "@/Layouts/Layout.vue";
-import { Link } from "@inertiajs/vue3";
+import {computed} from "vue";
+import CardLinkList from "@/Components/CardLinkList.vue";
+
+/* global route */
 
 const { lasts, owned } = defineProps({
     lasts: {
@@ -12,6 +15,17 @@ const { lasts, owned } = defineProps({
         default: () => [],
     },
 })
+
+const lastsWithHref = computed(function() {
+    return lasts.map(function (el) {
+       return {...el, href: route('languages.view', { code: el.id })};
+    });
+});
+const ownedWithHref = computed(function() {
+    return owned.map(function (el) {
+       return {...el, href: route('languages.view', { code: el.id })};
+    });
+});
 </script>
 
 <template>
@@ -23,20 +37,11 @@ const { lasts, owned } = defineProps({
 
         <div class="mx-auto max-w-screen-md grid grid-cols-1" :class="{ 'md:grid-cols-2': $page.props.auth.user, 'max-w-md': !$page.props.auth.user }">
             <div class="flex flex-col gap-2">
-                <div v-if="$page.props.auth.user" class="h-fit card rounded-2xl border-y flex flex-col divide-y divide-neutral-600">
-                    <Link v-for="language in owned" :key="language.id" class="w-full text-center link hover:link-info text-lg" href="">
-                        {{ language.name }}
-                    </Link>
-                </div>
-
+                <CardLinkList :list="ownedWithHref" />
                 <button class="btn btn-sm w-full mb-4 md:mb-0">Добавить язык</button>
             </div>
 
-            <div class="card rounded-2xl border-y flex flex-col divide-y divide-neutral-600">
-                <Link v-for="language in lasts" :key="language.id" class="w-full text-center link hover:link-info text-lg" href="">
-                    {{ language.name }}
-                </Link>
-            </div>
+            <CardLinkList :list="lastsWithHref" />
         </div>
     </Layout>
 </template>

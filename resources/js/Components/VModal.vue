@@ -4,7 +4,7 @@ import { ref } from "vue";
 const { id, buttonClass, modalBoxClass, headerClass } = defineProps({
     id: {
         type: String,
-        default: '',
+        default: null,
     },
     withoutX: {
         type: Boolean,
@@ -16,7 +16,7 @@ const { id, buttonClass, modalBoxClass, headerClass } = defineProps({
     },
     modalBoxClass: {
         type: [String, Object, Array],
-        default: ""
+        default: null
     },
     headerClass: {
         type: [String, Object, Array],

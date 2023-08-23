@@ -4,7 +4,7 @@ import {ref} from "vue";
 const { name, type, label, modelValue, id, inputClass, required, errors, min, max, pattern } = defineProps({
     name: {
         type: String,
-        required: true,
+        default: null,
     },
     type: {
         type: String,
@@ -12,7 +12,7 @@ const { name, type, label, modelValue, id, inputClass, required, errors, min, ma
     },
     label: {
       type: String,
-      required: true,
+      default: null,
     },
     modelValue: {
         type: [String, Object, Array],
@@ -55,23 +55,25 @@ const emits = defineEmits(['update:modelValue']);
 
 <template>
     <div class="form-control">
-        <label class="label"
-               :for="id"
+        <label
+            class="label"
+            :for="id"
         >
             <span class="label-text">{{ label }}</span>
         </label>
-        <input :type="type"
-               :id="id"
-               :name="name"
-               class="input input-bordered"
-               :class="inputClass"
-               :required="required"
-               v-model="value"
-               @input="emits('update:modelValue', value)"
-               :min="min"
-               :max="max"
-               :pattern="pattern"
-        />
+        <input
+            :id="id"
+            v-model="value"
+            :type="type"
+            :name="name"
+            class="input input-bordered"
+            :class="inputClass"
+            :required="required"
+            :min="min"
+            :max="max"
+            :pattern="pattern"
+            @input="emits('update:modelValue', value)"
+        >
         <label v-if="errors" class="label">
             <span class="label-text-alt text-red-500">{{ errors }}</span>
         </label>
