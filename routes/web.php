@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\LanguagesController;
 use App\Http\Controllers\MainController;
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -25,15 +26,16 @@ Route::prefix('auth')->group(static function() {
    Route::name('login')->get('/', [AuthController::class, 'login'])->middleware('guest');
    Route::post('/', [AuthController::class, 'login_post'])->middleware('guest');
 
-   Route::name('logout')->get('/logout', [AuthController::class, 'logout'])->middleware('auth');
-
    Route::name('cabinet')->get('/cabinet', [AuthController::class, 'cabinet'])->middleware('auth');
+
+   Route::name('logout')->get('/logout', [AuthController::class, 'logout'])->middleware('auth');
 
    Route::name('verify')->get('/verify', [AuthController::class, 'verify']);
 });
+Route::name('profile')->get('/profile/{user}', [ProfileController::class, 'profile']);
 
 Route::name('languages')->get('/languages', [LanguagesController::class, 'index']);
-Route::name('languages.')->group(static function() {
-    Route::name('view')->get('/languages/{code}', [LanguagesController::class, 'view']);
-    Route::name('store')->post('/languages', [LanguagesController::class, 'store']);
+Route::name('languages.')->prefix('/languages')->group(static function() {
+    Route::name('view')->get('/{code}', [LanguagesController::class, 'view']);
+    Route::name('store')->post('', [LanguagesController::class, 'store']);
 });

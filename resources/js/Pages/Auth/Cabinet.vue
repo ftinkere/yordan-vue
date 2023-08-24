@@ -5,6 +5,7 @@ import {computed, ref} from "vue";
 import VInput from "@/Components/VInput.vue";
 import VModal from "@/Components/VModal.vue";
 import VInputFile from "@/Components/VInputFile.vue";
+import UserAvatar from "@/Components/UserAvatar.vue";
 
 /* global route */
 
@@ -63,8 +64,7 @@ const pushAvatar = function() {
     <Layout>
         <div class="mb-2 mx-auto max-w-md flex flex-row">
             <VModal button-class="mx-auto" modal-box-class="flex flex-col gap-2 items-center">
-                <img v-if="user.avatar" class="rounded-full w-20" alt="Аватар" :src="user.avatar">
-                <svg v-else class="fill-neutral-200 rounded-xl" width="3rem" height="3rem" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg"><path d="M628.736 528.896A416 416 0 0 1 928 928H96a415.872 415.872 0 0 1 299.264-399.104L512 704l116.736-175.104zM720 304a208 208 0 1 1-416 0 208 208 0 0 1 416 0z"/></svg>
+                <UserAvatar class="w-[5rem]" :avatar="user.avatar" alt="Аватар" />
 
                 <template #header>
                     Сменить аватар

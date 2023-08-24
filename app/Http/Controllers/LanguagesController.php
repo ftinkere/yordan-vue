@@ -34,9 +34,14 @@ class LanguagesController extends Controller
     /**
      * Display the specified resource.
      */
-    public function view(string $id)
+    public function view($id)
     {
-        return $id;
+        $language = Language::with(['base_articles', 'dev_note', 'statuses'])->findOrFail($id);
+        return Inertia::render('LanguageView', [
+            ...compact('language'),
+            'can_edit' => \Auth::user()->can('edit-language', $language),
+            ]
+        );
     }
 
     /**

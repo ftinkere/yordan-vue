@@ -1,7 +1,7 @@
 <script setup>
 import {Link, usePage} from "@inertiajs/vue3";
 
-const avatar_path = usePage().props.auth.user?.avatar;
+const avatar_path = usePage().props.auth?.user?.avatar;
 </script>
 
 <template>

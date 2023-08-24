@@ -61,19 +61,36 @@ const emits = defineEmits(['update:modelValue']);
         >
             <span class="label-text">{{ label }}</span>
         </label>
-        <input
-            :id="id"
-            v-model="value"
-            :type="type"
-            :name="name"
-            class="input input-bordered"
-            :class="inputClass"
-            :required="required"
-            :min="min"
-            :max="max"
-            :pattern="pattern"
-            @input="emits('update:modelValue', value)"
-        >
+
+        <div class="w-full flex flex-row">
+            <input
+                v-if="type !== 'textarea'"
+                :id="id"
+                v-model="value"
+                :type="type"
+                :name="name"
+                class="grow input input-bordered"
+                :class="inputClass"
+                :required="required"
+                :min="min"
+                :max="max"
+                :pattern="pattern"
+                @input="emits('update:modelValue', value)"
+            >
+            <textarea
+                v-if="type === 'textarea'"
+                :id="id"
+                v-model="value"
+                :name="name"
+                class="grow input input-bordered"
+                :class="inputClass"
+                :required="required"
+                @input="emits('update:modelValue', value)"
+            >
+            </textarea>
+            <slot name="button" />
+        </div>
+
         <label v-if="errors" class="label">
             <span class="label-text-alt text-red-500">{{ errors }}</span>
         </label>

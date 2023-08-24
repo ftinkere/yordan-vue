@@ -4,6 +4,7 @@ namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -31,7 +32,7 @@ class Handler extends ExceptionHandler
                     'message' => 'Not found.'
                 ], 404);
             }
-            return  Inertia::render('Errors/NotFound')
+            return  Inertia::render('Errors/NotFound',['auth' => ['user' => Auth::user()]])
                 ->toResponse($request)
                 ->setStatusCode(404);
         });

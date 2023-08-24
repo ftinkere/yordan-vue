@@ -7,3 +7,16 @@
     --rounded-btn: 0.3rem;
     --rounded-badge: 0.3rem;
 }
+
+.toastui-editor-dark .toastui-editor-contents table th {
+    @apply bg-neutral-800 font-bold;
+}
+
+.toastui-editor-dark .toastui-editor-toolbar-icons {
+    @apply text-white;
+}
+
+.toastui-editor-md-tab-container {
+    background-color: #232428;
+    border-bottom-color: #303238;
+}

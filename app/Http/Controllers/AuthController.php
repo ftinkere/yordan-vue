@@ -53,7 +53,7 @@ class AuthController extends Controller
         return redirect()->route('main');
     }
 
-    public function cabinet(): \Inertia\Response {
+    public function cabinet() {
         return Inertia::render('Auth/Cabinet');
     }
 

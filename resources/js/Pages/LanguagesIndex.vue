@@ -34,8 +34,11 @@ function submit() {
                 <template #content>
                     <div class="flex flex-row items-end">
                         <input hidden name="_token" :value="$page.props.csrf_token">
-                        <VInput v-model="addForm.name" class="grow" label="Название" />
-                        <button class="btn btn-success" @click="submit">Добавить</button>
+                        <VInput v-model="addForm.name" label="Название" :errors="$page.props.errors.name" class="grow" input-class="rounded-e-none" >
+                            <template #button>
+                                <button class="btn btn-success rounded-s-none" @click="submit">Добавить</button>
+                            </template>
+                        </VInput>
                     </div>
                 </template>
             </VModal>
@@ -52,8 +55,8 @@ function submit() {
             <tbody>
                 <tr v-for="language in languages.data" :key="language.id" class="hover">
                     <th scope="row">{{ language.id }}</th>
-                    <td><Link class="hover:text-primary" :href="route('languages.view', {code: language.id})">{{ language.name }}</Link></td>
-                    <td>{{ language.user ? language.user.name : 'null' }}</td>
+                    <td><Link class="hover:text-info" :href="route('languages.view', language.id)">{{ language.name }}</Link></td>
+                    <td><Link class="hover:text-info" :href="route('profile', language.user_id)">{{ language.user ? language.user.name : 'null' }}</Link></td>
                 </tr>
             </tbody>
         </table>

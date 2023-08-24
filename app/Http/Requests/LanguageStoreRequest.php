@@ -29,8 +29,8 @@ class LanguageStoreRequest extends FormRequest
 
     public function messages() {
         return [
-            'name.required' => 'Укажите имя языка',
-            'name.filled' => 'Укажите имя языка',
+            'name.required' => 'Укажите название языка',
+            'name.filled' => 'Укажите название языка',
         ];
     }
 
