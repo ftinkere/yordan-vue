@@ -1,12 +1,14 @@
 <script setup>
-import {Link, usePage} from "@inertiajs/vue3";
+import { Link, usePage } from "@inertiajs/vue3";
 
-const avatar_path = usePage().props.auth?.user?.avatar;
+const user = usePage().props.auth?.user;
+const avatar_path = user?.avatar;
+
 </script>
 
 <template>
     <div class="shrink flex flex-row">
-        <div v-if="this.$page.props.auth.user === null" class="flex flex-row space-x-4">
+        <div v-if="user === null" class="flex flex-row space-x-4">
             <div class="flex flex-row space-x-4">
                 <a class="" :href="route('register')">Регистрация</a>
                 <a class="" :href="route('login')">Логин</a>

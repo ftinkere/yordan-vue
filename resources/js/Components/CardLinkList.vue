@@ -1,5 +1,6 @@
 <script setup>
 import { Link } from "@inertiajs/vue3";
+import CardList from "@/Components/CardList.vue";
 
 const { list, property } = defineProps({
    list: {
@@ -14,11 +15,11 @@ const { list, property } = defineProps({
 </script>
 
 <template>
-    <div v-if="$page.props.auth.user" class="h-fit card rounded-2xl border-y flex flex-col divide-y divide-neutral-600">
+    <CardList v-if="$page.props.auth.user">
         <Link v-for="item in list" :key="item.id" class="w-full text-center link hover:link-info text-lg" :href="item.href">
             {{ item[property] }}
         </Link>
-    </div>
+    </CardList>
 </template>
 
 <style scoped>

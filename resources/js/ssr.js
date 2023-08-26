@@ -19,7 +19,6 @@ createServer((page) =>
                 ...page.props.ziggy,
                 location: new URL(page.props.ziggy.location),
             };
-            global.route = (name, params, absolute, config = ziggy) => route(name, params, absolute, config);
             return createSSRApp({ render: () => h(App, props) })
                 .use(plugin)
                 .use(ZiggyVue, ziggy);

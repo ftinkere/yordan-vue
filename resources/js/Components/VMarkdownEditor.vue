@@ -74,8 +74,5 @@ onMounted(function () {
 </template>
 
 <style scoped>
-    .toastui-editor-md-tab-container {
-        background-color: #232428;
-        border-bottom-color: #303238;
-    }
+
 </style>

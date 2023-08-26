@@ -17,6 +17,20 @@
 }
 
 .toastui-editor-md-tab-container {
-    background-color: #232428;
-    border-bottom-color: #303238;
+    background-color: #232428 !important;
+    border-bottom-color: #303238 !important;
+}
+
+.toastui-editor-dropdown-toolbar {
+    flex-wrap: wrap;
+    height: auto !important;
+}
+
+.toastui-editor-contents,
+.ProseMirror {
+    font-size: unset !important;
+    font-family: unset !important;
+}
+.toastui-editor-contents p {
+    margin: unset !important;
 }

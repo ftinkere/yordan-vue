@@ -29,7 +29,7 @@ if (can_edit) {
 
 <template>
     <div class="flex flex-col lg:flex-row gap-2 lg:gap-6">
-        <h1 class="text-2xl self-center">{{ language.autonym }} <span class="text-lg">/{{ language.autonym_transcription }}/</span></h1>
+        <h1 v-if="language.autonym" class="text-2xl self-center">{{ language.autonym }} <span v-if="language.autonym_transcription" class="text-lg">/{{ language.autonym_transcription }}/</span></h1>
         <div class="tab tab-lg h-fit p-0">
             <Link v-for="tab in tabs"
                   class="tab tab-bordered"
