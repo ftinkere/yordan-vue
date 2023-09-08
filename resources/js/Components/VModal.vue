@@ -25,6 +25,14 @@ const { id, buttonClass, modalBoxClass, headerClass } = defineProps({
 })
 
 const modal = ref(null);
+
+const close = function() {
+    modal.close();
+}
+
+defineExpose({
+    close,
+})
 </script>
 
 <template>

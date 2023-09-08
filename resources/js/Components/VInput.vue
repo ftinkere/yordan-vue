@@ -77,6 +77,7 @@ const emits = defineEmits(['update:modelValue']);
                 :pattern="pattern"
                 @input="emits('update:modelValue', value)"
             >
+
             <textarea
                 v-if="type === 'textarea'"
                 :id="id"
@@ -88,6 +89,7 @@ const emits = defineEmits(['update:modelValue']);
                 @input="emits('update:modelValue', value)"
             >
             </textarea>
+
             <slot name="button" />
         </div>
 

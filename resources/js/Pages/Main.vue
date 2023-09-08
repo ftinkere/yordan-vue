@@ -35,13 +35,15 @@ const ownedWithHref = computed(function() {
             <p>На данном сайте вы можете создавать свои конланги. И делиться ими с другими людьми.</p>
         </article>
 
-        <div class="mx-auto max-w-screen-md grid grid-cols-1" :class="{ 'md:grid-cols-2': $page.props.auth.user, 'max-w-md': !$page.props.auth.user }">
-            <div class="flex flex-col gap-2">
-                <CardLinkList :list="ownedWithHref" />
+        <div class="mt-4 mx-auto grid grid-cols-1"
+             :class="{ 'md:grid-cols-2': $page.props.auth.user, 'max-w-md': !$page.props.auth.user }"
+        >
+            <div v-if="$page.props.auth.user" class="flex flex-col gap-2 max-w-screen-xs">
+                <CardLinkList v-if="ownedWithHref.length > 0" :list="ownedWithHref" />
                 <button class="btn btn-sm w-full mb-4 md:mb-0">Добавить язык</button>
             </div>
 
-            <CardLinkList :list="lastsWithHref" />
+            <CardLinkList v-if="lastsWithHref.length > 0" class="max-w-screen-xs" :list="lastsWithHref" />
         </div>
     </Layout>
 </template>

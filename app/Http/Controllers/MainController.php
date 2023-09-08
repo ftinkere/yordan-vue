@@ -12,7 +12,7 @@ class MainController extends Controller
 {
     public function index() {
         $lasts = Language::orderBy('updated_at', 'desc')->limit(15)->get();
-        $owned = Auth::user()->languages;
+        $owned = Auth::user()?->languages ?: [];
         return Inertia::render('Main', compact('lasts', 'owned'));
     }
 }

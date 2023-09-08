@@ -26,10 +26,17 @@ class AuthServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Gate::define('edit-language', static function (User $user, Language $language) {
-            if ($language->user_id == $user->id) {
+            if ($language->user_id == $user->id && $user->email_verified_at !== null) {
                 return Response::allow();
             } else {
-                return Response::deny('You are not owner');
+                return Response::deny('Вы не владелец.');
+            }
+        });
+        Gate::define('add-language', static function (User $user) {
+            if ($user->email_verified_at !== null) {
+                return Response::allow();
+            } else {
+                return Response::deny('Ваша почта не подтверждена.');
             }
         });
     }

@@ -23,7 +23,8 @@ class UserUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => '',
+            'name' => 'filled',
+            'email' => 'email',
         ];
     }
 }
