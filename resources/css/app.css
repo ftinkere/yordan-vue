@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-    --rounded-box: 0.3rem;
+    --rounded-box: 1rem;
     --rounded-btn: 0.3rem;
     --rounded-badge: 0.3rem;
 }

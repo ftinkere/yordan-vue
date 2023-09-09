@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Api\UserChangePassword;
+use App\Http\Requests\Api\UserChangePasswordRequest;
 use App\Http\Requests\Api\UserPushAvatarRequest;
 use App\Http\Requests\Api\UserUpdateRequest;
 use App\Http\Requests\Auth\VerifyRequest;
@@ -32,7 +32,7 @@ class UserController extends Controller
         return $user->toJson();
     }
 
-    public function change_password(UserChangePassword $request) {
+    public function change_password(UserChangePasswordRequest $request) {
         $data = $request->validated();
 
         $user = Auth::user();

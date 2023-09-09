@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from "vue";
+import {onMounted, ref} from "vue";
 
 const { id, buttonClass, modalBoxClass, headerClass } = defineProps({
     id: {
@@ -22,21 +22,40 @@ const { id, buttonClass, modalBoxClass, headerClass } = defineProps({
         type: [String, Object, Array],
         default: "text-xl font-bold"
     },
+    withoutButton: {
+        type: Boolean,
+        default: false,
+    }
 })
 
 const modal = ref(null);
 
+const emit = defineEmits(['close'])
+
+onMounted(() => {
+    modal.value.onclose = () => {
+        emit('close');
+    }
+})
+
 const close = function() {
-    modal.close();
+    modal.value.close();
+    emit('close');
+}
+
+const open = function() {
+    modal.value.showModal();
 }
 
 defineExpose({
     close,
+    open,
 })
 </script>
 
 <template>
     <button
+        v-if="!withoutButton"
         :class="buttonClass"
         @click="modal.showModal()"
     >

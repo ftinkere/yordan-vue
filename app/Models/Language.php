@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 
 /**
  * App\Models\Language
@@ -81,8 +82,8 @@ class Language extends Model
         return $this->hasOne(BaseArticles::class, 'language_id', 'id');
     }
 
-    public function statuses() {
-        return $this->hasMany(LanguageStatus::class, 'language_id', 'id');
+    public function status() {
+        return $this->hasOne(LanguageStatus::class, 'language_id', 'id');
     }
 
     public function has_status($status) {
@@ -110,5 +111,17 @@ class Language extends Model
     public function orthographemes() {
         return $this->hasMany(Orthographeme::class, 'language_id', 'id')
             ->orderBy('order');
+    }
+
+    public function get_action() {
+        if (empty($this->autonym)) {
+            return [
+                'message' => 'У вас не указан аутоним.',
+                'button' => 'Указать',
+                'modal' => 'autonym',
+            ];
+        }
+
+        return null;
     }
 }

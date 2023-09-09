@@ -25,7 +25,7 @@ function submit() {
     <Layout title="Все языки">
         <div v-if="$page.props.auth.user" class="mb-4">
             <VModal button-class="btn btn-primary">
-                Добавить язык
+                <span>Добавить язык</span>
 
                 <template #header>
                     Добавить язык
@@ -34,7 +34,13 @@ function submit() {
                 <template #content>
                     <div class="flex flex-row items-end">
                         <input hidden name="_token" :value="$page.props.csrf_token">
-                        <VInput v-model="addForm.name" label="Название" :errors="$page.props.errors.name" class="grow" input-class="rounded-e-none" >
+                        <VInput v-model="addForm.name"
+                                label="Название"
+                                :errors="$page.props.errors.name"
+                                class="grow"
+                                input-class="rounded-e-none"
+                                @keyup.enter="submit"
+                        >
                             <template #button>
                                 <button class="btn btn-success rounded-s-none" @click="submit">Добавить</button>
                             </template>

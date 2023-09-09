@@ -3,8 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\LanguageStoreRequest;
+use App\Http\Requests\LanguageUpdateRequest;
 use App\Models\Language;
+use App\Models\LanguageStatus;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 
 class LanguagesController extends Controller
@@ -27,19 +31,31 @@ class LanguagesController extends Controller
     public function store(LanguageStoreRequest $request)
     {
         ['name' => $name] = $request->validated();
+        $language = Language::create([
+            'name' => $name,
+            'user_id' => Auth::id(),
+        ]);
+        $language->save();
 
-        return ['message' => 'ok'];
+        $status = LanguageStatus::create([
+            'language_id' => $language->id,
+            'status' => 'Новый',
+            ]);
+        $status->save();
+
+        return redirect()->route('languages.view', ['code' => $language->id]);
     }
 
     /**
      * Display the specified resource.
      */
-    public function view($id)
+    public function view($code)
     {
-        $language = Language::with(['base_articles', 'dev_note', 'statuses'])->findOrFail($id);
+        /** @var Language $language */
+        $language = Language::with(['base_articles', 'dev_note', 'status'])->findOrFail($code);
         return Inertia::render('LanguageView', [
-            ...compact('language'),
-            'can_edit' => \Auth::user()->can('edit-language', $language),
+                ...compact('language'),
+                'can_edit' => \Auth::user()->can('edit-language', $language),
             ]
         );
     }
@@ -55,9 +71,13 @@ class LanguagesController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(LanguageUpdateRequest $request, string $code)
     {
-        //
+        $language = Language::find($code);
+
+        $language->update($request->validated());
+
+        return $language->toJson();
     }
 
     /**
@@ -66,5 +86,12 @@ class LanguagesController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+    public function action($code) {
+        $language = Language::findOrFail($code);
+        Gate::authorize('edit-language', $language);
+
+        return $language->get_action();
     }
 }

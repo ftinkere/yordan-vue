@@ -2,10 +2,16 @@
 import LanguageLayout from "@/Layouts/LanguageLayout.vue";
 import VMarkdownViewer from "@/Components/VMarkdownViewer.vue";
 import VMarkdownEditor from "@/Components/VMarkdownEditor.vue";
-import {ref} from "vue";
+import {reactive, ref, toRef} from "vue";
 import TodoList from "@/Components/LanguageTodoList.vue";
+import LanguageTodoAction from "@/Components/LanguageTodoAction.vue";
+import VModal from "@/Components/VModal.vue";
+import VInput from "@/Components/VInput.vue";
+import {useForm} from "@inertiajs/vue3";
 
-const { language, can_edit } = defineProps({
+/* global route */
+
+const props = defineProps({
     language: {
         type: Object,
         required: true,
@@ -13,10 +19,55 @@ const { language, can_edit } = defineProps({
     can_edit: {
         type: Boolean,
         default: false,
-    }
+    },
 });
 
-console.log(language);
+const { can_edit } = props;
+const language = reactive(props.language);
+
+const action = reactive({
+    message: null,
+    button: null,
+    modal: null,
+});
+
+let actionModal = ref(null);
+
+const autonymModal = ref(null);
+
+const actionUpdate = function () {
+    window.axios.get(route('languages.action', { code: language.id }))
+        .then((response) => {
+            if (response.data === null) {
+                action.message = null;
+                action.button = null;
+                action.modal = null;
+                actionModal.value = null;
+                return;
+            }
+            action.message = response.data.message;
+            action.button = response.data.button;
+            action.modal = response.data.modal;
+
+            if (action.modal === 'autonym') {
+                actionModal.value = autonymModal.value;
+            }
+        });
+
+}
+actionUpdate();
+
+const form = useForm({
+   autonym: language.autonym,
+});
+
+const applyForm = function () {
+    console.log('test');
+    window.axios.post(route('languages.update', { code: language.id }), form.data())
+        .then((response) => {
+            language.autonym = response.data.autonym;
+        });
+}
 
 </script>
 
@@ -30,21 +81,60 @@ console.log(language);
 
         <div class="mt-4 ms-6 mb-4 flex flex-row gap-2 items-baseline">
             <span v-if="language.type">{{ language.type }}</span>
-            <span v-if="language.statuses.filter((el) => el.status === 'new').length > 0">Новый</span>
-            <span v-if="language.statuses.filter((el) => el.status === 'progress').length > 0">В процессе</span>
-            <span v-if="language.statuses.filter((el) => el.status === 'complete').length > 0">Завершён</span>
+
+            <span v-if="language.status?.status">{{ language.status.status }}</span>
+        </div>
+
+        <div class="my-4">
+            <LanguageTodoAction
+                v-if="action.message"
+                :message="action.message"
+                :button="action.button"
+                :modal="actionModal"
+            />
         </div>
 
         <div>
             <VMarkdownViewer class="card border-y p-4 rounded-2xl text-white"
                              v-if="language.base_articles?.about"
                              :content="language.base_articles?.about" />
-            <TodoList class="mt-4"  :language="language"/>
+
             <VMarkdownViewer class="mt-4 card border-y border-warning p-4 rounded-2xl text-white"
                              v-if="language.dev_note?.note"
                              :content="language.dev_note?.note" />
         </div>
 
+        <VModal
+            ref="autonymModal"
+            without-button
+            @close="actionUpdate"
+        >
+            <template #header>
+                Аутоним
+            </template>
+
+            <template #content>
+                <div class="flex flex-row items-end">
+                    <input hidden name="_token" :value="$page.props.csrf_token">
+                    <VInput v-model="form.autonym"
+                            label="Аутоним"
+                            :errors="$page.props.errors.autonym"
+                            class="grow"
+                            input-class="rounded-e-none"
+                            @keyup.enter="applyForm(); autonymModal.close()"
+                    >
+                        <template #button>
+                            <button
+                                class="btn btn-success rounded-s-none"
+                                @click="applyForm(); autonymModal.close()"
+                            >
+                                Изменить
+                            </button>
+                        </template>
+                    </VInput>
+                </div>
+            </template>
+        </VModal>
     </LanguageLayout>
 </template>
 
