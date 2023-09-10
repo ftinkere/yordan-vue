@@ -120,6 +120,18 @@ class Language extends Model
                 'button' => 'Указать',
                 'modal' => 'autonym',
             ];
+        } else if (empty($this->autonym_transcription)) {
+            return [
+                'message' => 'У вас не указано произношение аутонима.',
+                'button' => 'Указать',
+                'modal' => 'autonym_transcription',
+            ];
+        } else if (empty($this->type)) {
+            return [
+                'message' => 'У вас не указан тип конланга.',
+                'button' => 'Указать',
+                'modal' => 'type',
+            ];
         }
 
         return null;

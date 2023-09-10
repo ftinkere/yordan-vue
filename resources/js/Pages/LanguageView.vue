@@ -8,6 +8,7 @@ import LanguageTodoAction from "@/Components/LanguageTodoAction.vue";
 import VModal from "@/Components/VModal.vue";
 import VInput from "@/Components/VInput.vue";
 import {useForm} from "@inertiajs/vue3";
+import TranscriptionConverter from "@/Components/TranscriptionConverter.vue";
 
 /* global route */
 
@@ -34,6 +35,8 @@ const action = reactive({
 let actionModal = ref(null);
 
 const autonymModal = ref(null);
+const autonymTranscriptionModal = ref(null);
+const typeModal = ref(null);
 
 const actionUpdate = function () {
     window.axios.get(route('languages.action', { code: language.id }))
@@ -51,6 +54,10 @@ const actionUpdate = function () {
 
             if (action.modal === 'autonym') {
                 actionModal.value = autonymModal.value;
+            } else if (action.modal === 'autonym_transcription') {
+                actionModal.value = autonymTranscriptionModal.value;
+            } else if (action.modal === 'type') {
+                actionModal.value = typeModal.value;
             }
         });
 
@@ -59,15 +66,34 @@ actionUpdate();
 
 const form = useForm({
    autonym: language.autonym,
+   autonym_transcription: language.autonym_transcription,
+    type: language.type,
 });
 
 const applyForm = function () {
-    console.log('test');
     window.axios.post(route('languages.update', { code: language.id }), form.data())
         .then((response) => {
             language.autonym = response.data.autonym;
+            language.autonym_transcription = response.data.autonym_transcription;
+            language.type = response.data.type;
         });
 }
+
+let typeList = [
+    'Априорный',
+    'Апостериорный',
+    'Художественный',
+    'Артланг',
+    'Инженерный',
+    'Энджланг',
+    'Вспомогательный',
+    'Ауксланг',
+    'Вымышленный',
+    'Персональный',
+    'Персланг',
+    'Философский',
+    'Логический',
+];
 
 </script>
 
@@ -88,8 +114,7 @@ const applyForm = function () {
         <div class="my-4">
             <LanguageTodoAction
                 v-if="action.message"
-                :message="action.message"
-                :button="action.button"
+                :action="action"
                 :modal="actionModal"
             />
         </div>
@@ -114,10 +139,14 @@ const applyForm = function () {
             </template>
 
             <template #content>
-                <div class="flex flex-row items-end">
+                <article>
+                    Аутоним — самоназвание вашего языка.
+                    Вы можете использовать юникод, но страйтесь использовать кириллицу или латиницу для записи,
+                    но это не обязательно.
+                </article>
+                <div>
                     <input hidden name="_token" :value="$page.props.csrf_token">
                     <VInput v-model="form.autonym"
-                            label="Аутоним"
                             :errors="$page.props.errors.autonym"
                             class="grow"
                             input-class="rounded-e-none"
@@ -135,6 +164,83 @@ const applyForm = function () {
                 </div>
             </template>
         </VModal>
+
+        <VModal
+            ref="autonymTranscriptionModal"
+            without-button
+            @close="actionUpdate"
+        >
+            <template #header>
+                Произношение аутонима
+            </template>
+
+            <template #content>
+                <article>
+                    Ваша орфография может быть неочевидна другим людям,
+                    поэтому укажите, пожалуйста, как ваш аутоним произносится.
+                    Для этого вы можете использовать X-SAMPA, который удобно набирать на клавиатуре.
+                    Просто введите его в поле и нажмите кнопку конвертации.
+                </article>
+                <div class="flex flex-col">
+                    <input hidden name="_token" :value="$page.props.csrf_token">
+                    <VInput
+                        v-model="form.autonym_transcription"
+                        :errors="$page.props.errors.autonym_transcription"
+                        class="grow"
+                        input-class="rounded-e-none"
+                        @keyup.enter="applyForm(); autonymTranscriptionModal.close()"
+                    >
+                        <template #button>
+                            <button
+                                class="btn btn-success rounded-s-none"
+                                @click="applyForm(); autonymTranscriptionModal.close()"
+                            >
+                                Изменить
+                            </button>
+                        </template>
+                    </VInput>
+                    <TranscriptionConverter v-model="form.autonym_transcription" />
+                </div>
+            </template>
+        </VModal>
+
+        <VModal
+            ref="typeModal"
+            without-button
+            @close="actionUpdate"
+        >
+            <template #header>
+                Тип конланга
+            </template>
+
+            <template #content>
+                <article>
+                    В данном поле вы можете указать что угодно, это ваше видение конланга.
+                    Но для вас есть небольшой список для помощи.
+                </article>
+                <div class="flex flex-col">
+                    <input hidden name="_token" :value="$page.props.csrf_token">
+                    <VInput
+                        v-model="form.type"
+                        :errors="$page.props.errors.type"
+                        class="grow"
+                        input-class="rounded-e-none"
+                        :list="typeList"
+                        @keyup.enter="applyForm(); typeModal.close()"
+                    >
+                        <template #button>
+                            <button
+                                class="btn btn-success rounded-s-none"
+                                @click="applyForm(); typeModal.close()"
+                            >
+                                Изменить
+                            </button>
+                        </template>
+                    </VInput>
+                </div>
+            </template>
+        </VModal>
+
     </LanguageLayout>
 </template>
 

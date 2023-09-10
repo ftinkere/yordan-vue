@@ -25,6 +25,8 @@ class LanguageUpdateRequest extends FormRequest
     {
         return [
             'autonym' => '',
+            'autonym_transcription' => '',
+            'type' => '',
         ];
     }
 

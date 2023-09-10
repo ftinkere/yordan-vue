@@ -1,7 +1,7 @@
 <script setup>
-import {ref} from "vue";
+import _ from "lodash"
 
-const { name, type, label, modelValue, id, inputClass, required, errors, min, max, pattern } = defineProps({
+const { name, type, label, modelValue, id, inputClass, required, errors, min, max, pattern, list } = defineProps({
     name: {
         type: String,
         default: null,
@@ -34,21 +34,13 @@ const { name, type, label, modelValue, id, inputClass, required, errors, min, ma
         type: String,
         default: null,
     },
-    min: {
-        type: Number,
+    list: {
+        type: [Array, null],
         default: null,
-    },
-    max: {
-        type: Number,
-        default: null,
-    },
-    pattern: {
-        type: String,
-        default: null,
-    },
+    }
 });
 
-const value = ref(modelValue);
+const listId = list !== null ? _.uniqueId('datalist_') : null;
 
 const emits = defineEmits(['update:modelValue']);
 </script>
@@ -66,27 +58,37 @@ const emits = defineEmits(['update:modelValue']);
             <input
                 v-if="type !== 'textarea'"
                 :id="id"
-                v-model="value"
+                :value="modelValue"
                 :type="type"
                 :name="name"
                 class="grow input input-bordered"
                 :class="inputClass"
+                :list="listId"
                 :required="required"
-                :min="min"
-                :max="max"
-                :pattern="pattern"
-                @input="emits('update:modelValue', value)"
+                @input="emits('update:modelValue', $event.target.value)"
             >
+
+            <datalist
+                v-if="list"
+                :id="listId"
+            >
+                <option
+                    v-for="item in list"
+                    :key="item"
+                >
+                    {{ item }}
+                </option>
+            </datalist>
 
             <textarea
                 v-if="type === 'textarea'"
                 :id="id"
-                v-model="value"
+                :value="modelValue"
                 :name="name"
                 class="grow input input-bordered"
                 :class="inputClass"
                 :required="required"
-                @input="emits('update:modelValue', value)"
+                @input="emits('update:modelValue', $event.target.value)"
             >
             </textarea>
 
