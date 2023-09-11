@@ -49,6 +49,9 @@ use Illuminate\Support\Facades\Gate;
  * @method static \Illuminate\Database\Eloquent\Builder|Language whereType($value)
  * @property-read int|null $orthographemes_count
  * @property-read int|null $language_sounds_count
+ * @property string|null $flag
+ * @property-read \App\Models\LanguageStatus|null $status
+ * @method static \Illuminate\Database\Eloquent\Builder|Language whereFlag($value)
  * @mixin \Eloquent
  */
 class Language extends Model
@@ -131,6 +134,12 @@ class Language extends Model
                 'message' => 'У вас не указан тип конланга.',
                 'button' => 'Указать',
                 'modal' => 'type',
+            ];
+        } else if (empty($this->base_articles?->about)) {
+            return [
+                'message' => 'У вас пустое описание языка. Напишите хотя бы пару предложений.',
+                'button' => 'Написать',
+                'modal' => 'about',
             ];
         }
 

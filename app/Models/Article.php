@@ -29,6 +29,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Article whereUpdatedAt($value)
  * @property string|null $published_at
  * @method static \Illuminate\Database\Eloquent\Builder|Article wherePublishedAt($value)ount
+ * @property-read int|null $tags_count
  * @mixin \Eloquent
  */
 class Article extends Model

@@ -2,13 +2,15 @@
 import LanguageLayout from "@/Layouts/LanguageLayout.vue";
 import VMarkdownViewer from "@/Components/VMarkdownViewer.vue";
 import VMarkdownEditor from "@/Components/VMarkdownEditor.vue";
-import {reactive, ref, toRef} from "vue";
+import {reactive, ref, toRef, watch} from "vue";
 import TodoList from "@/Components/LanguageTodoList.vue";
 import LanguageTodoAction from "@/Components/LanguageTodoAction.vue";
 import VModal from "@/Components/VModal.vue";
 import VInput from "@/Components/VInput.vue";
 import {useForm} from "@inertiajs/vue3";
 import TranscriptionConverter from "@/Components/TranscriptionConverter.vue";
+import _ from "lodash";
+import UserShort from "@/Components/UserShort.vue";
 
 /* global route */
 
@@ -37,6 +39,7 @@ let actionModal = ref(null);
 const autonymModal = ref(null);
 const autonymTranscriptionModal = ref(null);
 const typeModal = ref(null);
+const aboutModal = ref(null);
 
 const actionUpdate = function () {
     window.axios.get(route('languages.action', { code: language.id }))
@@ -58,6 +61,8 @@ const actionUpdate = function () {
                 actionModal.value = autonymTranscriptionModal.value;
             } else if (action.modal === 'type') {
                 actionModal.value = typeModal.value;
+            } else if (action.modal === 'about') {
+                actionModal.value = aboutModal.value;
             }
         });
 
@@ -65,8 +70,8 @@ const actionUpdate = function () {
 actionUpdate();
 
 const form = useForm({
-   autonym: language.autonym,
-   autonym_transcription: language.autonym_transcription,
+    autonym: language.autonym,
+    autonym_transcription: language.autonym_transcription,
     type: language.type,
 });
 
@@ -78,6 +83,16 @@ const applyForm = function () {
             language.type = response.data.type;
         });
 }
+
+const about = ref(language.base_articles?.about || '');
+const applyAbout = function () {
+    window.axios.post(route('languages.about', { code: language.id }), { about: about.value })
+        .then((response) => {
+            about.value = response.data.about;
+        });
+}
+
+watch(about, _.debounce(applyAbout, 1000));
 
 let typeList = [
     'Априорный',
@@ -105,10 +120,12 @@ let typeList = [
             <span v-if="language.autonym_transcription"> /{{ language.autonym_transcription }}/</span>
         </h1>
 
-        <div class="mt-4 ms-6 mb-4 flex flex-row gap-2 items-baseline">
-            <span v-if="language.type">{{ language.type }}</span>
-
-            <span v-if="language.status?.status">{{ language.status.status }}</span>
+        <div class="my-4 mx-6 flex flex-row gap-2 items-baseline justify-between">
+            <div class="flex flex-row gap-2">
+                <span v-if="language.type">{{ language.type }}</span>
+                <span v-if="language.status?.status">{{ language.status.status }}</span>
+            </div>
+            <UserShort :user="language.user" />
         </div>
 
         <div class="my-4">
@@ -121,8 +138,8 @@ let typeList = [
 
         <div>
             <VMarkdownViewer class="card border-y p-4 rounded-2xl text-white"
-                             v-if="language.base_articles?.about"
-                             :content="language.base_articles?.about" />
+                             v-if="about"
+                             :content="about" />
 
             <VMarkdownViewer class="mt-4 card border-y border-warning p-4 rounded-2xl text-white"
                              v-if="language.dev_note?.note"
@@ -237,6 +254,35 @@ let typeList = [
                             </button>
                         </template>
                     </VInput>
+                </div>
+            </template>
+        </VModal>
+
+        <VModal
+            ref="aboutModal"
+            without-button
+            class="w-full max-w-full md:max-w-screen-md"
+            @close="actionUpdate"
+        >
+            <template #header>
+                О языке
+            </template>
+
+            <template #content>
+                <article>
+                    Здесь вы можете сообщить о вашем языке что желаете.
+                    Можете сообщить о носителях. Об истории. О строе. О своих мыслях.
+                    И любое что может заинтересовать других людей.
+                </article>
+                <div class="mt-4 flex flex-col">
+                    <input hidden name="_token" :value="$page.props.csrf_token">
+                    <VMarkdownEditor v-model="about" />
+                    <button
+                        class="mt-4 btn btn-success self-end w-fit"
+                        @click="applyAbout()"
+                    >
+                        Сохранить
+                    </button>
                 </div>
             </template>
         </VModal>

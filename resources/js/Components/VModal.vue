@@ -66,7 +66,6 @@ defineExpose({
         <dialog :id="id" ref="modal" class="modal">
             <div
                 class="modal-box bg-neutral-900"
-                :class="modalBoxClass"
                 v-bind="$attrs"
             >
                 <div class="w-full flex flex-row justify-between">

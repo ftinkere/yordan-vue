@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\LanguageStoreRequest;
 use App\Http\Requests\LanguageUpdateRequest;
+use App\Models\BaseArticles;
 use App\Models\Language;
 use App\Models\LanguageStatus;
 use Illuminate\Http\Request;
@@ -52,7 +53,7 @@ class LanguagesController extends Controller
     public function view($code)
     {
         /** @var Language $language */
-        $language = Language::with(['base_articles', 'dev_note', 'status'])->findOrFail($code);
+        $language = Language::with(['base_articles', 'status', 'user'])->findOrFail($code);
         return Inertia::render('LanguageView', [
                 ...compact('language'),
                 'can_edit' => \Auth::user()->can('edit-language', $language),
@@ -78,6 +79,51 @@ class LanguagesController extends Controller
         $language->update($request->validated());
 
         return $language->toJson();
+    }
+
+    public function updateAbout(Request $request, string $code) {
+        $language = Language::findOrFail($code);
+        Gate::authorize('edit-language', $language);
+
+        $data = $request->validate([
+            'about' => 'required',
+        ]);
+
+        if ($language->base_articles === null) {
+            $articles = new BaseArticles([
+               'language_id' => $language->id,
+            ]);
+            $articles->save();
+        } else {
+            $articles = $language->base_articles;
+        }
+
+        $articles->update($data);
+
+        return ['about' => $articles->about];
+    }
+
+    public function pushFlag(Request $request, $code) {
+        $language = Language::findOrFail($code);
+        Gate::authorize('edit-language', $language);
+
+        $request->validate([
+            'flag' => 'required|file|image'
+        ], $messages = [
+            'flag.required' => 'Изображение обязательно.',
+            'flag.file' => 'Флаг должен быть файлом.',
+            'flag.image' => 'Флаг должен быть изображением.',
+        ]);
+        $file = $request->file('flag');
+
+        if ($file != null) {
+            $path = $file->storeAs('/flags', (string)$language->id . '.' . $file->getClientOriginalExtension(), 'public');
+            $path = '/storage/' . $path;
+            $language->flag = $path;
+            $language->save();
+            return ['message' => 'Success', 'path' => $path];
+        }
+        return ['message' => 'Error'];
     }
 
     /**

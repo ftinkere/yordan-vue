@@ -38,7 +38,8 @@ Route::name('languages')->get('/languages', [LanguagesController::class, 'index'
 Route::name('languages.')->prefix('/languages')->group(static function() {
     Route::name('view')->get('/{code}', [LanguagesController::class, 'view']);
     Route::name('store')->post('', [LanguagesController::class, 'store']);
-    Route::name('update')->post('{code}', [LanguagesController::class, 'update']);
+    Route::name('update')->post('/{code}', [LanguagesController::class, 'update']);
+    Route::name('about')->post('/{code}/about', [LanguagesController::class, 'updateAbout']);
 
     Route::name('action')->get('/{code}/action', [LanguagesController::class, 'action']);
 });
