@@ -40,6 +40,8 @@ Route::name('languages.')->prefix('/languages')->group(static function() {
     Route::name('store')->post('', [LanguagesController::class, 'store']);
     Route::name('update')->post('/{code}', [LanguagesController::class, 'update']);
     Route::name('about')->post('/{code}/about', [LanguagesController::class, 'updateAbout']);
+    Route::name('flag')->post('/{code}/flag', [LanguagesController::class, 'pushFlag']);
+    Route::name('image')->post('/{code}/image', [LanguagesController::class, 'pushImage']);
 
     Route::name('action')->get('/{code}/action', [LanguagesController::class, 'action']);
 });

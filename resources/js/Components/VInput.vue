@@ -48,10 +48,11 @@ const emits = defineEmits(['update:modelValue']);
 <template>
     <div class="form-control">
         <label
-            class="label"
+            class="label flex flex-row justify-start"
             :for="id"
         >
             <span class="label-text">{{ label }}</span>
+            <span v-if="required" class="text-red-600">*</span>
         </label>
 
         <div class="w-full flex flex-row">

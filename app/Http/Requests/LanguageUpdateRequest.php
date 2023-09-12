@@ -24,15 +24,19 @@ class LanguageUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'name' => 'required|filled',
             'autonym' => '',
             'autonym_transcription' => '',
             'type' => '',
+            'status' => '',
         ];
     }
 
     public function messages()
     {
         return [
+            'name.required' => 'Имя не может быть пустым.',
+            'name.filled' => 'Имя не может быть пустым.',
         ];
     }
 }

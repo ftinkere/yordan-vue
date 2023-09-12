@@ -26,7 +26,7 @@ const message = computed(function () {
     <LayoutHeader />
     <FlashMessage class="py-2" :message="message" />
 
-    <div class="container mx-auto m-4 px-6">
+    <div class="containe max-w-screen-lg mx-auto m-4 px-6">
         <slot />
     </div>
 </template>

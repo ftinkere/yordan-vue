@@ -8,7 +8,6 @@ const { name, label, id, inputClass, required, errors } = defineProps({
     },
     label: {
       type: String,
-      required: true,
     },
     modelValue: {
         type: [String, Object, Array],
@@ -38,28 +37,32 @@ const emits = defineEmits(['update:modelValue']);
 
 function update() {
     emits('update:modelValue', input.value.files[0])
-    console.log(input.value.files[0]);
 }
 </script>
 
 <template>
     <div class="form-control">
         <label
+            v-if="label"
             class="label"
             :for="id"
         >
             <span class="label-text">{{ label }}</span>
         </label>
-        <input
-            :id="id"
-            ref="input"
-            type="file"
-            :name="name"
-            class="input input-bordered"
-            :class="inputClass"
-            :required="required"
-            @input="update"
-        />
+        <div class="flex flex-row">
+            <input
+                :id="id"
+                ref="input"
+                type="file"
+                :name="name"
+                class="input input-bordered grow"
+                :class="inputClass"
+                :required="required"
+                @input="update"
+            />
+            <slot name="button" />
+        </div>
+
         <label v-if="errors" class="label">
             <span class="label-text-alt text-red-500">{{ errors }}</span>
         </label>

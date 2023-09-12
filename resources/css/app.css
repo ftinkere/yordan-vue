@@ -6,6 +6,11 @@
     --rounded-box: 1rem;
     --rounded-btn: 0.3rem;
     --rounded-badge: 0.3rem;
+    font-family: "Noto Sans", Roboto, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";;
+}
+
+.input, .select {
+    background-color: hsl(var(--b2) / var(--tw-bg-opacity));
 }
 
 .toastui-editor-dark .toastui-editor-contents table th {

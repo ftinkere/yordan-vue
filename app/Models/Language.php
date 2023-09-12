@@ -18,19 +18,18 @@ use Illuminate\Support\Facades\Gate;
  * @property string|null $autonym
  * @property string|null $autonym_transcription
  * @property string|null $type
+ * @property string $status
+ * @property string|null $flag
  * @property int|null $user_id
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\BaseArticles|null $base_articles
- * @property-read \App\Models\LanguageDevNote|null $dev_note
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Orthographeme> $orthographemes
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Grammatic> $grammatics
  * @property-read int|null $grammatics_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Sound> $sounds
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\LanguageSound> $language_sounds
  * @property-read int|null $sounds_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\LanguageStatus> $statuses
- * @property-read int|null $statuses_count
  * @property-read \App\Models\User|null $user
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Vocabula> $vocables
  * @property-read int|null $vocables_count
@@ -49,8 +48,6 @@ use Illuminate\Support\Facades\Gate;
  * @method static \Illuminate\Database\Eloquent\Builder|Language whereType($value)
  * @property-read int|null $orthographemes_count
  * @property-read int|null $language_sounds_count
- * @property string|null $flag
- * @property-read \App\Models\LanguageStatus|null $status
  * @method static \Illuminate\Database\Eloquent\Builder|Language whereFlag($value)
  * @mixin \Eloquent
  */
@@ -85,18 +82,18 @@ class Language extends Model
         return $this->hasOne(BaseArticles::class, 'language_id', 'id');
     }
 
-    public function status() {
-        return $this->hasOne(LanguageStatus::class, 'language_id', 'id');
-    }
+//    public function status() {
+//        return $this->hasOne(LanguageStatus::class, 'language_id', 'id');
+//    }
 
-    public function has_status($status) {
-        return $this->hasOne(LanguageStatus::class, 'language_id', 'id')
-            ->where('status', '=', $status)->first();
-    }
+//    public function has_status($status) {
+//        return $this->hasOne(LanguageStatus::class, 'language_id', 'id')
+//            ->where('status', '=', $status)->first();
+//    }
 
-    public function dev_note() {
-        return $this->hasOne(LanguageDevNote::class, 'language_id', 'id');
-    }
+//    public function dev_note() {
+//        return $this->hasOne(LanguageDevNote::class, 'language_id', 'id');
+//    }
 
     public function articles() {
         return $this->hasMany(Article::class, 'language_id', 'id')

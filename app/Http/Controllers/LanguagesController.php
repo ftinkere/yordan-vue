@@ -35,14 +35,9 @@ class LanguagesController extends Controller
         $language = Language::create([
             'name' => $name,
             'user_id' => Auth::id(),
+            'status' => 'Новый',
         ]);
         $language->save();
-
-        $status = LanguageStatus::create([
-            'language_id' => $language->id,
-            'status' => 'Новый',
-            ]);
-        $status->save();
 
         return redirect()->route('languages.view', ['code' => $language->id]);
     }
@@ -53,7 +48,7 @@ class LanguagesController extends Controller
     public function view($code)
     {
         /** @var Language $language */
-        $language = Language::with(['base_articles', 'status', 'user'])->findOrFail($code);
+        $language = Language::with(['base_articles', 'user'])->findOrFail($code);
         return Inertia::render('LanguageView', [
                 ...compact('language'),
                 'can_edit' => \Auth::user()->can('edit-language', $language),
@@ -77,6 +72,9 @@ class LanguagesController extends Controller
         $language = Language::find($code);
 
         $language->update($request->validated());
+
+        $language->status = $request->get('status');
+        $language->save();
 
         return $language->toJson();
     }
@@ -121,6 +119,27 @@ class LanguagesController extends Controller
             $path = '/storage/' . $path;
             $language->flag = $path;
             $language->save();
+            return ['message' => 'Success', 'path' => $path];
+        }
+        return ['message' => 'Error'];
+    }
+
+    public function pushImage(Request $request, $code) {
+        $language = Language::findOrFail($code);
+        Gate::authorize('edit-language', $language);
+
+        $request->validate([
+            'image' => 'required|file|image'
+        ], $messages = [
+            'image.required' => 'Изображение обязательно.',
+            'image.file' => 'Изображение должно быть файлом.',
+            'image.image' => 'Файл должен быть изображением.',
+        ]);
+        $file = $request->file('image');
+
+        if ($file != null) {
+            $path = $file->storeAs('/images/' . $language->id, $file->getClientOriginalName(), 'public');
+            $path = '/storage/' . $path;
             return ['message' => 'Success', 'path' => $path];
         }
         return ['message' => 'Error'];

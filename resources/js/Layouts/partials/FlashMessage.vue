@@ -23,7 +23,7 @@ router.on('success', () => {
         class="container-fluid rounded-b-lg"
         :class="{ 'bg-green-900': message.type === 'success', 'bg-red-900': message.type === 'error' }"
     >
-        <div class="container px-6 flex flex-row justify-between items-center">
+        <div class="container max-w-screen-lg px-6 flex flex-row justify-between items-center">
             <span>{{ message.message }}</span>
             <button
                 class="float-right btn btn-ghost btn-sm btn-circle fill-white"
