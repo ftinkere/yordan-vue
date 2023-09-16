@@ -1,18 +1,14 @@
 <script setup>
 
-import {ref} from "vue";
+import { ref } from "vue";
 
-const { name, id, modelValue, required, errors } = defineProps({
-   name: {
-       type: String,
-       required: true,
-   },
-    id: {
+const { name, modelValue, required, errors } = defineProps({
+    name: {
         type: String,
         default: null,
     },
     modelValue: {
-        type: [String, Object, Array, Boolean],
+        type: [ String, Object, Array, Boolean ],
         default: null,
     },
     required: {
@@ -27,27 +23,39 @@ const { name, id, modelValue, required, errors } = defineProps({
 
 const value = ref(modelValue);
 
-const emits = defineEmits(['update:modelValue'])
+const emits = defineEmits([ 'update:modelValue' ])
 </script>
 
 <template>
-    <div class="form-control">
-        <label class="label cursor-pointer flex gap-4">
-            <input :name="name"
-                   :id="id"
-                   type="checkbox"
-                   class="checkbox"
-                   v-model="value"
-                   @change="emits('update:modelValue', value)"
-                   :required="required" />
-            <span class="label-text me-4">
-                <slot></slot>
-            </span>
-        </label>
-        <label v-if="errors" class="label">
-            <span class="label-text-alt text-red-500">{{ errors }}</span>
-        </label>
-    </div>
+  <div class="form-control">
+    <label class="label cursor-pointer flex gap-4">
+      <input
+        v-model="value"
+        :name="name"
+        type="checkbox"
+        class="checkbox"
+        :required="required"
+        @change="emits('update:modelValue', value)"
+      >
+      <span class="label-text me-4">
+        <slot />
+      </span>
+    </label>
+    <label
+      v-if="errors"
+      class="label"
+    >
+      <span class="label-text-alt text-red-500">
+        {{ errors }}
+      </span>
+      <span
+        v-if="required"
+        class="text-red-600"
+      >
+        *
+      </span>
+    </label>
+  </div>
 </template>
 
 <style scoped>

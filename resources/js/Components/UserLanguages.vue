@@ -1,10 +1,12 @@
 <script setup>
-/* global route */
-
 import CardLinkList from "@/Components/CardLinkList.vue";
+import route from "ziggy-js";
 
 const { user } = defineProps({
-    user: Object,
+    user: {
+        type: Object,
+        required: true,
+    },
 });
 
 const languages = user.languages.map((language) => {
@@ -13,7 +15,7 @@ const languages = user.languages.map((language) => {
 </script>
 
 <template>
-    <CardLinkList :list="languages" />
+  <CardLinkList :list="languages" />
 </template>
 
 <style scoped>

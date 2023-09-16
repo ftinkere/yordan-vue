@@ -52,35 +52,4 @@ class AuthController extends Controller
 
         return redirect()->route('main');
     }
-
-    public function cabinet() {
-        return Inertia::render('Auth/Cabinet');
-    }
-
-    public function verify(VerifyRequest $request) {
-        [ 'token' => $token ] = $request->validated();
-
-        $token = VerificationToken::whereToken($token)->first();
-        if (!$token) {
-            Session::flash('message', ['type' => 'error', 'message' => 'Токен не найден']);
-            return redirect()->route('main');
-        }
-        $user = $token->user;
-        $token->delete();
-
-        foreach (VerificationToken::whereUserId($user->id)->get() as $token) {
-            $token->delete();
-        }
-
-        $time = date('Y-m-d H:i:s');
-        $user->email_verified_at = $time;
-        $user->save();
-
-        Session::flash('message', ['type' => 'success', 'message' => 'Успешно подтверждено']);
-
-        if (Auth::id() == $user->id){
-            return redirect()->route('cabinet');
-        }
-        return redirect()->route('main');
-    }
 }

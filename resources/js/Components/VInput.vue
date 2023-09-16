@@ -1,7 +1,7 @@
 <script setup>
 import _ from "lodash"
 
-const { name, type, label, modelValue, id, inputClass, required, errors, min, max, pattern, list } = defineProps({
+const { list } = defineProps({
     name: {
         type: String,
         default: null,
@@ -11,11 +11,11 @@ const { name, type, label, modelValue, id, inputClass, required, errors, min, ma
         default: 'text',
     },
     label: {
-      type: String,
-      default: null,
+        type: String,
+        default: null,
     },
     modelValue: {
-        type: [String, Object, Array],
+        type: [ String, Object, Array ],
         default: null,
     },
     id: {
@@ -23,7 +23,7 @@ const { name, type, label, modelValue, id, inputClass, required, errors, min, ma
         default: null,
     },
     inputClass: {
-        type: [String, Object, Array, Boolean],
+        type: [ String, Object, Array, Boolean ],
         default: '',
     },
     required: {
@@ -35,71 +35,78 @@ const { name, type, label, modelValue, id, inputClass, required, errors, min, ma
         default: null,
     },
     list: {
-        type: [Array, null],
+        type: [ Array, null ],
         default: null,
     }
 });
 
 const listId = list !== null ? _.uniqueId('datalist_') : null;
 
-const emits = defineEmits(['update:modelValue']);
+const emits = defineEmits([ 'update:modelValue' ]);
 </script>
 
 <template>
-    <div class="form-control">
-        <label
-            class="label flex flex-row justify-start"
-            :for="id"
+  <div class="form-control">
+    <label
+      class="label flex flex-row justify-start"
+      :for="id"
+    >
+      <span class="label-text">{{ label }}</span>
+      <span
+        v-if="required"
+        class="text-red-600"
+      >
+        *
+      </span>
+    </label>
+
+    <div class="w-full flex flex-row">
+      <input
+        v-if="type !== 'textarea'"
+        :id="id"
+        :value="modelValue"
+        :type="type"
+        :name="name"
+        class="grow input input-bordered"
+        :class="inputClass"
+        :list="listId"
+        :required="required"
+        @input="emits('update:modelValue', $event.target.value)"
+      >
+
+      <datalist
+        v-if="list"
+        :id="listId"
+      >
+        <option
+          v-for="item in list"
+          :key="item"
         >
-            <span class="label-text">{{ label }}</span>
-            <span v-if="required" class="text-red-600">*</span>
-        </label>
+          {{ item }}
+        </option>
+      </datalist>
 
-        <div class="w-full flex flex-row">
-            <input
-                v-if="type !== 'textarea'"
-                :id="id"
-                :value="modelValue"
-                :type="type"
-                :name="name"
-                class="grow input input-bordered"
-                :class="inputClass"
-                :list="listId"
-                :required="required"
-                @input="emits('update:modelValue', $event.target.value)"
-            >
+      <textarea
+        v-if="type === 'textarea'"
+        :id="id"
+        :value="modelValue"
+        :name="name"
+        class="grow input input-bordered"
+        :class="inputClass"
+        :required="required"
+        @input="emits('update:modelValue', $event.target.value)"
+      />
 
-            <datalist
-                v-if="list"
-                :id="listId"
-            >
-                <option
-                    v-for="item in list"
-                    :key="item"
-                >
-                    {{ item }}
-                </option>
-            </datalist>
-
-            <textarea
-                v-if="type === 'textarea'"
-                :id="id"
-                :value="modelValue"
-                :name="name"
-                class="grow input input-bordered"
-                :class="inputClass"
-                :required="required"
-                @input="emits('update:modelValue', $event.target.value)"
-            >
-            </textarea>
-
-            <slot name="button" />
-        </div>
-
-        <label v-if="errors" class="label">
-            <span class="label-text-alt text-red-500">{{ errors }}</span>
-        </label>
+      <slot name="button" />
     </div>
+
+    <label
+      v-if="errors"
+      class="label"
+    >
+      <span class="label-text-alt text-red-500">{{ errors }}</span>
+    </label>
+  </div>
 </template>
 
 <style scoped>

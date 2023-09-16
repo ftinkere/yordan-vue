@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $grammatic
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read Language $language
  * @method static \Illuminate\Database\Eloquent\Builder|BaseArticles newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|BaseArticles newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|BaseArticles query()
@@ -32,6 +33,10 @@ class BaseArticles extends Model
     use HasFactory;
 
     protected $table = 'base_articles';
-
     protected $fillable = ['language_id', 'about', 'phonetic', 'grammatic'];
+
+    public function language() {
+        return $this->belongsTo(Language::class);
+    }
+
 }

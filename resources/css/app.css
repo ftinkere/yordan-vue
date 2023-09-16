@@ -39,3 +39,42 @@
 .toastui-editor-contents p {
     margin: unset !important;
 }
+
+article p {
+    @apply indent-4;
+}
+
+article hr {
+    @apply mt-2;
+}
+
+article table p {
+    @apply indent-0;
+}
+
+article table {
+    @apply my-2;
+
+    width: fit-content !important;
+}
+
+article:has(table) {
+    @apply overflow-x-auto;
+}
+
+article table td,
+article table th {
+    @apply border border-neutral-500;
+}
+
+article table th {
+    background-color: rgb(38 38 38 / var(--tw-bg-opacity)) !important;
+}
+
+.btn-warning {
+    @apply hover:bg-warning/70 hover:border-warning/70;
+}
+
+.btn-success {
+    @apply hover:bg-success/70 hover:border-success/70;
+}

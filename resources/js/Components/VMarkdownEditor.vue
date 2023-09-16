@@ -9,28 +9,34 @@ import 'tui-color-picker/dist/tui-color-picker.css';
 import '@toast-ui/editor-plugin-color-syntax/dist/toastui-editor-plugin-color-syntax.css';
 import '@toast-ui/editor-plugin-table-merged-cell/dist/toastui-editor-plugin-table-merged-cell.css';
 import '@toast-ui/editor/dist/theme/toastui-editor-dark.css';
-import {htmlEncode} from "js-htmlencode";
 
 /* global route */
 
 const { modelValue, language, label } = defineProps({
     modelValue: {
         type: String,
+        default: '',
     },
-    language: Object,
-    label: String,
+    language: {
+        type: Object,
+        required: true,
+    },
+    label: {
+        type: String,
+        default: null,
+    },
 });
 
 const el = ref(null);
 
-const emits = defineEmits(['update:modelValue']);
+const emits = defineEmits([ 'update:modelValue' ]);
 
 onMounted(function () {
     const editor = new Editor({
         el: el.value,
         initialValue: modelValue,
         theme: 'dark',
-        plugins: [tableMergedCell, colorSyntax],
+        plugins: [ tableMergedCell, colorSyntax ],
         usageStatistics: false,
         height: 'auto',
         hooks: {
@@ -88,10 +94,17 @@ onMounted(function () {
 </script>
 
 <template>
-    <div>
-        <label v-if="label" class="label" for="about"><span class="label-text">{{ label }}</span></label>
-        <article ref="el"></article>
-    </div>
+  <div>
+    <label
+      v-if="label"
+      class="label"
+      for="about"
+    >
+      <span class="label-text">{{ label }}</span>
+    </label>
+
+    <article ref="el" />
+  </div>
 </template>
 
 <style scoped>

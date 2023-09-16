@@ -25,7 +25,6 @@ onMounted(function () {
         height: 'auto',
     });
 });
-
 </script>
 
 <template>

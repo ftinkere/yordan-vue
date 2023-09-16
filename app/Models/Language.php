@@ -102,10 +102,14 @@ class Language extends Model
     }
 
     public function tags() {
-        return ArticleTag::select('tag')
-            ->whereIn('article_id', $this->articles()->pluck('id'))
-            ->groupBy('tag')
-            ->get();
+        return $this->hasManyThrough(ArticleTag::class, Article::class)
+            ->select('article_tags.tag')
+            ->groupBy(['article_tags.tag', 'articles.language_id'])
+            ->orderByRaw('MAX(`article_tags`.`id`) DESC');
+//        return ArticleTag::select('tag')
+//            ->whereIn('article_id', $this->articles()->pluck('id'))
+//            ->groupBy('tag')
+//            ->get();
     }
 
     public function orthographemes() {
@@ -137,6 +141,12 @@ class Language extends Model
                 'message' => 'У вас пустое описание языка. Напишите хотя бы пару предложений.',
                 'button' => 'Написать',
                 'modal' => 'about',
+            ];
+        } else if ($this->articles->isEmpty()) {
+            return [
+                'message' => 'У вас не написано ни одной статьи. Напишите хотя бы примеры вашего языка в статьях.',
+                'button' => 'Написать',
+                'modal' => 'article',
             ];
         }
 

@@ -10,6 +10,7 @@ use App\Models\LanguageStatus;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Session;
 use Inertia\Inertia;
 
 class LanguagesController extends Controller
@@ -49,11 +50,11 @@ class LanguagesController extends Controller
     {
         /** @var Language $language */
         $language = Language::with(['base_articles', 'user'])->findOrFail($code);
+        $language->can_edit = Auth::user()->can('edit-language', $language);
         return Inertia::render('LanguageView', [
-                ...compact('language'),
-                'can_edit' => \Auth::user()->can('edit-language', $language),
-            ]
-        );
+            ...compact('language'),
+            'action' => $language->get_action(),
+            ]);
     }
 
     /**
@@ -74,9 +75,10 @@ class LanguagesController extends Controller
         $language->update($request->validated());
 
         $language->status = $request->get('status');
+        $language->updateTimestamps();
         $language->save();
 
-        return $language->toJson();
+        return redirect()->route('languages.view', ['code' => $language->id]);
     }
 
     public function updateAbout(Request $request, string $code) {
@@ -84,7 +86,7 @@ class LanguagesController extends Controller
         Gate::authorize('edit-language', $language);
 
         $data = $request->validate([
-            'about' => 'required',
+            'about' => '',
         ]);
 
         if ($language->base_articles === null) {
@@ -96,9 +98,10 @@ class LanguagesController extends Controller
             $articles = $language->base_articles;
         }
 
+        $language->updateTimestamps();
         $articles->update($data);
 
-        return ['about' => $articles->about];
+        return redirect()->route('languages.view', ['code' => $language->id]);
     }
 
     public function pushFlag(Request $request, $code) {
@@ -114,14 +117,19 @@ class LanguagesController extends Controller
         ]);
         $file = $request->file('flag');
 
-        if ($file != null) {
+        if ($file !== null) {
             $path = $file->storeAs('/flags', (string)$language->id . '.' . $file->getClientOriginalExtension(), 'public');
             $path = '/storage/' . $path;
             $language->flag = $path;
+            $language->updateTimestamps();
             $language->save();
-            return ['message' => 'Success', 'path' => $path];
+//            return ['message' => 'Success', 'path' => $path];
+            return redirect()->route('languages.view', ['code' => $language->id]);
         }
-        return ['message' => 'Error'];
+
+        Session::flash('message', ['type' => 'error', 'message' => 'Ошибка загрузки файла.']);
+        return redirect()->route('languages.view', ['code' => $language->id])->withErrors('Ошибка загрузки файла.');
+//        return ['message' => 'Error'];
     }
 
     public function pushImage(Request $request, $code) {
@@ -137,12 +145,15 @@ class LanguagesController extends Controller
         ]);
         $file = $request->file('image');
 
-        if ($file != null) {
+        if ($file !== null) {
             $path = $file->storeAs('/images/' . $language->id, $file->getClientOriginalName(), 'public');
             $path = '/storage/' . $path;
             return ['message' => 'Success', 'path' => $path];
+//            return redirect()->route('languages.view', ['code' => $language->id]);
         }
-        return ['message' => 'Error'];
+        Session::flash('message', ['type' => 'error', 'message' => 'Ошибка загрузки файла.']);
+        return redirect()->route('languages.view', ['code' => $language->id])->withErrors('Ошибка загрузки файла.');
+//        return ['message' => 'Error'];
     }
 
     /**
@@ -157,6 +168,6 @@ class LanguagesController extends Controller
         $language = Language::findOrFail($code);
         Gate::authorize('edit-language', $language);
 
-        return $language->get_action();
+        return redirect()->route('languages.view', ['code' => $language->id]);
     }
 }
