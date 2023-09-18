@@ -73,7 +73,8 @@ class VocabularyController extends Controller
     public function view(Request $request, $code, $vocabula) {
         $language = Language::findOrFail($code);
 
-        $vocabula = Vocabula::with('lexemes')->findOrFail($vocabula);
+        $vocabula = Vocabula::with(['lexemes', 'lexemes.links', 'lexemes.links.to', 'lexemes.links.to.grammatics', 'lexemes.links.to.grammatics.grammatic_value', 'lexemes.links.to.vocabula', 'lexemes.grammatics', 'lexemes.grammatics.grammatic_value'])
+            ->findOrFail($vocabula);
 
         return Inertia::render('VocabularyView', compact('language', 'vocabula'));
     }

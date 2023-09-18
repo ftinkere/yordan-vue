@@ -87,8 +87,8 @@ const deleteArticle = function () {
         </button>
 
         <div>
-          <VSaveLoader :is-save="!articleForm.isDirty"/>
-          <EditButton @click="isEdit = true"/>
+          <VSaveLoader :is-save="!articleForm.isDirty" />
+          <EditButton @click="isEdit = true" />
         </div>
       </div>
 

@@ -244,16 +244,16 @@ const pushVocabula = function() {
       <div
         v-for="vocabula in vocables.data"
         :key="vocabula.id"
-        class="card border-t dark:border-t-neutral-700"
+        class="card border-t border-t-neutral-700"
       >
-        <Link href="">
+        <Link :href="route('languages.vocabulary.view', { code: language.id, vocabula: vocabula.id })">
           <h4 class="card-title m-2">
             <span>{{ vocabula.vocabula }}</span>
             <span class="font-normal text-md">/{{ vocabula.transcription }}/</span>
           </h4>
         </Link>
         <div class="ms-6">
-          <ul class="divide-y dark:divide-neutral-700">
+          <ul class="divide-y divide-neutral-700">
             <template
               v-for="lexeme in vocabula.lexemes"
               :key="lexeme.id"
