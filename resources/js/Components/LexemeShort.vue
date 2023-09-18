@@ -18,13 +18,14 @@ const variable_grammatics = computed(() => {
 </script>
 
 <template>
-  <div class="flex flex-row gap-1">
+  <div class="inline">
     <span class="inline gap-0">
       <span v-if="lexeme.group_number !== 0">{{ lexeme.group_number }}</span>
       <span v-if="lexeme.lexeme_number !== 0 && !one">.{{ lexeme.lexeme_number }}</span>
+      &thinsp;
     </span>
     <span>{{ lexeme.short }}</span>
-    <i>
+    <i class="inline">
       <span v-if="constant_grammatics.length > 0">
         (
         <span class="inline-flex flex-row flew-wrap items-baseline gap-2">

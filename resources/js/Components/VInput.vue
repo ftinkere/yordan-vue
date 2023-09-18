@@ -15,7 +15,7 @@ const { list } = defineProps({
         default: null,
     },
     modelValue: {
-        type: [ String, Object, Array ],
+        type: [ String, Object, Array, Number ],
         default: null,
     },
     id: {

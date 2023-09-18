@@ -10,6 +10,7 @@ use App\Models\Vocabula;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Session;
 use Inertia\Inertia;
 
 class VocabularyController extends Controller
@@ -134,7 +135,72 @@ class VocabularyController extends Controller
         return redirect()->route('languages.vocabulary.view', ['code' => $language->id, 'vocabula' => $vocabula->id]);
     }
 
-    public function delete(Request $request, $code, $vocabula) {
-        dd(3);
+    public function update(Request $request, $code, $vocabula_id) {
+        $language = Language::findOrFail($code);
+        Gate::authorize('edit-language', $language);
+        $vocabula = Vocabula::findOrFail($vocabula_id);
+        Gate::authorize('vocabula-is-language', $vocabula);
+
+        $data = $request->validate([
+            'vocabula' => 'required',
+            'transcription' => 'required',
+        ], messages: [
+            'vocabula.required' => 'Вокабула не может быть пустой.',
+            'transcription.required' => 'Транскрипция не может быть пустой.',
+        ]
+        );
+
+        $vocabula->update($data);
+
+        return redirect()->route('languages.vocabulary.view', ['code' => $language->id, 'vocabula' => $vocabula->id]);
+    }
+
+    public function delete(Request $request, $code, $vocabula_id) {
+        $language = Language::findOrFail($code);
+        Gate::authorize('edit-language', $language);
+        $vocabula = Vocabula::findOrFail($vocabula_id);
+        Gate::authorize('vocabula-is-language', $vocabula);
+
+        $vocabula->delete();
+
+        return redirect()->route('languages.vocabulary', ['code' => $language->id]);
+    }
+
+    public function pushImage(Request $request, $code, $vocabula_id) {
+        $language = Language::findOrFail($code);
+        Gate::authorize('edit-language', $language);
+        $vocabula = Vocabula::findOrFail($vocabula_id);
+        Gate::authorize('vocabula-is-language', $vocabula);
+
+        $request->validate([
+            'image' => 'required|file|image'
+        ], messages: [
+            'image.required' => 'Изображение обязательно.',
+            'image.file' => 'Изображение должно быть файлом.',
+            'image.image' => 'Файл должен быть изображением.',
+        ]);
+        $file = $request->file('image');
+
+        if ($file !== null) {
+            $path = $file->storeAs('/images/' . $language->id . '/vocables', (string)$vocabula->id . '.' . $file->getClientOriginalExtension(), 'public');
+            $path = '/storage/' . $path;
+            $vocabula->image = $path;
+            $vocabula->save();
+            return redirect()->route('languages.vocabulary.view', ['code' => $language->id, 'vocabula' => $vocabula->id]);
+        }
+        Session::flash('message', ['type' => 'error', 'message' => 'Ошибка загрузки файла.']);
+        return redirect()->route('languages.view', ['code' => $language->id])->withErrors('Ошибка загрузки файла.');
+    }
+
+    public function deleteImage(Request $request, $code, $vocabula) {
+        $language = Language::findOrFail($code);
+        Gate::authorize('edit-language', $language);
+        $vocabula = Vocabula::findOrFail($vocabula);
+        Gate::authorize('vocabula-is-language', $vocabula);
+
+        $vocabula->image = null;
+        $vocabula->save();
+
+        return redirect()->route('languages.vocabulary.view', ['code' => $language->id, 'vocabula' => $vocabula->id]);
     }
 }

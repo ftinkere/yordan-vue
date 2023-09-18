@@ -77,6 +77,7 @@ Route::name('languages.')->prefix('/languages')->group(static function() {
         Route::name('store')->post('', [VocabularyController::class, 'store']);
         Route::name('update')->post('/{vocabula}', [VocabularyController::class, 'update']);
         Route::name('delete')->delete('/{vocabula}', [VocabularyController::class, 'delete']);
-
+        Route::name('image')->post('/{vocabula}/image', [VocabularyController::class, 'pushImage']);
+        Route::name('image')->delete('/{vocabula}/image', [VocabularyController::class, 'deleteImage']);
     });
 });

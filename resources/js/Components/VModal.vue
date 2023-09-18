@@ -63,8 +63,8 @@ defineExpose({
         class="modal-box bg-neutral-900 max-w-screen-lg"
         v-bind="$attrs"
       >
-        <div class="w-full flex flex-row justify-between">
-          <h3 class="flex flex-row gap-4 mb-4 text-xl font-bold">
+        <div class="w-full flex flex-row flex-wrap justify-between">
+          <h3 class="flex flex-row flex-wrap gap-4 mb-4 text-xl font-bold">
             {{ header }}
             <slot name="postHeader" />
           </h3>

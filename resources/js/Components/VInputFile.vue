@@ -41,7 +41,6 @@ function update() {
     <label
       v-if="label"
       class="label"
-      :for="id"
     >
       <span class="label-text">{{ label }}</span>
     </label>

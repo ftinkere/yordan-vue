@@ -3,6 +3,7 @@
   import { Link } from "@inertiajs/vue3"
   import LexemeShort from "@/Components/LexemeShort.vue";
   import _ from "lodash";
+  import route from "ziggy-js";
 
   const { links } = defineProps({
       links: {
@@ -21,21 +22,22 @@
     <div
       v-for="(arr, type) in linkByTypes"
       :key="type"
-      class="flex flex-row gap-2"
+      class=" inline"
     >
-      <span class="w-fit">{{ type }}:</span>
+      <span class="w-fit h-fit float-left">{{ type }}:&thinsp;&thinsp;&thinsp;&thinsp;</span>
       <div class="flex flex-col">
         <div
           v-for="link in arr"
           :key="link.id"
-          class="flex flex-row flex-wrap gap-1"
+          class="inline"
         >
           <Link
             class="link hover:link-info"
-            href="route('vocables.view', { id:link.to.vocabula.id })"
+            :href="route('languages.vocabulary.view', { code: link.to.vocabula.language_id, vocabula: link.to.vocabula.id })"
           >
             {{ link.to.vocabula.vocabula }}
           </Link>
+          <span>&thinsp;&thinsp;</span>
           <LexemeShort :lexeme="link.to" />
           <span v-if="link.comment">
             // {{ link.comment }}
