@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 
@@ -57,6 +59,15 @@ class Language extends Model
 
     protected $table = 'languages';
     protected $fillable = ['name', 'user_id', 'autonym', 'autonym_transcription', 'type'];
+    protected $appends = ['can_edit'];
+
+    public function canEdit(): Attribute {
+        return Attribute::make(
+            get: function () {
+                return Gate::allows('edit-language', $this);
+            }
+        );
+    }
 
     public function user(): BelongsTo {
         return $this->belongsTo(User::class);

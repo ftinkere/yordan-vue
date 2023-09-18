@@ -21,14 +21,12 @@ class ArticlesController extends Controller
         if ($tag = $request->query('tag')) {
             $articles->whereIn('id',
                 Article::join('article_tags', 'articles.id', '=', 'article_tags.article_id')
-                    ->where('article_tags.tag', '=', $request->get('tag'))
+                    ->where('article_tags.tag', '=', $tag)
                     ->pluck('articles.id')
             );
         }
 
-        $articles = $articles->paginate(15);
-
-        $language->can_edit = Auth::user()->can('edit-language', $language);
+        $articles = $articles->paginate(10);
 
         return Inertia::render('ArticlesIndex', compact('language', 'articles'));
     }
@@ -37,17 +35,18 @@ class ArticlesController extends Controller
         $language = Language::findOrFail($code);
         $article = Article::with('tags')->findOrFail($article);
 
-        $language->can_edit = Auth::user()->can('edit-language', $language);
+        $editMode = $request->has('editMode');
 
-        return Inertia::render('ArticleView', compact('language', 'article'));
+        return Inertia::render('ArticleView', compact('language', 'article', 'editMode'));
     }
 
     public function store(Request $request, $code) {
         $language = Language::findOrFail($code);
         Gate::authorize('edit-language', $language);
 
-        $data = $request->validate(['title' => 'required'],
-            $message = [
+        $data = $request->validate([
+            'title' => 'required'
+        ], messages: [
                 'title.required' => 'Заголовок не может быть пустым.'
             ]
         );
@@ -60,7 +59,7 @@ class ArticlesController extends Controller
         $language->updateTimestamps();
         $language->save();
 
-        return redirect()->route('languages.articles.view', ['code' => $language->id, 'article' => $article->id]);
+        return redirect()->route('languages.articles.view', ['code' => $language->id, 'article' => $article->id, 'editMode' => '']);
     }
 
     public function update(Request $request, $code, $article_id) {
@@ -73,7 +72,7 @@ class ArticlesController extends Controller
         $data = $request->validate([
             'title' => 'required',
             'article' => ''
-        ], $message = [
+        ], messages: [
             'title.required' => 'Заголовок не может быть пустым.'
         ]);
         if (empty($data['article'])) {
@@ -96,7 +95,7 @@ class ArticlesController extends Controller
 
         $data = $request->validate([
             'tag' => 'required',
-        ], $message = [
+        ], messages: [
             'tag.required' => 'Тег не может быть пустым.'
         ]);
 

@@ -34,7 +34,6 @@ class Link extends Model
     use HasFactory;
 
     protected $table = 'links';
-
     protected $fillable = ['type', 'from_lexeme_id', 'to_lexeme_id', 'comment'];
 
     public function from() {

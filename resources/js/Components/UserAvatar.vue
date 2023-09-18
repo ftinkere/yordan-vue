@@ -3,7 +3,7 @@
 defineProps({
     avatar: {
         type: String,
-        required: true,
+        default: null,
     },
     alt: {
         type: String,

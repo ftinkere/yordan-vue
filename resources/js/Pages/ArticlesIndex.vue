@@ -6,6 +6,7 @@ import TagLink from "@/Components/TagLink.vue";
 import VModal from "@/Components/VModal.vue";
 import VInput from "@/Components/VInput.vue";
 import route from "ziggy-js";
+import VPaginator from "@/Components/VPaginator.vue";
 
 
 const { language, articles } = defineProps({
@@ -115,6 +116,8 @@ const newArticle = function () {
         </div>
       </article>
     </div>
+
+    <VPaginator :paginator="articles" />
   </LanguageLayout>
 </template>
 

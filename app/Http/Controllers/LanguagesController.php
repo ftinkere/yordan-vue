@@ -30,9 +30,15 @@ class LanguagesController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(LanguageStoreRequest $request)
+    public function store(Request $request)
     {
-        ['name' => $name] = $request->validated();
+        ['name' => $name] = $request->validate([
+            'name' => 'required|filled',
+        ], $messages = [
+            'name.required' => 'Укажите название языка',
+            'name.filled' => 'Укажите название языка',
+        ]);
+
         $language = Language::create([
             'name' => $name,
             'user_id' => Auth::id(),
@@ -50,7 +56,6 @@ class LanguagesController extends Controller
     {
         /** @var Language $language */
         $language = Language::with(['base_articles', 'user'])->findOrFail($code);
-        $language->can_edit = Auth::user()->can('edit-language', $language);
         return Inertia::render('LanguageView', [
             ...compact('language'),
             'action' => $language->get_action(),
@@ -68,11 +73,22 @@ class LanguagesController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(LanguageUpdateRequest $request, string $code)
+    public function update(Request $request, string $code)
     {
         $language = Language::find($code);
 
-        $language->update($request->validated());
+        $data = $request->validate([
+            'name' => 'required|filled',
+            'autonym' => '',
+            'autonym_transcription' => '',
+            'type' => '',
+            'status' => '',
+        ], messages: [
+            'name.required' => 'Имя не может быть пустым.',
+            'name.filled' => 'Имя не может быть пустым.',
+        ]);
+
+        $language->update($data);
 
         $language->status = $request->get('status');
         $language->updateTimestamps();
@@ -110,7 +126,7 @@ class LanguagesController extends Controller
 
         $request->validate([
             'flag' => 'required|file|image'
-        ], $messages = [
+        ], messages: [
             'flag.required' => 'Изображение обязательно.',
             'flag.file' => 'Флаг должен быть файлом.',
             'flag.image' => 'Флаг должен быть изображением.',
@@ -138,7 +154,7 @@ class LanguagesController extends Controller
 
         $request->validate([
             'image' => 'required|file|image'
-        ], $messages = [
+        ], messages: [
             'image.required' => 'Изображение обязательно.',
             'image.file' => 'Изображение должно быть файлом.',
             'image.image' => 'Файл должен быть изображением.',

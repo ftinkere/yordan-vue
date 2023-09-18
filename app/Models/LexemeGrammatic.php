@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -32,8 +33,14 @@ class LexemeGrammatic extends Model
     use HasFactory;
 
     protected $table = 'lexeme_grammatics';
-
     protected $fillable = ['lexeme_id', 'grammatic_value_id', 'is_variable'];
+    protected $appends = ['short'];
+
+    public function short(): Attribute {
+        return Attribute::make(function () {
+            return $this->grammatic_value->short;
+        });
+    }
 
     public function lexeme() {
         return $this->belongsTo(Lexeme::class, 'lexeme_id', 'id');

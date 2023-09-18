@@ -37,6 +37,10 @@ const { list } = defineProps({
     list: {
         type: [ Array, null ],
         default: null,
+    },
+    placeholder: {
+        type: String,
+        default: null,
     }
 });
 
@@ -69,6 +73,7 @@ const emits = defineEmits([ 'update:modelValue' ]);
         :name="name"
         class="grow input input-bordered"
         :class="inputClass"
+        :placeholder="placeholder"
         :list="listId"
         :required="required"
         @input="emits('update:modelValue', $event.target.value)"

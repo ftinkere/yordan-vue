@@ -37,7 +37,7 @@ class Vocabula extends Model
     use HasFactory;
 
     protected $table = 'vocables';
-    protected $fillable = ['language_id', 'vocabula', 'data', 'transcription', 'image'];
+    protected $fillable = ['language_id', 'vocabula', 'transcription', 'image'];
 
     public function language(): BelongsTo {
         return $this->belongsTo(Language::class, 'language_id', 'id');

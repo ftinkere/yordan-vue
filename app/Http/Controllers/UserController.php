@@ -31,7 +31,7 @@ class UserController extends Controller
         $data = $request->validate([
             'name' => 'filled',
             'email' => 'email',
-        ], $messages = [
+        ], messages: [
             'name.filled' => 'Имя не может быть пустым.',
             'email' => 'Введите правильный email.',
         ]);
@@ -53,7 +53,7 @@ class UserController extends Controller
     public function push_avatar(Request $request) {
         $request->validate([
             'avatar' => 'required|file|image',
-        ], $message = [
+        ], messages: [
             'avatar.required' => 'Изображение обязательно.',
             'avatar.file' => 'Аватар должен быть файлом.',
             'avatar.image' => 'Аватар должен быть изображением.',
@@ -76,7 +76,7 @@ class UserController extends Controller
     public function change_password(Request $request) {
         ['password' => $password] = $request->validate([
             'password' => 'required|min:8',
-        ], $messages = [
+        ], messages: [
             'password.required' => 'Новый пароль не может быть пустым.',
             'password.min' => 'Пароль не может быть меньше 8 символов.',
         ]);
@@ -101,7 +101,7 @@ class UserController extends Controller
     public function verify(Request $request) {
         [ 'token' => $token ] = $request->validate([
             'token' => 'required'
-        ], $message = [
+        ], messages: [
             'token.required' => 'Укажите токен верификации'
         ]);
 

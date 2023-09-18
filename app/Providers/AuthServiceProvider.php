@@ -5,8 +5,12 @@ namespace App\Providers;
 // use Illuminate\Support\Facades\Gate;
 use App\Models\Article;
 use App\Models\ArticleTag;
+use App\Models\Grammatic;
+use App\Models\GrammaticValue;
 use App\Models\Language;
+use App\Models\Lexeme;
 use App\Models\User;
+use App\Models\Vocabula;
 use Illuminate\Auth\Access\Response;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
@@ -53,6 +57,22 @@ class AuthServiceProvider extends ServiceProvider
 
         Gate::define('tag-is-language', static function (User $user, ArticleTag $tag) use ($can_edit) {
             return $can_edit($user, $tag->article->language);
+        });
+
+        Gate::define('grammatic-is-language', static function (User $user, Grammatic $grammatic) use ($can_edit) {
+            return $can_edit($user, $grammatic->language);
+        });
+
+        Gate::define('grammatic-value-is-language', static function (User $user, GrammaticValue $value) use ($can_edit) {
+            return $can_edit($user, $value->grammatic->language);
+        });
+
+        Gate::define('vocabula-is-language', static function (User $user, Vocabula $vocabula) use ($can_edit) {
+            return $can_edit($user, $vocabula->language);
+        });
+
+        Gate::define('lexeme-is-language', static function (User $user, Lexeme $lexeme) use ($can_edit) {
+            return $can_edit($user, $lexeme->vocabula->language);
         });
     }
 }

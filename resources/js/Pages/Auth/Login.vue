@@ -41,7 +41,6 @@ const form = useForm({
         v-model="form.remember"
         name="check"
         :errors="form.errors.remember"
-        required
       >
         Запомнить
       </VCheckbox>

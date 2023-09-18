@@ -28,7 +28,7 @@ if (language.can_edit) {
 </script>
 
 <template>
-  <div class="flex flex-col lg:flex-row gap-2 lg:gap-6">
+  <div class="flex flex-col gap-2">
     <h1 class="flex flex-row gap-2 items-center text-2xl self-center w-fit">
       <VModal
         modal-box-class="flex flex-col gap-2 items-center"

@@ -72,7 +72,11 @@ Route::name('languages.')->prefix('/languages')->group(static function() {
     });
 
     Route::name('vocabulary')->get('/{code}/vocabulary', [VocabularyController::class, 'index']);
-    Route::name('vocabulary.')->prefix('/{code}/vocabulary', static function () {
+    Route::name('vocabulary.')->prefix('/{code}/vocabulary')->group(static function () {
+        Route::name('view')->get('/{vocabula}', [VocabularyController::class, 'view']);
+        Route::name('store')->post('', [VocabularyController::class, 'store']);
+        Route::name('update')->post('/{vocabula}', [VocabularyController::class, 'update']);
+        Route::name('delete')->delete('/{vocabula}', [VocabularyController::class, 'delete']);
 
     });
 });

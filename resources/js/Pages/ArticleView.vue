@@ -1,17 +1,17 @@
 <script setup>
 import LanguageLayout from "@/Layouts/LanguageLayout.vue";
 import LanguageArticle from "@/Components/LanguageArticle.vue";
-import { router, useForm, usePage } from "@inertiajs/vue3";
+import { useForm, usePage } from "@inertiajs/vue3";
 import VModal from "@/Components/VModal.vue";
 import VInput from "@/Components/VInput.vue";
-import { computed, reactive, ref, watch } from "vue";
+import { computed, ref, watch } from "vue";
 import VSaveLoader from "@/Components/VSaveLoader.vue";
 import VMarkdownEditor from "@/Components/VMarkdownEditor.vue";
 import _ from "lodash";
 import EditButton from "@/Components/EditButton.vue";
 import route from "ziggy-js";
 
-const { language, article } = defineProps({
+const { language, article, editMode } = defineProps({
     language: {
         type: Object,
         required: true,
@@ -20,11 +20,15 @@ const { language, article } = defineProps({
         type: Object,
         required: true,
     },
+    editMode: {
+        type: Boolean,
+        default: false,
+    }
 })
 
 const _token = usePage().props.csrf_token;
 
-const isEdit = ref(false);
+const isEdit = ref(editMode);
 
 const articleForm = useForm({
     title: article.title,
@@ -66,14 +70,11 @@ const unpublish = function () {
 const deleteArticle = function () {
     useForm({ _token }).delete(route('languages.articles.delete', { code: language.id, article: article.id }))
 }
-
-console.log(route('languages.articles.delete', { code: language.id, article: article.id }));
 </script>
 
 <template>
   <LanguageLayout :language="language">
     <div class="px-4 flex flex-col gap-2">
-
       <div
         v-if="!isEdit"
         class="mb-2 flex flex-row justify-between"
@@ -94,7 +95,7 @@ console.log(route('languages.articles.delete', { code: language.id, article: art
       <LanguageArticle
         v-if="!isEdit"
         :article="article"
-        :is-save="!(isDirty || isDirtyTags)"
+        :is-save="!articleForm.isDirty"
         view
       />
 
@@ -203,6 +204,7 @@ console.log(route('languages.articles.delete', { code: language.id, article: art
           <VMarkdownEditor
             v-model="articleForm.article"
             label="Статья"
+            :language="language"
           />
 
           <button
