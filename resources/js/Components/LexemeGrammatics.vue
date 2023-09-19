@@ -18,32 +18,31 @@
         },
     })
 
-    // const model = ref(modelValue)
-    // const variablesModel = ref(variables)
+    const model = ref(modelValue)
+    const variablesModel = ref(variables)
 
     const uid = _.uniqueId();
 
     const grammaticsForm = ref(null);
 
-    const getData = () => {
-        if (grammaticsForm.value === null) {
-            return [];
+    const change = function (event) {
+        if (event.target.checked && !model.value.includes(event.target.value)) {
+            model.value.push(event.target.value)
+        } else {
+            model.value = model.value.filter(item => item !== event.target.value)
         }
-        return (new FormData(grammaticsForm.value)).getAll(`grammatic_${uid}[]`)
+        emit("update:modelValue", model.value)
     }
-    const getDataVariables = () => {
-        if (grammaticsForm.value === null) {
-            return [];
+    const changeVariable = function (event) {
+        if (event.target.checked && !variablesModel.value.includes(event.target.value)) {
+            variablesModel.value.push(event.target.value)
+        } else {
+            variablesModel.value = variablesModel.value.filter(item => item !== event.target.value)
         }
-        return (new FormData(grammaticsForm.value)).getAll(`grammatic_variable_${uid}[]`)
+        emit("update:variables", variablesModel.value)
     }
 
-    const emit = defineEmits(['update:modelValue', 'update:modelVariables'])
-
-    const update = function () {
-        emit("update:modelValue", getData())
-        emit("update:variables", getDataVariables())
-    }
+    const emit = defineEmits(['update:modelValue', 'update:variables'])
 
     // watch(model, update)
     // watch(variablesModel, update)
@@ -65,26 +64,26 @@
           :key="value.id"
         >
           <VCheckbox
-
+            :model-value="model"
             :name="`grammatic_${uid}[]`"
             :value="`${value.id}`"
             class="w-fit"
             label-class="py-0"
             input-class="checkbox-sm"
-            @change="update"
+            @change="change($event)"
           >
             {{ value.value }} ({{ value.short }})
           </VCheckbox>
           <VCheckbox
             v-if="variables !== null"
-            v-show="modelValue.includes(`${value.id}`)"
-
+            v-show="model.includes(`${value.id}`)"
+            :model-value="variablesModel"
             :name="`grammatic_variable_${uid}[]`"
             :value="`${value.id}`"
             class="ms-4 w-fit"
             label-class="py-0"
             input-class="checkbox-sm"
-            @change="update"
+            @change="changeVariable($event)"
           >
             Изменяемое?
           </VCheckbox>

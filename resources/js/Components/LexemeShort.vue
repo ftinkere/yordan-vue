@@ -1,5 +1,4 @@
 <script setup>
-import { computed } from "vue";
 
 const { lexeme } = defineProps({
     lexeme: {
@@ -9,12 +8,6 @@ const { lexeme } = defineProps({
     one: Boolean,
 })
 
-const constant_grammatics = computed(() => {
-    return lexeme.grammatics?.filter(grammatic => grammatic.is_variable == false)
-})
-const variable_grammatics = computed(() => {
-    return lexeme.grammatics?.filter(grammatic => grammatic.is_variable == true)
-})
 </script>
 
 <template>
@@ -26,11 +19,11 @@ const variable_grammatics = computed(() => {
     </span>
     <span>{{ lexeme.short }}</span>
     <i class="inline">
-      <span v-if="constant_grammatics.length > 0">
+      <span v-if="lexeme.grammatics?.filter(grammatic => grammatic.is_variable == false).length > 0">
         (
         <span class="inline-flex flex-row flew-wrap items-baseline gap-2">
           <span
-            v-for="grammatic in constant_grammatics"
+            v-for="grammatic in lexeme.grammatics?.filter(grammatic => grammatic.is_variable == false)"
             :key="grammatic.id"
           >
             {{ grammatic.short }}
@@ -38,11 +31,11 @@ const variable_grammatics = computed(() => {
         </span>
         )
       </span>
-      <span v-if="variable_grammatics.length > 0">
+      <span v-if="lexeme.grammatics?.filter(grammatic => grammatic.is_variable == true).length > 0">
         [
         <span class="inline-flex flex-row flew-wrap items-baseline gap-2">
           <span
-            v-for="grammatic in variable_grammatics"
+            v-for="grammatic in lexeme.grammatics?.filter(grammatic => grammatic.is_variable == true)"
             :key="grammatic.id"
           >
             {{ grammatic.short }}

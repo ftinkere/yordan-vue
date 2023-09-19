@@ -9,6 +9,7 @@ use App\Models\Grammatic;
 use App\Models\GrammaticValue;
 use App\Models\Language;
 use App\Models\Lexeme;
+use App\Models\Link;
 use App\Models\User;
 use App\Models\Vocabula;
 use Illuminate\Auth\Access\Response;
@@ -73,6 +74,10 @@ class AuthServiceProvider extends ServiceProvider
 
         Gate::define('lexeme-is-language', static function (User $user, Lexeme $lexeme) use ($can_edit) {
             return $can_edit($user, $lexeme->vocabula->language);
+        });
+
+        Gate::define('link-is-language', static function (User $user, Link $link) use ($can_edit) {
+            return $can_edit($user, $link->from->vocabula->language);
         });
     }
 }

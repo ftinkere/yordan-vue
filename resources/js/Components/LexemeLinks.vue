@@ -4,6 +4,7 @@
   import LexemeShort from "@/Components/LexemeShort.vue";
   import _ from "lodash";
   import route from "ziggy-js";
+  import LexemeLink from "@/Components/LexemeLink.vue";
 
   const { links } = defineProps({
       links: {
@@ -22,7 +23,7 @@
     <div
       v-for="(arr, type) in linkByTypes"
       :key="type"
-      class=" inline"
+      class="inline"
     >
       <span class="w-fit h-fit float-left">{{ type }}:&thinsp;&thinsp;&thinsp;&thinsp;</span>
       <div class="flex flex-col">
@@ -31,17 +32,7 @@
           :key="link.id"
           class="inline"
         >
-          <Link
-            class="link hover:link-info"
-            :href="route('languages.vocabulary.view', { code: link.to.vocabula.language_id, vocabula: link.to.vocabula.id })"
-          >
-            {{ link.to.vocabula.vocabula }}
-          </Link>
-          <span>&thinsp;&thinsp;</span>
-          <LexemeShort :lexeme="link.to" />
-          <span v-if="link.comment">
-            // {{ link.comment }}
-          </span>
+          <LexemeLink :link="link" />
         </div>
       </div>
     </div>

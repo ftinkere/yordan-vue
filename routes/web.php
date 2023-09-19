@@ -73,11 +73,23 @@ Route::name('languages.')->prefix('/languages')->group(static function() {
 
     Route::name('vocabulary')->get('/{code}/vocabulary', [VocabularyController::class, 'index']);
     Route::name('vocabulary.')->prefix('/{code}/vocabulary')->group(static function () {
-        Route::name('view')->get('/{vocabula}', [VocabularyController::class, 'view']);
+        Route::name('view')->get('/{vocabula}', [VocabularyController::class, 'view'])->whereNumber('vocabula');
         Route::name('store')->post('', [VocabularyController::class, 'store']);
-        Route::name('update')->post('/{vocabula}', [VocabularyController::class, 'update']);
-        Route::name('delete')->delete('/{vocabula}', [VocabularyController::class, 'delete']);
-        Route::name('image')->post('/{vocabula}/image', [VocabularyController::class, 'pushImage']);
-        Route::name('image')->delete('/{vocabula}/image', [VocabularyController::class, 'deleteImage']);
+        Route::name('update')->post('/{vocabula}', [VocabularyController::class, 'update'])->whereNumber('vocabula');
+        Route::name('delete')->delete('/{vocabula}', [VocabularyController::class, 'delete'])->whereNumber('vocabula');
+        Route::name('image')->post('/{vocabula}/image', [VocabularyController::class, 'pushImage'])->whereNumber('vocabula');
+        Route::name('image')->delete('/{vocabula}/image', [VocabularyController::class, 'deleteImage'])->whereNumber('vocabula');
+
+        Route::name('lexemes.search')->get('/search', [VocabularyController::class, 'searchLexemes']);
+        Route::name('lexemes.')->prefix('/{vocabula}/lexemes')->group(static function () {
+            Route::name('store')->post('', [VocabularyController::class, 'lexemeStore']);
+            Route::name('update')->post('/{lexeme}', [VocabularyController::class, 'lexemeUpdate']);
+            Route::name('delete')->delete('/{lexeme}', [VocabularyController::class, 'lexemeDelete']);
+
+            Route::name('links.')->prefix('/{lexeme}/links')->group(static function () {
+                Route::name('store')->post('', [VocabularyController::class, 'linkStore']);
+                Route::name('delete')->delete('/{link}', [VocabularyController::class, 'linkDelete']);
+            });
+        })->whereNumber('vocabula');
     });
 });

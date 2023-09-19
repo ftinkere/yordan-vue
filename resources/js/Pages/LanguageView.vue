@@ -161,7 +161,10 @@ const isEdit = ref(false);
 
         <div class="flex flex-row gap-4">
           <VSaveLoader :is-save="!languageForm.isDirty && !flagForm.isDirty && !aboutForm.isDirty" />
-          <EditButton @click="isEdit = true" />
+          <EditButton
+            v-if="language.can_edit"
+            @click="isEdit = true"
+          />
         </div>
       </div>
 
