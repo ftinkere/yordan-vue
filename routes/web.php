@@ -4,6 +4,7 @@ use App\Http\Controllers\ArticlesController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\LanguagesController;
 use App\Http\Controllers\MainController;
+use App\Http\Controllers\PhoneticsController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VocabularyController;
@@ -92,4 +93,7 @@ Route::name('languages.')->prefix('/languages')->group(static function() {
             });
         })->whereNumber('vocabula');
     });
+
+    Route::name('phonetic')->get('/{code}/phonetic', [PhoneticsController::class, 'index']);
+
 });

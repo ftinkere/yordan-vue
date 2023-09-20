@@ -32,7 +32,6 @@ class LanguageSound extends Model
     use HasFactory;
 
     protected $table = 'language_sounds';
-
     protected $fillable = ['language_id', 'sound_id', 'allophone_of'];
 
     public function sound() {

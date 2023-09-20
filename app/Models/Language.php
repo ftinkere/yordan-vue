@@ -89,6 +89,12 @@ class Language extends Model
         return $this->hasMany(LanguageSound::class, 'language_id', 'id');
     }
 
+    public function sounds_tables() {
+        $language_sounds = $this->language_sounds()->with('sound', 'allophone')->get();
+
+
+    }
+
     public function base_articles() {
         return $this->hasOne(BaseArticles::class, 'language_id', 'id');
     }

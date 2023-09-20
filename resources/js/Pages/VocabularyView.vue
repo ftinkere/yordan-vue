@@ -176,7 +176,7 @@
                 linksModal.forEach(modal => {
                     try {
                         modal.close()
-                    } catch (e) {}
+                    } catch (e) { /* empty */ }
                 })
             },
         })
