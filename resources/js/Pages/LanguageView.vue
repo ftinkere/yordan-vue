@@ -184,7 +184,10 @@ const isEdit = ref(false);
         </div>
       </div>
 
-      <div class="my-4">
+      <div
+        v-if="language.can_edit"
+        class="my-4"
+      >
         <LanguageTodoAction
           v-if="action?.message"
           :action="action"
