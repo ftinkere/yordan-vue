@@ -95,5 +95,10 @@ Route::name('languages.')->prefix('/languages')->group(static function() {
     });
 
     Route::name('phonetic')->get('/{code}/phonetic', [PhoneticsController::class, 'index']);
+    Route::name('phonetic.')->prefix('/{code}/phonetic')->group(static function () {
+        Route::name('edit')->post('/{language_sound}/edit', [PhoneticsController::class, 'edit']);
+        Route::name('toggle-sound')->post('/toggle-sound', [PhoneticsController::class, 'toggleSoundNew']);
+
+    });
 
 });

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 
 /**
  * App\Models\Sound
@@ -18,6 +19,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property int|null $language_id
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read  Language|null $language
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\LanguageSound> $language_sounds
  * @method static Builder|Sound newModelQuery()
  * @method static Builder|Sound newQuery()
  * @method static Builder|Sound query()
@@ -39,122 +42,82 @@ class Sound extends Model
     protected $table = 'sounds';
     protected $fillable = ['sound', 'table', 'row', 'column', 'sub_column', 'language_id'];
 
-    public function language_sound($id) {
-        return LanguageSound::where('sound_id', '=', $this->id)
-            ->where('language_id', '=', $id)
-            ->first();
+    public function language() {
+        return $this->belongsTo(Language::class);
     }
 
-    public static function only_language_sounds($language_id) {
-        return self::where('language_id', '=', $language_id)->get();
+    public function language_sounds() {
+        return $this->hasMany(LanguageSound::class, 'sound_id', 'id');
     }
 
-    public static function sound_by_rc(string $table, string $row, string $column, string|null $sub_column = null, int|null $language_id = null) {
-        return self::where('table', '=', $table)
-            ->where('row', '=', $row)
-            ->where('column', '=', $column)
-            ->where('sub_column', '=', $sub_column)
-            ->where(static function(Builder $query) use ($language_id) {
-                $query->whereNull('language_id')
-                    ->orWhere('language_id', '=', $language_id);
-            })->first();
+    public static function sounds($language_id) {
+        $collection = self::with([
+            'language_sounds',
+            'language_sounds.sound',
+            'language_sounds.allophone',
+            'language_sounds.allophone.sound',
+        ])->whereNull('language_id');
+
+        if ($language_id) {
+            $collection = $collection->orWhere('language_id', '=', $language_id);
+        }
+
+        return $collection->get();
     }
 
-    public static function sounds_row(string $table, string $row, int|null $language_id = null) {
-        return self::where('table', '=', $table)
-            ->where('row', '=', $row)
-            ->where(static function(Builder $query) use ($language_id) {
-                $query->whereNull('language_id')
-                    ->orWhere('language_id', '=', $language_id);
-            })->get();
-    }
+    public static function view_sounds($language_id) {
+        $collection = self::sounds($language_id);
 
-    public static function sounds_table(string $table, int|null $language_id = null) {
-//        $res = [];
-//        foreach (self::rows_list($table, $language_id) as $row) {
-//            $res[$row] = self::phonemes_row($table, $row, $language_id);
-//        }
-//        return $res;
-        return self::where('table', '=', $table)
-            ->where(static function(Builder $query) use ($language_id) {
-                $query->whereNull('language_id')
-                    ->orWhere('language_id', '=', $language_id);
-            })->get();
-    }
+        $collection = $collection->reject(static function(self $sound) use ($language_id) {
+            return $sound->language_sounds->where('language_id', $language_id)->count() === 0;
+        });
 
-    public static function sounds(string|null $language_id = null) {
-        return self::where(static function(Builder $query) use ($language_id) {
-            $query->whereNull('language_id')
-                ->orWhere('language_id', '=', $language_id);
-        })->get();
+        return $collection;
     }
 
     public static function meta(string|null $language_id = null, $is_view = false) {
         $res = [];
-        foreach (self::tables_list($language_id, $is_view) as $table) {
-            $res[$table] = self::meta_table($table, $language_id, $is_view);
+
+        $collection = self::with('language_sounds')
+                ->whereNull('language_id')
+                ->orWhere('language_id', '=', $language_id)
+                ->get();
+
+        if ($is_view) {
+            $collection = $collection->reject(static function(self $sound) use ($language_id) {
+                return $sound->language_sounds->where('language_id', $language_id)->count() === 0;
+            });
+        }
+
+        foreach (self::tables_list($collection) as $table) {
+            $res[$table] = self::meta_table($collection, $table);
         }
         return $res;
     }
 
-    public static function meta_table($table, string|null $language_id = null, $is_view = false) {
-        return ['rows' => self::rows_list($table, $language_id, $is_view),
-                'columns' => self::columns_list($table, $language_id, $is_view),
-                'sub_columns' => self::sub_columns_list($table, $language_id, $is_view)];
+    public static function meta_table(Collection $collection, $table) {
+        $collection = $collection->where('table', $table);
+        return ['rows' => self::rows_list($collection),
+                'columns' => self::columns_list($collection),
+                'sub_columns' => self::sub_columns_list($collection)];
     }
 
-    public static function tables_list(string|null $language_id = null, $is_view = false) {
-        $q = self::select('table')->distinct()
-            ->where(static function(Builder $query) use ($language_id) {
-                $query->whereNull('language_id')
-                    ->orWhere('language_id', '=', $language_id);
-            });
-        if ($is_view) {
-            $q->whereIn('id', LanguageSound::in_language($language_id));
-        }
-        return $q->pluck('table');
+    public static function tables_list(Collection $collection) {
+        return $collection->unique('table')->pluck('table');
     }
 
-    public static function rows_list(string $table, string|null $language_id = null, $is_view = false) {
-        $q = self::select('row')->distinct()
-            ->where('table', '=', $table)
-            ->where(static function(Builder $query) use ($language_id) {
-                $query->whereNull('language_id')
-                    ->orWhere('language_id', '=', $language_id);
-            });
-        if ($is_view) {
-            $q->whereIn('id', LanguageSound::in_language($language_id));
-        }
-        $t = $q->pluck('row');
+    public static function rows_list(Collection $collection) {
+        $t = $collection->unique('row')->pluck('row');
         return self::select('row')->distinct()->whereIn('row', $t)->pluck('row');
     }
 
-    public static function columns_list(string $table, string|null $language_id = null, $is_view = false) {
-        $q = self::select('column')->distinct()
-            ->where('table', '=', $table)
-            ->where(static function(Builder $query) use ($language_id) {
-                $query->whereNull('language_id')
-                    ->orWhere('language_id', '=', $language_id);
-            });
-        if ($is_view) {
-            $q->whereIn('id', LanguageSound::in_language($language_id));
-        }
-        $t = $q->pluck('column');
+    public static function columns_list(Collection $collection) {
+        $t = $collection->unique('column')->pluck('column');
         return self::select('column')->distinct()->whereIn('column', $t)->pluck('column');
     }
 
-    public static function sub_columns_list(string $table, string|null $language_id = null, $is_view = false) {
-        $q = self::select('sub_column')->distinct()
-            ->where('table', '=', $table)
-            ->where(static function(Builder $query) use ($language_id) {
-                $query->whereNull('language_id')
-                    ->orWhere('language_id', '=', $language_id);
-            })
-            ->whereNotNull('sub_column');
-        if ($is_view) {
-            $q->whereIn('id', LanguageSound::in_language($language_id));
-        }
-        $t = $q->pluck('sub_column');
+    public static function sub_columns_list(Collection $collection) {
+        $t = $collection->unique('sub_column')->pluck('sub_column');
         return self::select('sub_column')->distinct()->whereIn('sub_column', $t)->pluck('sub_column');
     }
 }

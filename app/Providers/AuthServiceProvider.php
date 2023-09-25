@@ -8,6 +8,7 @@ use App\Models\ArticleTag;
 use App\Models\Grammatic;
 use App\Models\GrammaticValue;
 use App\Models\Language;
+use App\Models\LanguageSound;
 use App\Models\Lexeme;
 use App\Models\Link;
 use App\Models\User;
@@ -78,6 +79,14 @@ class AuthServiceProvider extends ServiceProvider
 
         Gate::define('link-is-language', static function (User $user, Link $link) use ($can_edit) {
             return $can_edit($user, $link->from->vocabula->language);
+        });
+
+        Gate::define('language_sound-is-language', static function (User $user, LanguageSound $language_sound) use ($can_edit) {
+            return $can_edit($user, $language_sound->language);
+        });
+
+        Gate::define('sound-is-language', static function (User $user, Sound $sound) use ($can_edit) {
+            return $can_edit($user, $language_sound->language);
         });
     }
 }

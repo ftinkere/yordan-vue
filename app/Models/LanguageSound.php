@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read LanguageSound|null $allophone
  * @property-read \App\Models\Sound $sound
+ * @property-read \App\Models\Language $language
  * @method static \Illuminate\Database\Eloquent\Builder|LanguageSound newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|LanguageSound newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|LanguageSound query()
@@ -33,6 +34,10 @@ class LanguageSound extends Model
 
     protected $table = 'language_sounds';
     protected $fillable = ['language_id', 'sound_id', 'allophone_of'];
+
+    public function language() {
+        return $this->belongsTo(Language::class);
+    }
 
     public function sound() {
         return $this->belongsTo(Sound::class, 'sound_id', 'id');

@@ -64,7 +64,7 @@ defineExpose({
         v-bind="$attrs"
       >
         <div class="w-full flex flex-row flex-wrap justify-between">
-          <h3 class="flex flex-row flex-wrap gap-4 mb-4 text-xl font-bold">
+          <h3 :class="{ 'mb-4': header, 'mb-10': !header, 'flex flex-row flex-wrap gap-4 text-xl font-bold': true }">
             {{ header }}
             <slot name="postHeader" />
           </h3>

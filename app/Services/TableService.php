@@ -2,11 +2,12 @@
 
 namespace App\Services;
 
+use App\Models\Sound;
 use Illuminate\Database\Eloquent\Collection;
 
 class TableService
 {
-    function tables($language, Collection $data, $meta) {
+    function tables($language, $data, $meta, $addMode = false) {
         $tables = [];
 
 
@@ -50,6 +51,7 @@ class TableService
 
                     foreach ($sub_column_names as $sub_column_name) {
                         $sub_column_data = $column_data->where('sub_column', '=', $sub_column_name);
+                        /** @var Sound|null $td_data */
                         $td_data = $sub_column_data->isNotEmpty() ? $sub_column_data->first() : ($column_data->first()?->sub_column == null ? $column_data->first() : null);
 
                         $all_sub_column_data = $table_data->where('column', $column_name)
@@ -63,15 +65,21 @@ class TableService
                             $colspan = count($table_meta['sub_columns']) > 0 ? count($table_meta['sub_columns']) : 1;
                         }
                         if ($td_data) {
-
-                            $lsound = $td_data->language_sound($language->id);
-                            if ($lsound->allophone_of) {
-                                $str = "[" . $td_data->sound . "] /" . $td_data->language_sound($language->id)->allophone->sound->sound . "/";
+//                            $lsound = $td_data->language_sound($language->id);
+                                $lsound = $td_data->language_sounds->where('language_id', $language->id)->first();
+                            if (!$addMode && $lsound?->allophone_of) {
+//                                $str = "[" . $td_data->sound . "] /" . $lsound->allophone->sound->sound . "/";
+                                $str = $td_data->sound . " /" . $lsound->allophone->sound->sound . "/";
                             } else {
                                 $str = $td_data->sound;
                             }
+                            $to_row = ['data' => $str, 'colspan' => $colspan, 'sound' => $lsound ?? $td_data];
 
-                            $row[] = ['data' => $str, 'colspan' => $colspan];
+                            if ($lsound && $addMode) {
+                                $to_row['language_has'] = true;
+                            }
+
+                            $row[] = $to_row;
                         } else {
                             $row[] = ['data' => null];
                         }

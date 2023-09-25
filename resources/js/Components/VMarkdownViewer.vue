@@ -28,7 +28,7 @@ onMounted(function () {
 </script>
 
 <template>
-    <article ref="el"></article>
+  <article ref="el"></article>
 </template>
 
 <style scoped>
