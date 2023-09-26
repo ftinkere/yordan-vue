@@ -7,6 +7,7 @@ use App\Http\Requests\LanguageUpdateRequest;
 use App\Models\BaseArticles;
 use App\Models\Language;
 use App\Models\LanguageStatus;
+use App\Services\BaseArticlesService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
@@ -97,7 +98,7 @@ class LanguagesController extends Controller
         return redirect()->route('languages.view', ['code' => $language->id]);
     }
 
-    public function updateAbout(Request $request, string $code) {
+    public function updateAbout(Request $request, $code, BaseArticlesService $articlesService) {
         $language = Language::findOrFail($code);
         Gate::authorize('edit-language', $language);
 
@@ -105,17 +106,10 @@ class LanguagesController extends Controller
             'about' => '',
         ]);
 
-        if ($language->base_articles === null) {
-            $articles = new BaseArticles([
-               'language_id' => $language->id,
-            ]);
-            $articles->save();
-        } else {
-            $articles = $language->base_articles;
-        }
+        $articlesService->update($language, $data);
 
         $language->updateTimestamps();
-        $articles->update($data);
+        $language->save();
 
         return redirect()->route('languages.view', ['code' => $language->id]);
     }

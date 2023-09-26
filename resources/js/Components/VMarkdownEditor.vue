@@ -14,7 +14,7 @@ import '@toast-ui/editor/dist/theme/toastui-editor-dark.css';
 
 const { modelValue, language, label } = defineProps({
     modelValue: {
-        type: String,
+        type: [String, null],
         default: '',
     },
     language: {
@@ -34,7 +34,7 @@ const emits = defineEmits([ 'update:modelValue' ]);
 onMounted(function () {
     const editor = new Editor({
         el: el.value,
-        initialValue: modelValue,
+        initialValue: modelValue ?? '',
         theme: 'dark',
         plugins: [ tableMergedCell, colorSyntax ],
         usageStatistics: false,

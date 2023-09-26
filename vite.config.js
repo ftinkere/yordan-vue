@@ -9,7 +9,8 @@ export default defineConfig({
                 host: 'localhost',
             },
         },
-      host: 'localhost',
+        host: 'localhost',
+        cors: '*',
     },
     plugins: [
         laravel({

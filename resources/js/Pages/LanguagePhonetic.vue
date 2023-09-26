@@ -1,6 +1,6 @@
 <script setup>
 import LanguageLayout from "@/Layouts/LanguageLayout.vue";
-import { computed, ref, toRef } from "vue";
+import { computed, ref, toRef, watch } from "vue";
 import { useForm, usePage } from "@inertiajs/vue3";
 import VModal from "@/Components/VModal.vue";
 import SoundSelector from "@/Components/SoundSelector.vue";
@@ -10,6 +10,8 @@ import { router } from '@inertiajs/vue3'
 import VMarkdownViewer from "@/Components/VMarkdownViewer.vue";
 import VMarkdownEditor from "@/Components/VMarkdownEditor.vue";
 import VSaveLoader from "@/Components/VSaveLoader.vue";
+import LanguageTodoAction from "@/Components/LanguageTodoAction.vue";
+import _ from "lodash";
 
 const { language, sounds, ...props } = defineProps({
     language: {
@@ -37,6 +39,7 @@ const _token = usePage().props.csrf_token
 // const mode = ref((new URLSearchParams(window.location.search)).get('mode') ?? 'view') // view, edit, add
 const mode = ref(props.mode) // view, edit, add
 
+const articleEditModal = ref(null)
 const editModal = ref(null)
 
 const lsounds = computed(() => {
@@ -82,10 +85,17 @@ const openEditModal = function (td) {
     }
 }
 
-const articleForm = useForm({
-    article: language.base_articles?.phonetic,
+
+const phoneticForm = useForm({
+    phonetic: language.base_articles?.phonetic ?? '',
     _token,
 })
+
+const applyPhonetic = function () {
+    phoneticForm.post(route('languages.phonetic.article', { code: language.id }));
+}
+
+watch(computed(() => phoneticForm.data()), _.debounce(applyPhonetic, 2000));
 
 </script>
 
@@ -188,12 +198,13 @@ const articleForm = useForm({
     <!-- Article -->
     <div class="mt-4 p-4 card border-t">
       <div
-        v-if="mode === 'edit'"
         class="flex flex-row justify-between items-center"
       >
         <span />
 
         <VModal
+          ref="articleEditModal"
+          :without-button="!language.base_articles?.phonetic || mode !== 'edit'"
           header="Изменить статью"
           button-class="btn btn-sm btn-warning"
         >
@@ -204,19 +215,27 @@ const articleForm = useForm({
               Сохранить
             </button>
 
-            <VSaveLoader :is-save="!articleForm.isDirty" />
+            <VSaveLoader :is-save="!phoneticForm.isDirty" />
           </template>
 
           <template #content>
             <VMarkdownEditor
-              v-model="articleForm.article"
+              v-model="phoneticForm.phonetic"
               :language="language"
             />
           </template>
         </VModal>
       </div>
 
-      <VMarkdownViewer :content="language.base_articles?.phonetic" />
+      <VMarkdownViewer
+        v-if="language.base_articles?.phonetic"
+        :content="language.base_articles?.phonetic"
+      />
+      <LanguageTodoAction
+        v-else-if="mode !== 'add'"
+        :action="{ message: 'Напишите статью про устройство фонетики в вашем языке', button: 'Написать' }"
+        @click="articleEditModal?.open()"
+      />
     </div>
     <!-- End article -->
 

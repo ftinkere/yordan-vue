@@ -6,7 +6,7 @@ import { computed, reactive, ref, watch } from "vue";
 import LanguageTodoAction from "@/Components/LanguageTodoAction.vue";
 import VModal from "@/Components/VModal.vue";
 import VInput from "@/Components/VInput.vue";
-import { useForm, usePage } from "@inertiajs/vue3";
+import { router, useForm, usePage } from "@inertiajs/vue3";
 import TranscriptionConverter from "@/Components/TranscriptionConverter.vue";
 import _ from "lodash";
 import UserShort from "@/Components/UserShort.vue";
@@ -33,6 +33,7 @@ const autonymModal = ref(null)
 const autonymTranscriptionModal = ref(null)
 const typeModal = ref(null)
 const aboutModal = ref(null)
+const phoneticModal = ref(null)
 const articleModal = ref(null)
 
 const actionModal = computed(() => {
@@ -41,26 +42,31 @@ const actionModal = computed(() => {
     }
 
     if (action.modal === 'autonym') {
-        return  autonymModal
+        return autonymModal
     } else if (action.modal === 'autonym_transcription') {
-        return  autonymTranscriptionModal
+        return autonymTranscriptionModal
     } else if (action.modal === 'type') {
-        return  typeModal
+        return typeModal
     } else if (action.modal === 'about') {
-        return  aboutModal
+        return aboutModal
+    }  else if (action.modal === 'phonetic') {
+        return phoneticModal
     } else if (action.modal === 'article') {
-        return  articleModal
+        return articleModal
     }
-    return  null;
+    return null
 })
 
-const actionUpdate = function () {
-    useForm({}).get(route('languages.action', { code: language.id }), {
-        onSuccess: (resp) => {
-            console.log(resp);
-        }
-    })
+const actionAction = function () {
+    if (action?.url) {
+        router.visit(action.url)
+    } else {
+        actionModal.value?.value?.open()
+    }
+}
 
+const actionUpdate = function () {
+    useForm({}).get(route('languages.action', { code: language.id }))
 }
 
 const articleForm = useForm({
@@ -103,6 +109,17 @@ const applyAbout = function () {
 }
 
 watch(computed(() => aboutForm.data()), _.debounce(applyAbout, 2000));
+
+
+const phoneticForm = useForm({
+    phonetic: language.base_articles?.phonetic ?? '',
+    _token,
+})
+const applyPhonetic = function () {
+    phoneticForm.post(route('languages.phonetic.article', { code: language.id }));
+}
+
+watch(computed(() => phoneticForm.data()), _.debounce(applyPhonetic, 2000));
 
 let typeList = [
     'Априорный',
@@ -191,7 +208,7 @@ const isEdit = ref(false);
         <LanguageTodoAction
           v-if="action?.message"
           :action="action"
-          :modal="actionModal"
+          @click="actionAction"
         />
       </div>
 
@@ -323,6 +340,7 @@ const isEdit = ref(false);
     </div>
 
     <VModal
+      v-if="action?.modal === 'autonym'"
       ref="autonymModal"
       without-button
       header="Аутоним"
@@ -355,6 +373,7 @@ const isEdit = ref(false);
     </VModal>
 
     <VModal
+      v-if="action?.modal === 'autonym_transcription'"
       ref="autonymTranscriptionModal"
       without-button
       header="Произношение аутонима"
@@ -389,6 +408,7 @@ const isEdit = ref(false);
     </VModal>
 
     <VModal
+      v-if="action?.modal === 'type'"
       ref="typeModal"
       without-button
       header="Тип конланга"
@@ -421,12 +441,22 @@ const isEdit = ref(false);
     </VModal>
 
     <VModal
+      v-if="action?.modal === 'about'"
       ref="aboutModal"
       without-button
-      class="w-full max-w-full md:max-w-screen-md"
       header="О языке"
       @close="actionUpdate"
     >
+      <template #postHeader>
+        <button
+          class="btn btn-sm btn-success self-end w-fit"
+          @click="actionUpdate(); applyAbout()"
+        >
+          Сохранить
+        </button>
+        <VSaveLoader :is-save="!aboutForm.isDirty" />
+      </template>
+
       <template #content>
         <article>
           Здесь вы можете сообщить о вашем языке что желаете.
@@ -439,17 +469,39 @@ const isEdit = ref(false);
             v-model="aboutForm.about"
             :language="language"
           />
-          <button
-            class="mt-4 btn btn-success self-end w-fit"
-            @click="actionUpdate(); applyAbout()"
-          >
-            Сохранить
-          </button>
         </div>
       </template>
     </VModal>
 
     <VModal
+      v-if="action?.modal === 'phonetic'"
+      ref="phoneticModal"
+      without-button
+      header="О фонетике языка"
+      @close="actionUpdate"
+    >
+      <template #postHeader>
+        <button
+          class="btn btn-sm btn-success self-end w-fit"
+          @click="actionUpdate(); applyPhonetic()"
+        >
+          Сохранить
+        </button>
+        <VSaveLoader :is-save="!phoneticForm.isDirty" />
+      </template>
+
+      <template #content>
+        <div class="mt-4 flex flex-col">
+          <VMarkdownEditor
+            v-model="phoneticForm.phonetic"
+            :language="language"
+          />
+        </div>
+      </template>
+    </VModal>
+
+    <VModal
+      v-if="action?.modal === 'article'"
       ref="articleModal"
       without-button
       class="w-full max-w-full md:max-w-screen-md"

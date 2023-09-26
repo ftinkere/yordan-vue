@@ -159,6 +159,18 @@ class Language extends Model
                 'button' => 'Написать',
                 'modal' => 'about',
             ];
+        } else if ($this->language_sounds()->count() < 2) {
+            return [
+                'message' => 'Добавьте в ваш язык звуки',
+                'button' => 'Добавить',
+                'url' => route('languages.phonetic', ['code' => $this->id, 'mode' => 'add'])
+            ];
+        }  else if (empty($this->base_articles?->phonetic)) {
+            return [
+                'message' => 'Напишите статью про устройство фонетики в вашем языке',
+                'button' => 'Написать',
+                'modal' => 'phonetic'
+            ];
         } else if ($this->articles->isEmpty()) {
             return [
                 'message' => 'У вас не написано ни одной статьи. Напишите хотя бы примеры вашего языка в статьях.',

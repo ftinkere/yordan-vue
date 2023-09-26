@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BaseArticles;
 use App\Models\Language;
 use App\Models\LanguageSound;
 use App\Models\Sound;
+use App\Services\BaseArticlesService;
 use App\Services\TableService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -29,6 +31,22 @@ class PhoneticsController extends Controller
             $sounds = array_values($sounds->toArray());
         }
         return Inertia::render('LanguagePhonetic', compact('language', 'tables', 'sounds', 'mode'));
+    }
+
+    public function article(Request $request, $code, BaseArticlesService $articlesService) {
+        $language = Language::findOrFail($code);
+        Gate::authorize('edit-language', $language);
+
+        $data = $request->validate([
+            'phonetic' => '',
+        ]);
+
+        $articlesService->update($language, $data);
+
+        $language->updateTimestamps();
+        $language->save();
+
+        return redirect()->route('languages.phonetic', ['code' => $language->id, 'mode' => $request->get('mode', 'edit')]);
     }
 
     public function edit(Request $request, $code, $language_sound_id) {

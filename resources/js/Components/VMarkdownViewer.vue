@@ -8,7 +8,7 @@ import '@toast-ui/editor-plugin-table-merged-cell/dist/toastui-editor-plugin-tab
 
 const { content } = defineProps({
     content: {
-        type: String,
+        type: [String, null],
         required: true,
     }
 });
@@ -16,19 +16,24 @@ const { content } = defineProps({
 const el = ref(null);
 
 onMounted(function () {
-    new Viewer({
-        el: el.value,
-        initialValue: content,
-        theme: 'dark',
-        plugins: [tableMergedCell],
-        usageStatistics: false,
-        height: 'auto',
-    });
+    if (content) {
+        new Viewer({
+            el: el.value,
+            initialValue: content,
+            theme: 'dark',
+            plugins: [tableMergedCell],
+            usageStatistics: false,
+            height: 'auto',
+        });
+    }
 });
 </script>
 
 <template>
-  <article ref="el"></article>
+  <article
+    v-if="content"
+    ref="el"
+  />
 </template>
 
 <style scoped>

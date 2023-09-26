@@ -1,14 +1,12 @@
 <script setup>
-const { action, modal } = defineProps({
+const { action } = defineProps({
     action: {
         type: Object,
         required: true,
-    },
-    modal: {
-        type: Object,
-        default: null,
-    },
+    }
 })
+
+const emits = defineEmits(['click'])
 </script>
 
 <template>
@@ -30,7 +28,7 @@ const { action, modal } = defineProps({
     <div>
       <button
         class="btn btn-sm btn-primary"
-        @click="modal?.value.open()"
+        @click="emits('click')"
       >
         {{ action.button ?? 'Добавить' }}
       </button>
