@@ -132,4 +132,43 @@ class PhoneticsController extends Controller
 //        return redirect()->route('languages.phonetic', ['code' => $language->id, 'mode' => $request->get('mode', 'add')]);
     }
 
+    public function addSound(Request $request, $code) {
+        $language = Language::findOrFail($code);
+        Gate::authorize('edit-language', $language);
+
+        $data = $request->validate([
+            'sound' => 'required',
+            'table' => 'required',
+            'row' => 'required',
+            'column' => 'required',
+            'sub_column' => 'nullable',
+        ], messages: [
+            'sound.required' => 'Звук обязателен к указанию.',
+            'table.required' => 'Таблица обязательна к указанию.',
+            'row.required' => 'Строка обязательна к указанию.',
+            'column.required' => 'Колонка обязательна к указанию.',
+        ]);
+
+        $sound = Sound::create([...$data, 'language_id' => $language->id]);
+        $sound->save();
+
+        $language->updateTimestamps();
+        $language->save();
+
+        return redirect()->route('languages.phonetic', ['code' => $language->id, 'mode' => $request->get('mode', 'add')]);
+    }
+
+    public function deleteSound(Request $request, $code, $sound_id) {
+        $language = Language::findOrFail($code);
+        Gate::authorize('edit-language', $language);
+        $sound = Sound::findOrFail($sound_id);
+        Gate::authorize('sound-is-language', $sound);
+
+        $sound->delete();
+
+        $language->updateTimestamps();
+        $language->save();
+
+        return redirect()->route('languages.phonetic', ['code' => $language->id, 'mode' => $request->get('mode', 'add')]);
+    }
 }

@@ -1,4 +1,6 @@
 <script setup>
+    import SoundString from "@/Components/SoundString.vue";
+
     const { sounds, modelValue, language } = defineProps({
         modelValue: {
             type: Number,
@@ -22,8 +24,8 @@
     <label class="label"><span class="label-text">Аллофон?</span></label>
     <select
       :modelValue="modelValue"
-      @change="emits('update:modelValue', parseInt($event.target.value)); emits('change')"
       class="select select-bordered"
+      @change="emits('update:modelValue', parseInt($event.target.value)); emits('change')"
     >
       <option :value="-1">
         Не аллофон
@@ -34,7 +36,7 @@
         :selected="modelValue === sound.language_sounds?.filter(ls => ls.language_id === language.id)[0]?.id"
         :value="sound.language_sounds?.filter(ls => ls.language_id === language.id)[0].id"
       >
-        {{ sound.table }} {{ sound.sub_column }} {{ sound.column }} {{ sound.row }}: {{ sound.sound }}
+        <SoundString :sound="sound" />
       </option>
     </select>
   </div>

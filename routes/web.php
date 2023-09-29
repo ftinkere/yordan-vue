@@ -99,7 +99,8 @@ Route::name('languages.')->prefix('/languages')->group(static function() {
         Route::name('article')->post('/article', [PhoneticsController::class, 'article']);
         Route::name('edit')->post('/{language_sound}/edit', [PhoneticsController::class, 'edit']);
         Route::name('toggle-sound')->post('/toggle-sound', [PhoneticsController::class, 'toggleSoundNew']);
-
+        Route::name('sounds.store')->post('/sounds', [PhoneticsController::class, 'addSound']);
+        Route::name('sounds.delete')->delete('/sounds/{sound}', [PhoneticsController::class, 'deleteSound']);
     });
 
 });

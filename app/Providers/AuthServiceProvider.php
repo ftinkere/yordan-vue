@@ -11,6 +11,7 @@ use App\Models\Language;
 use App\Models\LanguageSound;
 use App\Models\Lexeme;
 use App\Models\Link;
+use App\Models\Sound;
 use App\Models\User;
 use App\Models\Vocabula;
 use Illuminate\Auth\Access\Response;
@@ -86,7 +87,10 @@ class AuthServiceProvider extends ServiceProvider
         });
 
         Gate::define('sound-is-language', static function (User $user, Sound $sound) use ($can_edit) {
-            return $can_edit($user, $language_sound->language);
+            if ($sound->language_id === null) {
+                return Response::deny('Вы не владелец.');
+            }
+            return $can_edit($user, $sound->language);
         });
     }
 }

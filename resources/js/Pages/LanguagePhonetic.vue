@@ -12,6 +12,10 @@ import VMarkdownEditor from "@/Components/VMarkdownEditor.vue";
 import VSaveLoader from "@/Components/VSaveLoader.vue";
 import LanguageTodoAction from "@/Components/LanguageTodoAction.vue";
 import _ from "lodash";
+import VInput from "@/Components/VInput.vue";
+import VCheckbox from "@/Components/VCheckbox.vue";
+import VFlashSuccess from "@/Components/VFlashSuccess.vue";
+import SoundString from "@/Components/SoundString.vue";
 
 const { language, sounds, tables, ...props } = defineProps({
     language: {
@@ -100,6 +104,35 @@ const applyPhonetic = function () {
 }
 
 watch(computed(() => phoneticForm.data()), _.debounce(applyPhonetic, 2000));
+
+
+const addSoundForm = useForm({
+    sound: '',
+    table: '',
+    row: '',
+    column: '',
+    sub_column: '',
+})
+const isSubColumn = ref(false)
+
+const flashSuccess = ref(null)
+
+const applyAddSoundForm = function () {
+    addSoundForm.transform(data => {
+        if (!isSubColumn.value) {
+            data.sub_column = null
+        }
+        return data
+    }).post(route('languages.phonetic.sounds.store', { code: language.id }), {
+        onSuccess: () => flashSuccess.value.flash()
+    })
+}
+
+const deleteSoundForm = useForm({})
+
+const deleteSound = function (sound) {
+    deleteSoundForm.delete(route('languages.phonetic.sounds.delete', { code: language.id, sound: sound.id }))
+}
 
 </script>
 
@@ -192,6 +225,128 @@ watch(computed(() => phoneticForm.data()), _.debounce(applyPhonetic, 2000));
       <!-- End table -->
     </div>
     <!-- End tables -->
+
+    <!-- Adding custom sounds -->
+    <div
+      v-if="mode === 'add'"
+      class="mt-6 flex flex-col gap-4"
+    >
+      <article class="alert">
+        Вы можете добавить свои звуки в язык. Для этого требуется указать сам звук, название таблицы (которое пишется в первой ячейке), название строки, столбца и под-столбца.<br/>
+        Если вы укажете "несуществующие" данные, то это просто создаст новую сущность.<br/>
+        Доступные подстолбцы для таблицы 'consonants': 'Voiced' и 'Voiceless'. Для 'vowels': 'Unrounded' и 'Rounded'.<br/>
+        Создание подстолбца в таблице создаёт его для всех столбцов, поэтому если вам нужно добавить один-два звука порой лучше использовать столбец.<br/>
+        Если подстолбец оставить пустым, то он объединит все ячейки и будет один на столбец. Не советую делать при этом другие звуки в подстолбцах с пустым в столбце<br/>
+        Пока доступен только такой способ добавления, если вам нужно много таких звуков, просто простите.<br/>
+        Вы можете добавлять в существующую таблицу, но не советую указывать данные уже существующих звуков.<br/>
+        Порядок строк и столбцов автоматический, к сожалению. Что встретится первее, то первее и будет показано<br/>
+      </article>
+
+      <div class="flex flex-row flex-wrap gap-4">
+        <!-- Modal adding sound -->
+        <VModal
+          header="Добавить свой звук"
+          button-class="btn btn-sm btn-success"
+          class="max-w-screen-sm"
+        >
+          Добавить свой звук
+
+          <template #postHeader>
+            <button
+              class="btn btn-sm btn-success"
+              @click="applyAddSoundForm"
+            >
+              Добавить
+            </button>
+            <VSaveLoader :is-save="!addSoundForm.processing" />
+            <VFlashSuccess ref="flashSuccess" />
+          </template>
+
+          <template #content>
+            <div class="flex flex-col gap-2">
+              <article class="alert">
+                Окно безопасно закрывать, введённые данные не сбросятся
+              </article>
+
+              <VInput
+                v-model="addSoundForm.sound"
+                label="Звук"
+                :errors="addSoundForm.errors.sound"
+                required
+              />
+              <VInput
+                v-model="addSoundForm.table"
+                label="Таблица"
+                :errors="addSoundForm.errors.table"
+                required
+              />
+              <VInput
+                v-model="addSoundForm.row"
+                label="Строка"
+                :errors="addSoundForm.errors.row"
+                required
+              />
+              <VInput
+                v-model="addSoundForm.column"
+                label="Колонка"
+                :errors="addSoundForm.errors.column"
+                required
+              />
+              <VCheckbox
+                v-model="isSubColumn"
+                class="w-fit"
+              >
+                Добавить в подколонку?
+              </VCheckbox>
+              <VInput
+                v-if="isSubColumn"
+                v-model="addSoundForm.sub_column"
+                label="Подколонка"
+                :errors="addSoundForm.errors.sub_column"
+              />
+
+              <button
+                class="btn btn-sm btn-success w-fit"
+                @click="applyAddSoundForm"
+              >
+                Добавить
+              </button>
+            </div>
+          </template>
+        </VModal>
+        <!-- End modal adding sound -->
+
+        <VModal
+          button-class="btn btn-sm btn-warning"
+          header="Список добавленных звуков"
+        >
+          Список добавленных звуков
+
+          <template #postHeader>
+            <VSaveLoader :is-save="!deleteSoundForm.processing" />
+          </template>
+
+          <template #content>
+            <div class="flex flex-col gap-2">
+              <div
+                v-for="sound in sounds.filter(el => el.language_id !== null)"
+                :key="sound.id"
+                class="w-fit"
+              >
+                <button
+                  class="ms-2 btn btn-xs btn-error float-right border-neutral-800"
+                  @click="deleteSound(sound)"
+                >
+                  Удалить
+                </button>
+                <SoundString :sound="sound" />
+              </div>
+            </div>
+          </template>
+        </VModal>
+      </div>
+    </div>
+    <!-- End adding custom sounds -->
 
     <!-- Article -->
     <div class="mt-4 p-4 card border-t">
