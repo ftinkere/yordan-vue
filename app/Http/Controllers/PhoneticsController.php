@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\BaseArticles;
 use App\Models\Language;
 use App\Models\LanguageSound;
 use App\Models\Sound;
@@ -11,7 +10,6 @@ use App\Services\TableService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
-use function Termwind\render;
 
 class PhoneticsController extends Controller
 {
@@ -23,13 +21,12 @@ class PhoneticsController extends Controller
             $sounds = Sound::view_sounds($language->id);
             $meta = Sound::meta($language->id, is_view: true);
             $tables = $tableService->tables($language, $sounds, $meta);
-            $sounds = array_values($sounds->toArray());
         } else {
             $sounds = Sound::sounds($language->id);
             $meta = Sound::meta($language->id);
             $tables = $tableService->tables($language, $sounds, $meta, addMode: true);
-            $sounds = array_values($sounds->toArray());
         }
+        $sounds = array_values($sounds->toArray());
         return Inertia::render('LanguagePhonetic', compact('language', 'tables', 'sounds', 'mode'));
     }
 
@@ -63,6 +60,9 @@ class PhoneticsController extends Controller
 
         $language_sound->update($data);
 
+        $language->updateTimestamps();
+        $language->save();
+
         return redirect()->route('languages.phonetic', ['code' => $language->id, 'mode' => $request->get('mode', 'edit')]);
     }
 
@@ -90,6 +90,9 @@ class PhoneticsController extends Controller
             $lsound->save();
         }
 
+        $language->updateTimestamps();
+        $language->save();
+
         return redirect()->route('languages.phonetic', ['code' => $language->id, 'mode' => $request->get('mode', 'add')]);
     }
 
@@ -115,9 +118,16 @@ class PhoneticsController extends Controller
                 'sound_id' => $sound_id,
             ]);
             if ($lsound->save()) {
+                $language->updateTimestamps();
+                $language->save();
+
                 return ['language_has' => true];
             }
+
         }
+        $language->updateTimestamps();
+        $language->save();
+
         return ['language_has' => false];
 //        return redirect()->route('languages.phonetic', ['code' => $language->id, 'mode' => $request->get('mode', 'add')]);
     }

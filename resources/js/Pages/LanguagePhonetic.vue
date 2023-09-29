@@ -13,7 +13,7 @@ import VSaveLoader from "@/Components/VSaveLoader.vue";
 import LanguageTodoAction from "@/Components/LanguageTodoAction.vue";
 import _ from "lodash";
 
-const { language, sounds, ...props } = defineProps({
+const { language, sounds, tables, ...props } = defineProps({
     language: {
         type: Object,
         required: true
@@ -32,7 +32,7 @@ const { language, sounds, ...props } = defineProps({
     }
 })
 
-let tables = toRef(props.tables)
+// let tables = toRef(props.tables)
 
 const _token = usePage().props.csrf_token
 
@@ -74,10 +74,14 @@ const toggleSound = function (td) {
 }
 
 const openEditModal = function (td) {
+    if (!td.data) {
+        return
+    }
+
     if (mode.value === 'edit') {
         lsound.value = td.sound
 
-        tdEditForm.allophone_of = td.sound.allophone_of
+        tdEditForm.allophone_of = td.sound?.allophone_of
 
         editModal.value.open()
     } else if (mode.value === 'add') {
@@ -146,7 +150,7 @@ watch(computed(() => phoneticForm.data()), _.debounce(applyPhonetic, 2000));
             <tr>
               <td
                 v-for="el in table.rows[0]"
-                :key="el.data"
+                :key="el.key"
                 :is="el.header ? 'th' : 'td'"
                 :colspan="el.colspan ?? 1"
                 class="text-center text-white whitespace-nowrap w-fit"
@@ -162,10 +166,9 @@ watch(computed(() => phoneticForm.data()), _.debounce(applyPhonetic, 2000));
             >
               <td
                 v-for="el in row"
-                :key="el.data"
+                :key="el.key"
                 :is="el.header ? 'th' : 'td'"
                 :colspan="el.colspan ?? 1"
-                class=""
                 :class="{
                   'text-center border border-neutral-700 whitespace-nowrap w-fit': !el.header,
                   'text-end whitespace-nowrap w-fit': el.header,
@@ -173,17 +176,12 @@ watch(computed(() => phoneticForm.data()), _.debounce(applyPhonetic, 2000));
                   'cursor-pointer': el.data && mode === 'add' && !el.header,
                   'bg-green-700 hover:bg-orange-800': el.language_has && mode === 'add' && !el.header,
                   'hover:bg-green-800': el.data && !el.language_has && mode === 'add' && !el.header,
+                  'tooltip': el.sound?.allophone
                 }"
+                :data-tip="'Это аллофон звука /' + el.sound?.allophone?.sound?.sound + '/'"
                 @click="openEditModal(el)"
               >
-                <span
-                  v-if="el.sound?.allophone"
-                  class="tooltip"
-                  :data-tip="'Это аллофон звука /' + el.sound.allophone.sound.sound + '/'"
-                >
-                  {{ el.data }}
-                </span>
-                <span v-else>
+                <span>
                   {{ el.data }}
                 </span>
               </td>

@@ -20,7 +20,7 @@ class TableService
 
             $table['rows'] = [];
             $first_row = [];
-            $first_row[] = ['data' => $table_name, 'header' => true];
+            $first_row[] = ['data' => $table_name, 'header' => true, 'key' => $table_name];
             foreach ($table_meta['columns'] as $column_name) {
                 $colspan = count($table_meta['sub_columns']);
 
@@ -36,6 +36,7 @@ class TableService
                     'data' => $column_name,
                     'header' => true,
                     'colspan' => $colspan,
+                    'key' => $column_name,
                 ];
             }
             $table['rows'][] = $first_row;
@@ -43,7 +44,7 @@ class TableService
             foreach ($table_meta['rows'] as $row_name) {
                 $row_data = $table_data->where('row', '=', $row_name);
                 $row = [];
-                $row[] = ['data' => $row_name, 'header' => true];
+                $row[] = ['data' => $row_name, 'header' => true, 'key' => $row_name];
 
                 foreach ($table_meta['columns'] as $column_name) {
                     $column_data = $row_data->where('column', '=', $column_name);
@@ -73,7 +74,7 @@ class TableService
                             } else {
                                 $str = $td_data->sound;
                             }
-                            $to_row = ['data' => $str, 'colspan' => $colspan, 'sound' => $lsound ?? $td_data];
+                            $to_row = ['data' => $str, 'colspan' => $colspan, 'sound' => $lsound ?? $td_data, 'key' => $lsound?->sound_id ?? $td_data->id ];
 
                             if ($lsound && $addMode) {
                                 $to_row['language_has'] = true;
