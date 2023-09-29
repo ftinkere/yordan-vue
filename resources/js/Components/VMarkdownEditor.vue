@@ -39,6 +39,7 @@ onMounted(function () {
         plugins: [ tableMergedCell, colorSyntax ],
         usageStatistics: false,
         height: 'auto',
+        autofocus: false,
         hooks: {
             addImageBlobHook: (file, cb) => {
                 window.axios.post(route('languages.image', { code: language.id }), { image: file }, {
@@ -52,7 +53,7 @@ onMounted(function () {
                     cb(encodeURI(path), split[split.length - 1]);
                 });
             }
-        }
+        },
     });
 
     const cmd = function (_, state, dispatch) {
