@@ -139,7 +139,10 @@ const deleteSound = function (sound) {
 <template>
   <LanguageLayout :language="language">
     <!-- Buttons -->
-    <div class="mb-2 flex flex-row justify-between items-center">
+    <div
+      v-if="language.can_edit"
+      class="mb-2 flex flex-row justify-between items-center"
+    >
       <span />
 
       <!-- Right side -->
@@ -351,6 +354,7 @@ const deleteSound = function (sound) {
     <!-- Article -->
     <div class="mt-4 p-4 card border-t">
       <div
+        v-if="language.can_edit"
         class="flex flex-row justify-between items-center"
       >
         <span />
@@ -385,7 +389,7 @@ const deleteSound = function (sound) {
         :content="language.base_articles?.phonetic"
       />
       <LanguageTodoAction
-        v-else-if="mode !== 'add'"
+        v-else-if="language.can_edit && mode !== 'add'"
         :action="{ message: 'Напишите статью про устройство фонетики в вашем языке', button: 'Написать' }"
         @click="articleEditModal?.open()"
       />

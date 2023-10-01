@@ -4,6 +4,7 @@ use App\Http\Controllers\ArticlesController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\LanguagesController;
 use App\Http\Controllers\MainController;
+use App\Http\Controllers\OrthographyController;
 use App\Http\Controllers\PhoneticsController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
@@ -101,6 +102,14 @@ Route::name('languages.')->prefix('/languages')->group(static function() {
         Route::name('toggle-sound')->post('/toggle-sound', [PhoneticsController::class, 'toggleSoundNew']);
         Route::name('sounds.store')->post('/sounds', [PhoneticsController::class, 'addSound']);
         Route::name('sounds.delete')->delete('/sounds/{sound}', [PhoneticsController::class, 'deleteSound']);
+    });
+
+    Route::name('orthography')->get('/{code}/orthography', [OrthographyController::class, 'index']);
+    Route::name('orthography.')->prefix('/{code}/orthography')->group(static function () {
+        Route::name('order')->post('/order', [OrthographyController::class, 'order']);
+        Route::name('store')->post('', [OrthographyController::class, 'store']);
+        Route::name('update')->post('/{orthographeme}', [OrthographyController::class, 'update']);
+        Route::name('delete')->delete('/{orthographeme}', [OrthographyController::class, 'delete']);
     });
 
 });

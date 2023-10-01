@@ -11,6 +11,7 @@ use App\Models\Language;
 use App\Models\LanguageSound;
 use App\Models\Lexeme;
 use App\Models\Link;
+use App\Models\Orthographeme;
 use App\Models\Sound;
 use App\Models\User;
 use App\Models\Vocabula;
@@ -91,6 +92,10 @@ class AuthServiceProvider extends ServiceProvider
                 return Response::deny('Вы не владелец.');
             }
             return $can_edit($user, $sound->language);
+        });
+
+        Gate::define('orthographeme-is-language', static function (User $user, Orthographeme $orthographeme) use ($can_edit) {
+            return $can_edit($user, $orthographeme->language);
         });
     }
 }

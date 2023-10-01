@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from "vue";
+import { computed, onUpdated, ref } from "vue";
 
 const { name, modelValue, value, required, errors } = defineProps({
     name: {
@@ -7,16 +7,16 @@ const { name, modelValue, value, required, errors } = defineProps({
         default: null,
     },
     modelValue: {
-        type: [ String, Object, Array, Boolean ],
+        type: [ Boolean, Array, String, Number ],
         default: null,
     },
     value: {
-        type: [ String ],
-        default: null,
+        type: [ Boolean, String, Number ],
+        default: true,
     },
     required: {
         type: Boolean,
-        default: null,
+        default: false,
     },
     errors: {
         type: Object,
@@ -32,9 +32,18 @@ const { name, modelValue, value, required, errors } = defineProps({
     },
 });
 
-const model = ref(modelValue);
-
 const emits = defineEmits([ 'update:modelValue' ])
+
+const change = function (event) {
+    if (event.target.checked) {
+        emits('update:modelValue',
+            Array.isArray(modelValue) ? [ ...modelValue, event.target.value ] : !!event.target.value )
+    } else {
+        emits('update:modelValue',
+            Array.isArray(modelValue) ? modelValue.filter(el => el !== event.target.value) : false)
+    }
+}
+
 </script>
 
 <template>
@@ -44,22 +53,23 @@ const emits = defineEmits([ 'update:modelValue' ])
       :class="labelClass"
     >
       <input
-        v-model="model"
+        :model-value="modelValue"
+        :checked="Array.isArray(modelValue) ? modelValue.includes(value) : modelValue === value"
         :value="value"
         :name="name"
         type="checkbox"
         class="checkbox"
         :class="inputClass"
         :required="required"
-        @change="emits('update:modelValue', model)"
+        @change="change"
       >
       <span class="label-text">
         <slot />
         <span
           v-if="required"
-          class="text-red-600"
+          class="inline-block fill-red-600 self-start"
         >
-          *
+          <svg xmlns="http://www.w3.org/2000/svg" height="0.5em" viewBox="0 0 384 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M192 32c17.7 0 32 14.3 32 32V199.5l111.5-66.9c15.2-9.1 34.8-4.2 43.9 11s4.2 34.8-11 43.9L254.2 256l114.3 68.6c15.2 9.1 20.1 28.7 11 43.9s-28.7 20.1-43.9 11L224 312.5V448c0 17.7-14.3 32-32 32s-32-14.3-32-32V312.5L48.5 379.4c-15.2 9.1-34.8 4.2-43.9-11s-4.2-34.8 11-43.9L129.8 256 15.5 187.4c-15.2-9.1-20.1-28.7-11-43.9s28.7-20.1 43.9-11L160 199.5V64c0-17.7 14.3-32 32-32z"/></svg>
         </span>
       </span>
     </label>

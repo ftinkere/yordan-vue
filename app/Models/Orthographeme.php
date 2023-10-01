@@ -39,12 +39,12 @@ class Orthographeme extends Model
     protected $table = 'orthographemes';
     protected $fillable = ['language_id', 'lowercase', 'uppercase', 'is_alphabet', 'order'];
 
-    public function language() {
-        return $this->belongsTo(Language::class, 'language_id', 'id');
-    }
-
     public static function new_order(Language $language) {
         return $language->orthographemes()->max('order') + 1;
+    }
+
+    public function language() {
+        return $this->belongsTo(Language::class, 'language_id', 'id');
     }
 
     public function pronunciations() {

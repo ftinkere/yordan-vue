@@ -18,7 +18,7 @@ const tabs = [
     { name: 'Статьи', url: route("languages.articles", language.id), active: 'languages.articles*' },
     { name: 'Словарь', url: route("languages.vocabulary", language.id), active: 'languages.vocabulary*' },
     { name: 'Фонетика', url: route("languages.phonetic", language.id), active: 'languages.phonetic' },
-    { name: 'Орфография', url: 'route("languages.orthography", language.id)', active: 'languages.orthography' },
+    { name: 'Орфография', url: route("languages.orthography", language.id), active: 'languages.orthography' },
     { name: 'Грамматика', url: 'route("languages.grammatics", language.id)', active: 'languages.grammatics' },
 ];
 
