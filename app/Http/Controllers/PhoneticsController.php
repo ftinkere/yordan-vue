@@ -27,6 +27,7 @@ class PhoneticsController extends Controller
             $tables = $tableService->tables($language, $sounds, $meta, addMode: true);
         }
         $sounds = array_values($sounds->toArray());
+
         return Inertia::render('LanguagePhonetic', compact('language', 'tables', 'sounds', 'mode'));
     }
 

@@ -73,9 +73,9 @@ article table th {
 }
 
 .btn-warning {
-    @apply hover:bg-warning/70 hover:border-warning/70;
+    @apply hover:bg-warning/70 hover:border-warning/50;
 }
 
 .btn-success {
-    @apply hover:bg-success/70 hover:border-success/70;
+    @apply hover:bg-success/70 hover:border-success/50;
 }

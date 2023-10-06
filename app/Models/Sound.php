@@ -19,7 +19,7 @@ use Illuminate\Support\Collection;
  * @property int|null $language_id
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read  Language|null $language
+ * @property-read Language|null $language
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\LanguageSound> $language_sounds
  * @method static Builder|Sound newModelQuery()
  * @method static Builder|Sound newQuery()
@@ -33,6 +33,7 @@ use Illuminate\Support\Collection;
  * @method static Builder|Sound whereSubColumn($value)
  * @method static Builder|Sound whereTable($value)
  * @method static Builder|Sound whereUpdatedAt($value)
+ * @property-read int|null $language_sounds_count
  * @mixin \Eloquent
  */
 class Sound extends Model

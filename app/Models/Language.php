@@ -51,6 +51,9 @@ use Illuminate\Support\Facades\Gate;
  * @property-read int|null $orthographemes_count
  * @property-read int|null $language_sounds_count
  * @method static \Illuminate\Database\Eloquent\Builder|Language whereFlag($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ArticleTag> $tags
+ * @property-read int|null $tags_count
+ * @method static \Illuminate\Database\Eloquent\Builder|Language whereStatus($value)
  * @mixin \Eloquent
  */
 class Language extends Model
@@ -161,15 +164,21 @@ class Language extends Model
             ];
         } else if ($this->language_sounds()->count() < 2) {
             return [
-                'message' => 'Добавьте в ваш язык звуки',
+                'message' => 'Добавьте в ваш язык звуки. То как ваш язык произносится.',
                 'button' => 'Добавить',
                 'url' => route('languages.phonetic', ['code' => $this->id, 'mode' => 'add'])
             ];
-        }  else if (empty($this->base_articles?->phonetic)) {
+        } else if (empty($this->base_articles?->phonetic)) {
             return [
-                'message' => 'Напишите статью про устройство фонетики в вашем языке',
+                'message' => 'Напишите статью про устройство фонетики в вашем языке.',
                 'button' => 'Написать',
                 'modal' => 'phonetic'
+            ];
+        } else if ($this->orthographemes->isEmpty()) {
+            return [
+                'message' => 'Добавьте в ваш язык орфографемы. То чем ваш язык записывается.',
+                'button' => 'Добавить',
+                'url' => route('languages.orthography', ['code' => $this->id, 'editMode' => true]),
             ];
         } else if ($this->articles->isEmpty()) {
             return [

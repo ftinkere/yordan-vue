@@ -110,6 +110,12 @@ Route::name('languages.')->prefix('/languages')->group(static function() {
         Route::name('store')->post('', [OrthographyController::class, 'store']);
         Route::name('update')->post('/{orthographeme}', [OrthographyController::class, 'update']);
         Route::name('delete')->delete('/{orthographeme}', [OrthographyController::class, 'delete']);
+
+        Route::name('pronunciations.')->prefix('/{orthographeme}/pronunciations')->group(static function () {
+            Route::name('store')->post('', [OrthographyController::class, 'pronunciations_store']);
+            Route::name('update')->post('/{pronunciation}', [OrthographyController::class, 'pronunciations_update']);
+            Route::name('delete')->delete('/{pronunciation}', [OrthographyController::class, 'pronunciations_delete']);
+        });
     });
 
 });

@@ -25,6 +25,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|OrthographemePronunciation wherePronunciation($value)
  * @method static \Illuminate\Database\Eloquent\Builder|OrthographemePronunciation whereUpdatedAt($value)
  * @property-read int|null $contexts_count
+ * @property string|null $context
+ * @method static \Illuminate\Database\Eloquent\Builder|OrthographemePronunciation whereContext($value)
  * @mixin \Eloquent
  */
 class OrthographemePronunciation extends Model
@@ -32,7 +34,7 @@ class OrthographemePronunciation extends Model
     use HasFactory;
 
     protected $table = 'orthographeme_pronunciations';
-    protected $fillable = ['orthographeme_id', 'pronunciation'];
+    protected $fillable = ['orthographeme_id', 'pronunciation', 'context'];
 
     public function orthographeme() {
         return $this->belongsTo(Orthographeme::class, 'orthographeme_id', 'id');

@@ -12,6 +12,7 @@ use App\Models\LanguageSound;
 use App\Models\Lexeme;
 use App\Models\Link;
 use App\Models\Orthographeme;
+use App\Models\OrthographemePronunciation;
 use App\Models\Sound;
 use App\Models\User;
 use App\Models\Vocabula;
@@ -96,6 +97,10 @@ class AuthServiceProvider extends ServiceProvider
 
         Gate::define('orthographeme-is-language', static function (User $user, Orthographeme $orthographeme) use ($can_edit) {
             return $can_edit($user, $orthographeme->language);
+        });
+
+        Gate::define('pronunciation-is-language', static function (User $user, OrthographemePronunciation $pronunciation) use ($can_edit) {
+            return $can_edit($user, $pronunciation->orthographeme->language);
         });
     }
 }

@@ -15,6 +15,7 @@ import LanguageFlag from "@/Components/LanguageFlag.vue";
 import VSaveLoader from "@/Components/VSaveLoader.vue";
 import EditButton from "@/Components/EditButton.vue";
 import route from "ziggy-js";
+import VFlashSuccess from "@/Components/VFlashSuccess.vue";
 
 const { action, language } = defineProps({
     language: {
@@ -91,12 +92,20 @@ const languageForm = useForm({
     _token,
 });
 
+const successFlash1 = ref(null)
+const successFlash2 = ref(null)
+
 const applyForm = function () {
     if (!languageForm.name) {
         languageForm.setError('name', "Имя не может быть пустым.")
         return;
     }
-    languageForm.post(route('languages.update', { code: language.id }));
+    languageForm.post(route('languages.update', { code: language.id }), {
+        onSuccess: () => {
+            successFlash1.value?.flash()
+            successFlash2.value?.flash()
+        }
+    });
 };
 
 watch(computed(() => languageForm.data()), _.debounce(applyForm, 2000));
@@ -176,8 +185,9 @@ const isEdit = ref(false);
           </span>
         </h1>
 
-        <div class="flex flex-row gap-4">
+        <div class="flex flex-row gap-4 items-center">
           <VSaveLoader :is-save="!languageForm.isDirty && !flagForm.isDirty && !aboutForm.isDirty" />
+          <VFlashSuccess ref="successFlash1" />
           <EditButton
             v-if="language.can_edit"
             @click="isEdit = true"
@@ -268,8 +278,9 @@ const isEdit = ref(false);
           </template>
         </VModal>
 
-        <div class="flex flex-row gap-2">
+        <div class="flex flex-row gap-2 items-center">
           <VSaveLoader :is-save="!languageForm.isDirty && !aboutForm.isDirty && !flagForm.isDirty" />
+          <VFlashSuccess ref="successFlash2" />
           <button
             class="btn btn-success btn-sm"
             @click="actionUpdate(); applyForm(); applyAbout(); isEdit = false"

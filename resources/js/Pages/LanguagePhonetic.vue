@@ -112,6 +112,7 @@ const addSoundForm = useForm({
     row: '',
     column: '',
     sub_column: '',
+    _token,
 })
 const isSubColumn = ref(false)
 
@@ -206,18 +207,20 @@ const deleteSound = function (sound) {
                 :is="el.header ? 'th' : 'td'"
                 :colspan="el.colspan ?? 1"
                 :class="{
-                  'text-center border border-neutral-700 whitespace-nowrap w-fit': !el.header,
-                  'text-end whitespace-nowrap w-fit': el.header,
+                  'text-center border border-neutral-700 whitespace-nowrap': !el.header,
+                  'text-end whitespace-nowrap': el.header,
                   'cursor-pointer hover:bg-neutral-800': el.data && mode === 'edit',
                   'cursor-pointer': el.data && mode === 'add' && !el.header,
                   'bg-green-700 hover:bg-orange-800': el.language_has && mode === 'add' && !el.header,
                   'hover:bg-green-800': el.data && !el.language_has && mode === 'add' && !el.header,
-                  'tooltip': el.sound?.allophone
                 }"
-                :data-tip="'Это аллофон звука /' + el.sound?.allophone?.sound?.sound + '/'"
                 @click="openEditModal(el)"
               >
-                <span>
+                <span
+                  v-if="el.data"
+                  :class="{ 'tooltip': el.sound?.allophone }"
+                  :data-tip="el.sound?.allophone ? 'Это аллофон звука /' + el.sound?.allophone?.sound?.sound + '/' : null"
+                >
                   {{ el.data }}
                 </span>
               </td>
@@ -408,6 +411,8 @@ const deleteSound = function (sound) {
           v-model="tdEditForm.allophone_of"
           :sounds="lsounds"
           :language="language"
+          label="Аллофон?"
+          no-selected="Не аллофон"
           @change="applyEditForm"
         />
       </template>

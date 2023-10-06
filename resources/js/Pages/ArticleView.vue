@@ -10,6 +10,7 @@ import VMarkdownEditor from "@/Components/VMarkdownEditor.vue";
 import _ from "lodash";
 import EditButton from "@/Components/EditButton.vue";
 import route from "ziggy-js";
+import VFlashSuccess from "@/Components/VFlashSuccess.vue";
 
 const { language, article, editMode } = defineProps({
     language: {
@@ -36,8 +37,12 @@ const articleForm = useForm({
     _token,
 })
 
+const successFlash = ref(null)
+
 const applyForm = function () {
-    articleForm.post(route('languages.articles.update', { code: language.id, article: article.id }))
+    articleForm.post(route('languages.articles.update', { code: language.id, article: article.id }), {
+        onSuccess: () => successFlash.value?.flash()
+    })
 }
 
 watch(computed(() => articleForm.data()), _.debounce(applyForm, 3000));
@@ -122,8 +127,10 @@ const deleteArticle = function () {
             Снять с публикации
           </button>
 
-          <div class="flex flex-row gap-2">
-            <VSaveLoader :is-save="!articleForm.isDirty"/>
+          <div class="flex flex-row gap-2 items-center">
+            <VSaveLoader :is-save="!articleForm.isDirty" />
+            <VFlashSuccess ref="successFlash" />
+
             <button
               class="btn btn-sm btn-success"
               @click="applyForm"
