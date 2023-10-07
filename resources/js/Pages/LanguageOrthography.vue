@@ -239,8 +239,6 @@ const openAddPronunciationModal = function (orthographeme) {
       class="mt-6 sm:mx-10 md:mx-20 flex flex-row flex-wrap gap-y-2 items-center"
       draggable=".item"
       handle=".handle"
-      :delay_="100"
-      delay-on-touch-only
       @change="changeSortable"
     >
       <div
