@@ -108,7 +108,11 @@ const applyForm = function () {
     });
 };
 
-watch(computed(() => languageForm.data()), _.debounce(applyForm, 2000));
+watch(computed(() => languageForm.data()), _.debounce(() => {
+    if (!isEdit.value)
+        return ;
+    applyForm()
+}, 2000));
 
 const aboutForm = useForm({
     about: language.base_articles?.about ?? '',
@@ -186,7 +190,7 @@ const isEdit = ref(false);
         </h1>
 
         <div class="flex flex-row gap-4 items-center">
-          <VSaveLoader :is-save="!languageForm.isDirty && !flagForm.isDirty && !aboutForm.isDirty" />
+          <VSaveLoader :is-save="!languageForm.processing && !flagForm.processing && !aboutForm.processing" />
           <VFlashSuccess ref="successFlash1" />
           <EditButton
             v-if="language.can_edit"
@@ -279,7 +283,7 @@ const isEdit = ref(false);
         </VModal>
 
         <div class="flex flex-row gap-2 items-center">
-          <VSaveLoader :is-save="!languageForm.isDirty && !aboutForm.isDirty && !flagForm.isDirty" />
+          <VSaveLoader :is-save="!languageForm.processing && !aboutForm.processing && !flagForm.processing" />
           <VFlashSuccess ref="successFlash2" />
           <button
             class="btn btn-success btn-sm"

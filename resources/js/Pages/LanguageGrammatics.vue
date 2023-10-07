@@ -249,7 +249,7 @@ const addValue = function () {
 
     <!-- Alert if no one orthographemes to make it -->
     <LanguageTodoAction
-      v-if="language.grammatics.length === 0"
+      v-if="language.can_edit && language.grammatics.length === 0"
       :action="{ message: 'Добавьте первую грамматическую категорию.' }"
       class="mt-4"
       @click="addGrammaticModal?.open()"

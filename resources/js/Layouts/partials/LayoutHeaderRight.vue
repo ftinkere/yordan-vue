@@ -56,6 +56,12 @@ const avatar_path = user?.avatar;
       <div class="text-xl flex flex-col gap-2 menu dropdown-content shadow rounded-box bg-neutral-800 border border-neutral-600">
         <Link
           class="px-2 hover:bg-neutral-900 rounded-box"
+          :href="route('profile', user.id)"
+        >
+          Профиль
+        </Link>
+        <Link
+          class="px-2 hover:bg-neutral-900 rounded-box"
           :href="route('user.cabinet')"
         >
           Кабинет

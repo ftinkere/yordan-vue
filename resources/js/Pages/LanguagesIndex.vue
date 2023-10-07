@@ -4,6 +4,7 @@ import VModal from "@/Components/VModal.vue";
 import { Link, useForm, usePage } from "@inertiajs/vue3";
 import VInput from "@/Components/VInput.vue";
 import route from "ziggy-js";
+import VPaginator from "@/Components/VPaginator.vue";
 
 defineProps({
     languages: {
@@ -100,6 +101,8 @@ function submit() {
         </tr>
       </tbody>
     </table>
+
+    <VPaginator :paginator="languages" />
   </Layout>
 </template>
 

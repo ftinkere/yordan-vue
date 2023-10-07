@@ -25,8 +25,8 @@ use Tightenco\Ziggy\Ziggy;
 */
 
 Route::name('main')->get('/', [MainController::class, 'index']);
-Route::name('info')->get('/info', [MainController::class, 'index']); // TODO
-Route::name('about')->get('/about', [MainController::class, 'index']); // TODO
+Route::name('info')->get('/info', [MainController::class, 'info']);
+Route::name('about')->get('/about', [MainController::class, 'about']);
 
 Route::name('ziggy')->get('/ziggy', static fn () => response()->json(new Ziggy));
 
@@ -57,10 +57,14 @@ Route::name('languages.')->prefix('/languages')->group(static function() {
     Route::name('view')->get('/{code}', [LanguagesController::class, 'view']);
     Route::name('store')->post('', [LanguagesController::class, 'store']);
     Route::name('update')->post('/{code}', [LanguagesController::class, 'update']);
+    Route::name('delete')->delete('/{code}', [LanguagesController::class, 'destroy']);
+    Route::name('restore')->get('/{code}/restore', [LanguagesController::class, 'restore']);
     Route::name('about')->post('/{code}/about', [LanguagesController::class, 'updateAbout']);
     Route::name('flag')->post('/{code}/flag', [LanguagesController::class, 'pushFlag']);
     Route::name('image')->post('/{code}/image', [LanguagesController::class, 'pushImage']);
     Route::name('action')->get('/{code}/action', [LanguagesController::class, 'action']);
+
+    Route::name('settings')->get('/{code}/settings', [LanguagesController::class, 'settings']);
 
     Route::name('articles')->get('/{code}/articles', [ArticlesController::class, 'index']);
     Route::name('articles.')->prefix('/{code}/articles')->group(static function() {

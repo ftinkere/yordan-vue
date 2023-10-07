@@ -6,6 +6,7 @@ use App\Http\Requests\Auth\VerifyRequest;
 use App\Http\Requests\UserChangePasswordRequest;
 use App\Http\Requests\UserPushAvatarRequest;
 use App\Http\Requests\UserUpdateRequest;
+use App\Models\Language;
 use App\Models\User;
 use App\Models\VerificationToken;
 use App\Services\MailService;
@@ -20,6 +21,11 @@ class UserController extends Controller
 
     public function profile($user_id) {
         $user = User::with('languages')->findOrFail($user_id);
+
+        $user->logged = Auth::user()->id === $user->id;
+
+        $user->deletedLanguages = Language::onlyTrashed()->where('user_id', $user->id)->get()->toArray();
+
         return Inertia::render('UserProfile', compact('user'));
     }
 

@@ -23,7 +23,7 @@ const tabs = [
 ];
 
 if (language.can_edit) {
-    tabs.push({ name: 'Настройки', url: 'route("languages.settings", language.id)', active: 'languages.settings' })
+    tabs.push({ name: 'Настройки', url: route("languages.settings", language.id), active: 'languages.settings' })
 }
 </script>
 

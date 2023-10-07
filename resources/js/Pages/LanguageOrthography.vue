@@ -228,7 +228,7 @@ const openAddPronunciationModal = function (orthographeme) {
 
     <!-- Alert if no one orthographemes to make it -->
     <LanguageTodoAction
-      v-if="language.orthographemes.length === 0"
+      v-if="language.can_edit && language.orthographemes.length === 0"
       :action="{ message: 'Добавьте орфографемы' }"
       class="mt-4"
       @click="addOrthographemeModal.open()"

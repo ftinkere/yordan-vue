@@ -169,9 +169,22 @@ class LanguagesController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
-    {
-        //
+    public function destroy(string $code) {
+        $language = Language::findOrFail($code);
+        Gate::authorize('edit-language', $language);
+
+        $language->delete();
+
+        return redirect()->route('main');
+    }
+
+    public function restore(string $code) {
+        $language = Language::withTrashed()->findOrFail($code);
+        Gate::authorize('edit-language', $language);
+
+        $e = $language->restore();
+
+        return redirect()->route('languages.view', $language->id);
     }
 
     public function action($code) {
@@ -179,5 +192,12 @@ class LanguagesController extends Controller
         Gate::authorize('edit-language', $language);
 
         return redirect()->route('languages.view', ['code' => $language->id]);
+    }
+
+    public function settings($code) {
+        $language = Language::findOrFail($code);
+        Gate::authorize('edit-language', $language);
+
+        return Inertia::render('LanguageSettings', compact('language'));
     }
 }

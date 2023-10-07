@@ -73,8 +73,9 @@ const ownedLanguages = computed(function () {
 
         <!--  Модалка добавления нового языка  -->
         <VModal
-          button-class="mb-4 md:mb-0 w-full"
+          button-class="mb-4 md:mb-0 btn btn-sm w-full"
           header="Добавить язык"
+          class="max-w-screen-md"
         >
           <span>Добавить язык</span>
 

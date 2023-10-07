@@ -139,7 +139,6 @@ class VocabularyController extends Controller
         }
 
         foreach ($data['grammatics'] as $gram) {
-            dd($data['grammatics']);
             $grammatic = GrammaticValue::findOrFail($gram);
             Gate::authorize('grammatic-value-is-language', $grammatic);
 
@@ -153,7 +152,7 @@ class VocabularyController extends Controller
         $language->updateTimestamps();
         $language->save();
 
-        return redirect()->route('languages.vocabulary.view', ['code' => $language->id, 'vocabula' => $vocabula->id]);
+        return redirect()->route('languages.vocabulary.view', ['code' => $language->id, 'vocabula' => $vocabula->id, 'editMode' => true]);
     }
 
     public function update(Request $request, $code, $vocabula_id) {

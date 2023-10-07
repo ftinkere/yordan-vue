@@ -15,4 +15,12 @@ class MainController extends Controller
         $owned = Auth::user()?->languages ?: [];
         return Inertia::render('MainPage', compact('lasts', 'owned'));
     }
+
+    public function info() {
+        return Inertia::render('InfoPage');
+    }
+
+    public function about() {
+        return Inertia::render('AboutPage');
+    }
 }
