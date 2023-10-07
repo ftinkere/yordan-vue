@@ -10,6 +10,7 @@ import VInput from "@/Components/VInput.vue";
 import { useForm, usePage } from "@inertiajs/vue3";
 import route from "ziggy-js";
 import VMarkdownEditor from "@/Components/VMarkdownEditor.vue";
+import LanguageTodoAction from "@/Components/LanguageTodoAction.vue";
 
 const { language, editMode } = defineProps({
     language: {
@@ -85,6 +86,30 @@ const openEditGrammaticModal = function (grammatic) {
     })
 }
 
+// Add grammatic value
+const addGrammaticModal = ref(null)
+const addGrammaticUpdate = ref(true)
+
+const addGrammaticForm = useForm({
+    name: null,
+    article: null,
+})
+
+const addGrammatic = function () {
+    addGrammaticForm.post(route('languages.grammatics.store', language.id), {
+        onSuccess: () => {
+            addGrammaticModal.value?.close()
+            addGrammaticForm.reset()
+            addGrammaticForm.clearErrors()
+
+            addGrammaticUpdate.value = false
+
+            nextTick(() => {
+                addGrammaticUpdate.value = true
+            })
+        },
+    })
+}
 
 
 // Edit value part
@@ -191,7 +216,15 @@ const addValue = function () {
       v-if="language.can_edit"
       class="flex flex-row justify-between"
     >
-      <span />
+      <div v-if="isEdit">
+        <button
+          class="btn btn-sm btn-primary"
+          @click="addGrammaticModal?.open()"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 32V224H48c-17.7 0-32 14.3-32 32s14.3 32 32 32H192V432c0 17.7 14.3 32 32 32s32-14.3 32-32V288H400c17.7 0 32-14.3 32-32s-14.3-32-32-32H256V80z"/></svg>
+        </button>
+      </div>
+      <span v-else />
 
       <EditButton
         v-if="!isEdit"
@@ -213,6 +246,14 @@ const addValue = function () {
       </div>
     </div>
     <!-- End buttons -->
+
+    <!-- Alert if no one orthographemes to make it -->
+    <LanguageTodoAction
+      v-if="language.grammatics.length === 0"
+      :action="{ message: 'Добавьте первую грамматическую категорию.' }"
+      class="mt-4"
+      @click="addGrammaticModal?.open()"
+    />
 
     <!-- Article about grammatic -->
     <VMarkdownViewer
@@ -455,6 +496,56 @@ const addValue = function () {
             <button
               class="btn btn-sm btn-success"
               @click="addValue"
+            >
+              Сохранить
+            </button>
+          </div>
+          <!-- End buttons -->
+        </div>
+      </template>
+    </VModal>
+    <!-- End edit grammatic value modal -->
+
+    <!-- Add grammatic modal -->
+    <VModal
+      v-if="addGrammaticUpdate"
+      ref="addGrammaticModal"
+      without-button
+      header="Добавить грамматическую категорию"
+    >
+      <template #postHeader>
+        <button
+          class="btn btn-sm btn-success"
+          @click="addGrammatic"
+        >
+          Сохранить
+        </button>
+
+        <VSaveLoader :is-save="!addGrammaticForm.processing" />
+      </template>
+
+      <template #content>
+        <div class="flex flex-col gap-2">
+          <VInput
+            v-model="addGrammaticForm.name"
+            label="Название категории"
+            :errors="addGrammaticForm.errors.name"
+            required
+          />
+
+          <VMarkdownEditor
+            v-model="addGrammaticForm.article"
+            :language="language"
+            label="Статья о грамматической категории"
+          />
+
+          <!-- Buttons -->
+          <div class="mt-6 flex flex-row flex-wrap items-center justify-between">
+            <span />
+
+            <button
+              class="btn btn-sm btn-success"
+              @click="addGrammatic"
             >
               Сохранить
             </button>

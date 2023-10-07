@@ -180,6 +180,12 @@ class Language extends Model
                 'button' => 'Добавить',
                 'url' => route('languages.orthography', ['code' => $this->id, 'editMode' => true]),
             ];
+        }  else if ($this->grammatics->isEmpty()) {
+            return [
+                'message' => 'Добавьте первую грамматическую категорию.',
+                'button' => 'Добавить',
+                'url' => route('languages.grammatics', ['code' => $this->id, 'editMode' => true]),
+            ];
         } else if ($this->articles->isEmpty()) {
             return [
                 'message' => 'У вас не написано ни одной статьи. Напишите хотя бы примеры вашего языка в статьях.',
