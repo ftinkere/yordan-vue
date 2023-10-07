@@ -102,5 +102,19 @@ class AuthServiceProvider extends ServiceProvider
         Gate::define('pronunciation-is-language', static function (User $user, OrthographemePronunciation $pronunciation) use ($can_edit) {
             return $can_edit($user, $pronunciation->orthographeme->language);
         });
+
+        Gate::define('grammatic-is-language', static function (User $user, Grammatic $grammatic) use ($can_edit) {
+            return $can_edit($user, $grammatic->language);
+        });
+
+        Gate::define('grammatic_value-is-language', static function (User $user, GrammaticValue $value) use ($can_edit) {
+            return $can_edit($user, $value->grammatic->language);
+        });
+        Gate::define('grammatic_value-is-grammatic', static function (User $user, GrammaticValue $value, Grammatic $grammatic) use ($can_edit) {
+            if ($value->grammatic->id === $grammatic->id) {
+                return Response::allow();
+            }
+            return Response::deny();
+        });
     }
 }

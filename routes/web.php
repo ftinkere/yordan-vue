@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ArticlesController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\GrammaticsController;
 use App\Http\Controllers\LanguagesController;
 use App\Http\Controllers\MainController;
 use App\Http\Controllers\OrthographyController;
@@ -115,6 +116,19 @@ Route::name('languages.')->prefix('/languages')->group(static function() {
             Route::name('store')->post('', [OrthographyController::class, 'pronunciations_store']);
             Route::name('update')->post('/{pronunciation}', [OrthographyController::class, 'pronunciations_update']);
             Route::name('delete')->delete('/{pronunciation}', [OrthographyController::class, 'pronunciations_delete']);
+        });
+    });
+
+    Route::name('grammatics')->get('/{code}/grammatics', [GrammaticsController::class, 'index']);
+    Route::name('grammatics.')->prefix('/{code}/grammatics')->group(static function () {
+        Route::name('store')->post('', [GrammaticsController::class, 'store']);
+        Route::name('update')->post('/{grammatics}', [GrammaticsController::class, 'update']);
+        Route::name('delete')->delete('/{grammatics}', [GrammaticsController::class, 'delete']);
+
+        Route::name('values.')->prefix('/{grammatics}/values')->group(static function () {
+            Route::name('store')->post('', [GrammaticsController::class, 'value_store']);
+            Route::name('update')->post('/{value}', [GrammaticsController::class, 'value_update']);
+            Route::name('delete')->delete('/{value}', [GrammaticsController::class, 'value_delete']);
         });
     });
 
