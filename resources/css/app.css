@@ -6,8 +6,8 @@
     --rounded-box: 1rem;
     --rounded-btn: 0.3rem;
     --rounded-badge: 0.3rem;
-    font-family: "Helvetica Neue", "Noto Sans", Roboto, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-    font-weight: 500;
+    font-family: "Arimo", "Helvetica Neue", "Noto Sans", Roboto, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    font-weight: 400;
 }
 
 .input, .select {
