@@ -149,7 +149,6 @@ const pushVocabula = function() {
           ref="addVocabulaModal"
           button-class="btn btn-sm btn-success"
           header="Добавить вокабулу"
-          :class="{ 'min-w-[85dvw]': isLexeme }"
         >
           <span>Добавить вокабулу</span>
 
