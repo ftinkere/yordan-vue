@@ -41,7 +41,8 @@ const successFlash = ref(null)
 
 const applyForm = function () {
     articleForm.post(route('languages.articles.update', { code: language.id, article: article.id }), {
-        onSuccess: () => successFlash.value?.flash()
+        onSuccess: () => successFlash.value?.flash(),
+        preserveScroll: true,
     })
 }
 
