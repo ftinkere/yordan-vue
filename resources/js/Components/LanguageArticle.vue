@@ -56,7 +56,8 @@ const language = inject('language');
     </div>
     <VMarkdownViewer
       :content="article.article"
-      class="break-words line-clamp-6"
+      class="break-words"
+      :class="{ 'line-clamp-6' : !view }"
     />
   </div>
 </template>
