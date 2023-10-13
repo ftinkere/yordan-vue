@@ -130,7 +130,7 @@ class VocabularyController extends Controller
             ]);
 
         $lexeme1 = null;
-        if ($data['lexeme'] && ($data['lexeme']['short'] || $data['lexeme']['article']) || $data['grammatics_general']) {
+        if ($data['lexeme'] && ($data['lexeme']['short'] || $data['lexeme']['article'])) {
             $lexeme1 = Lexeme::create([
                 'vocabula_id' => $vocabula->id,
                 'short' => $data['lexeme']['short'] ?? '',
@@ -378,17 +378,33 @@ class VocabularyController extends Controller
             'type' => 'required|filled',
             'to_lexeme_id' => 'required|exists:lexemes,id',
             'comment' => 'nullable',
+            'reverse' => 'nullable|array',
+            'reverse.type' => 'nullable',
+            'reverse.comment' => 'nullable',
         ], messages: [
             'type.required' => 'Тип связи обязателен.',
             'type.filled' => 'Тип связи обязателен.',
             'to_lexeme_id.required' => 'На что ссылаемся обязательно.',
             'to_lexeme_id.exists' => 'На что ссылаемся должно существовать.',
+            'reverse.array' => 'Обратка должна быть массивом.'
         ]);
 
         Link::create([
             ...$data,
             'from_lexeme_id' => $lexeme->id,
         ]);
+
+        if ($data['reverse'] && $data['reverse']['type']) {
+            Link::create([
+                ...$data['reverse'],
+                'to_lexeme_id' => $lexeme->id,
+                'from_lexeme_id' => $data['to_lexeme_id'],
+            ]);
+
+            $l = Lexeme::find($data['to_lexeme_id']);
+            $l?->updateTimestamps();
+            $l?->save();
+        }
 
         $lexeme->updateTimestamps();
         $lexeme->save();

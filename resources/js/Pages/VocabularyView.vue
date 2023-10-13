@@ -16,6 +16,7 @@
     import VMarkdownEditor from "@/Components/VMarkdownEditor.vue";
     import LexemeLink from "@/Components/LexemeLink.vue";
     import VInputLexeme from "@/Components/VInputLexeme.vue";
+    import VCheckbox from "@/Components/VCheckbox.vue";
 
     const { language, vocabula, editMode } = defineProps({
         language: {
@@ -163,14 +164,28 @@
 
     const linksModal = reactive([])
 
+    const isLinkReverse = ref(false)
     const linkForm = useForm({
         type: '',
         to_lexeme_id: null,
         comment: '',
     })
+    const reverseLinkForm = useForm({
+        type: null,
+        comment: null,
+    })
 
     const addLink = function (lexeme) {
-        linkForm.post(route('languages.vocabulary.lexemes.links.store', { code: language.id, vocabula: vocabula.id, lexeme: lexeme.id }), {
+        linkForm.transform(data => {
+            if (isLinkReverse.value) {
+                data.reverse = reverseLinkForm.data()
+            }
+            return data
+        }).post(route('languages.vocabulary.lexemes.links.store', {
+            code: language.id,
+            vocabula: vocabula.id,
+            lexeme: lexeme.id
+        }), {
             onSuccess: () => {
                 linkForm.reset()
                 linksModal.forEach(modal => {
@@ -511,6 +526,24 @@
                                           label="Комментарий"
                                           :errors="linkForm.errors.comment"
                                         />
+                                        <VCheckbox
+                                          v-model="isLinkReverse"
+                                          class="w-fit"
+                                        >
+                                          Добавить обратную связь?
+                                        </VCheckbox>
+
+                                        <div v-if="isLinkReverse">
+                                          <VInput
+                                            v-model="reverseLinkForm.type"
+                                            label="Тип обратной связи"
+                                            required
+                                          />
+                                          <VInput
+                                            v-model="reverseLinkForm.comment"
+                                            label="Комментарий обратной связи"
+                                          />
+                                        </div>
 
                                         <button
                                           class="mt-4 btn btn-sm btn-success w-fit"
