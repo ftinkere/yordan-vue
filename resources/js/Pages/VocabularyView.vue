@@ -37,6 +37,8 @@
 
     const isEdit = ref(editMode)
 
+    const update = ref(true)
+
     const vocabulaModal = ref(null)
 
     const vocabulaForm = useForm({
@@ -147,7 +149,14 @@
                     data.grammatics_variables = data.grammatics_variables.map(g => parseInt(g))
                 }
                 return data
-            }).post(route('languages.vocabulary.lexemes.update', { code: language, vocabula: vocabula.id, lexeme: id }))
+            }).post(route('languages.vocabulary.lexemes.update', { code: language, vocabula: vocabula.id, lexeme: id }), {
+                onSuccess: () => {
+                    update.value = false
+                    nextTick(() => {
+                        update.value = true
+        })
+                }
+        })
     }
     const deleteLexeme = function (id) {
         lexemeForms[id].delete(route('languages.vocabulary.lexemes.update', { code: language, vocabula: vocabula.id, lexeme: id }))
@@ -375,6 +384,7 @@
         <ul class="divide-y divide-neutral-700">
           <li class="mb-6 flex flex-col">
             <LexemeShort
+              v-if="update"
               v-for="lexeme in vocabula.lexemes"
               :key="lexeme.id"
               :lexeme="lexeme"
@@ -390,6 +400,7 @@
               <div class="p-1">
                 <div class="inline md:flex md:flex-row md:justify-between">
                   <LexemeShort
+                    v-if="update"
                     :lexeme="lexeme"
                     :one="vocabula.lexemes.filter(lx => lx.group_number === lexeme.group_number).length === 1"
                   />
@@ -591,6 +602,7 @@
                 </div>
 
                 <LexemeArticle
+                  v-if="update"
                   :lexeme="lexeme"
                   without-short
                 />
