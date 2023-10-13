@@ -3,7 +3,7 @@
     import LexemeShort from "@/Components/LexemeShort.vue";
     import LexemeArticle from "@/Components/LexemeArticle.vue";
     import EditButton from "@/Components/EditButton.vue";
-    import { computed, nextTick, reactive, ref, watch } from "vue";
+    import { computed, reactive, ref, watch } from "vue";
     import VSaveLoader from "@/Components/VSaveLoader.vue";
     import { useForm, usePage } from "@inertiajs/vue3";
     import VModal from "@/Components/VModal.vue";
@@ -362,7 +362,7 @@
           <li class="mb-6 flex flex-col">
             <LexemeShort
               v-for="lexeme in vocabula.lexemes"
-              :key="'short' + lexeme.id"
+              :key="lexeme.id"
               :lexeme="lexeme"
               :one="vocabula.lexemes.filter(lx => lx.group_number === lexeme.group_number).length === 1"
             />
@@ -370,7 +370,7 @@
 
           <li
             v-for="lexeme in vocabula.lexemes"
-            :key="'lexeme' + lexeme.id"
+            :key="lexeme.id"
           >
             <article class="card">
               <div class="p-1">

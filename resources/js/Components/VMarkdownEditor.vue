@@ -1,6 +1,6 @@
 <script setup>
 import Editor from '@toast-ui/editor';
-import { onMounted, ref, defineEmits } from "vue";
+import { onMounted, ref, defineEmits, onUpdated } from "vue";
 import tableMergedCell from '@toast-ui/editor-plugin-table-merged-cell';
 import colorSyntax from '@toast-ui/editor-plugin-color-syntax';
 
@@ -31,8 +31,10 @@ const el = ref(null);
 
 const emits = defineEmits([ 'update:modelValue' ]);
 
+const editor = ref(null)
+
 onMounted(function () {
-    const editor = new Editor({
+    editor.value = new Editor({
         el: el.value,
         initialValue: modelValue ?? '',
         theme: 'dark',
@@ -72,10 +74,10 @@ onMounted(function () {
         }
         return false;
     }
-    editor.addCommand('markdown', 'x2i', cmd);
-    editor.addCommand('ww', 'x2i', cmd);
+    editor.value.addCommand('markdown', 'x2i', cmd);
+    editor.value.addCommand('ww', 'x2i', cmd);
 
-    editor.insertToolbarItem({ groupIndex: 0, itemIndex: 5 }, {
+    editor.value.insertToolbarItem({ groupIndex: 0, itemIndex: 5 }, {
         name: 'X-SAMPA to IPA',
         tooltip: 'Convert X-SAMPA to IPA',
         command: 'x2i',
@@ -84,13 +86,17 @@ onMounted(function () {
         style: { backgroundImage: 'none', fontSize: 'larger' }
     });
 
-    editor.on('keyup', function () {
-        emits('update:modelValue', editor.getMarkdown());
+    editor.value.on('keyup', function () {
+        emits('update:modelValue', editor.value.getMarkdown());
     });
-    editor.on('change', function () {
-        emits('update:modelValue', editor.getMarkdown());
+    editor.value.on('change', function () {
+        emits('update:modelValue', editor.value.getMarkdown());
     });
-});
+})
+
+onUpdated(function () {
+    editor.value.setMarkdown(modelValue)
+})
 
 </script>
 
