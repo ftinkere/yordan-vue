@@ -3,7 +3,7 @@
     import LexemeShort from "@/Components/LexemeShort.vue";
     import LexemeArticle from "@/Components/LexemeArticle.vue";
     import EditButton from "@/Components/EditButton.vue";
-    import { computed, reactive, ref, watch } from "vue";
+    import { computed, nextTick, reactive, ref, watch } from "vue";
     import VSaveLoader from "@/Components/VSaveLoader.vue";
     import { useForm, usePage } from "@inertiajs/vue3";
     import VModal from "@/Components/VModal.vue";
@@ -147,8 +147,7 @@
                     data.grammatics_variables = data.grammatics_variables.map(g => parseInt(g))
                 }
                 return data
-            })
-            .post(route('languages.vocabulary.lexemes.update', { code: language, vocabula: vocabula.id, lexeme: id }))
+            }).post(route('languages.vocabulary.lexemes.update', { code: language, vocabula: vocabula.id, lexeme: id }))
     }
     const deleteLexeme = function (id) {
         lexemeForms[id].delete(route('languages.vocabulary.lexemes.update', { code: language, vocabula: vocabula.id, lexeme: id }))

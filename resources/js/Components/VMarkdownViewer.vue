@@ -1,6 +1,6 @@
 <script setup>
 import Viewer from '@toast-ui/editor/dist/toastui-editor-viewer';
-import { onMounted, onUpdated, ref } from "vue";
+import { onMounted, ref } from "vue";
 import tableMergedCell from '@toast-ui/editor-plugin-table-merged-cell';
 
 import '@toast-ui/editor/dist/theme/toastui-editor-dark.css'
@@ -15,7 +15,9 @@ const { content } = defineProps({
 
 const el = ref(null)
 
-const viewer = ref(null)
+const viewer = {
+    value: null,
+}
 
 onMounted(function () {
     if (content) {

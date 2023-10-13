@@ -344,7 +344,7 @@ class VocabularyController extends Controller
         $language->updateTimestamps();
         $language->save();
 
-        return redirect()->route('languages.vocabulary.view', ['code' => $language->id, 'vocabula' => $vocabula->id, 'editMode' => '']);
+        return redirect()->route('languages.vocabulary.view', ['code' => $language->id, 'vocabula' => $vocabula->id, 'editMode' => true]);
     }
 
     public function lexemeDelete(Request $request, $code, $vocabula_id, $lexeme_id) {
