@@ -1,6 +1,6 @@
 <script setup>
 import Editor from '@toast-ui/editor';
-import { onMounted, ref, defineEmits, onUpdated } from "vue";
+import { onMounted, ref, defineEmits, onUpdated, nextTick } from "vue";
 import tableMergedCell from '@toast-ui/editor-plugin-table-merged-cell';
 import colorSyntax from '@toast-ui/editor-plugin-color-syntax';
 
@@ -31,7 +31,9 @@ const el = ref(null);
 
 const emits = defineEmits([ 'update:modelValue' ]);
 
-const editor = ref(null)
+const editor = {
+    value: null,
+}
 
 onMounted(function () {
     editor.value = new Editor({
@@ -92,10 +94,6 @@ onMounted(function () {
     editor.value.on('change', function () {
         emits('update:modelValue', editor.value.getMarkdown());
     });
-})
-
-onUpdated(function () {
-    editor.value.setMarkdown(modelValue)
 })
 
 </script>
