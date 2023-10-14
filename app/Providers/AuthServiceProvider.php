@@ -7,6 +7,7 @@ use App\Models\Article;
 use App\Models\ArticleTag;
 use App\Models\Grammatic;
 use App\Models\GrammaticValue;
+use App\Models\HasLanguage;
 use App\Models\Language;
 use App\Models\LanguageSound;
 use App\Models\Lexeme;
@@ -14,6 +15,7 @@ use App\Models\Link;
 use App\Models\Orthographeme;
 use App\Models\OrthographemePronunciation;
 use App\Models\Sound;
+use App\Models\Table;
 use App\Models\User;
 use App\Models\Vocabula;
 use Illuminate\Auth\Access\Response;
@@ -115,6 +117,9 @@ class AuthServiceProvider extends ServiceProvider
                 return Response::allow();
             }
             return Response::deny();
+        });
+        Gate::define('all-is-language', static function (User $user, HasLanguage $model) use ($can_edit) {
+            return $can_edit($user, $model->language);
         });
     }
 }

@@ -38,6 +38,7 @@ use Illuminate\Support\Facades\Gate;
  * @property-read int|null $vocables_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Article> $articles
  * @property-read int|null $articles_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Table> $tables
  * @method static \Illuminate\Database\Eloquent\Builder|Language newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Language newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Language query()
@@ -55,6 +56,11 @@ use Illuminate\Support\Facades\Gate;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ArticleTag> $tags
  * @property-read int|null $tags_count
  * @method static \Illuminate\Database\Eloquent\Builder|Language whereStatus($value)
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @method static \Illuminate\Database\Eloquent\Builder|Language onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|Language whereDeletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Language withTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|Language withoutTrashed()
  * @mixin \Eloquent
  */
 class Language extends Model
@@ -135,6 +141,11 @@ class Language extends Model
 
     public function orthographemes() {
         return $this->hasMany(Orthographeme::class, 'language_id', 'id')
+            ->orderBy('order');
+    }
+
+    public function tables() {
+        return $this->hasMany(Table::class)
             ->orderBy('order');
     }
 

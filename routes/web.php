@@ -8,6 +8,7 @@ use App\Http\Controllers\MainController;
 use App\Http\Controllers\OrthographyController;
 use App\Http\Controllers\PhoneticsController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\TablesController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VocabularyController;
 use Illuminate\Support\Facades\Route;
@@ -76,6 +77,19 @@ Route::name('languages.')->prefix('/languages')->group(static function() {
         Route::name('publish')->post('/{article}/publish', [ArticlesController::class, 'publish']);
         Route::name('unpublish')->post('/{article}/unpublish', [ArticlesController::class, 'unpublish']);
         Route::name('delete')->delete('/{article}', [ArticlesController::class, 'delete']);
+    });
+
+    Route::name('tables')->get('/{code}/tables', [TablesController::class, 'index']);
+    Route::name('tables.')->prefix('/{code}/tables')->group(static function() {
+        Route::name('store')->post('', [TablesController::class, 'store']);
+        Route::name('update')->post('/{table}', [TablesController::class, 'update']);
+        Route::name('delete')->delete('/{table}', [TablesController::class, 'delete']);
+        Route::name('rows.store')->post('/{table}/rows', [TablesController::class, 'add_row']);
+        Route::name('rows.delete')->delete('/{table}/rows/{row}', [TablesController::class, 'delete_row']);
+        Route::name('cells.store')->post('/{table}/rows/{row}/cells', [TablesController::class, 'add_cell']);
+        Route::name('cells.update')->post('/{table}/cells/{cell}', [TablesController::class, 'update_cell']);
+        Route::name('cells.delete')->delete('/{table}/cells/{cell}', [TablesController::class, 'delete_cell']);
+        Route::name('cells.styles.update')->post('/{table}/cells/{cell}/styles', [TablesController::class, 'update_style']);
     });
 
     Route::name('vocabulary')->get('/{code}/vocabulary', [VocabularyController::class, 'index']);

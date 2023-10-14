@@ -79,3 +79,7 @@ article table th {
 .btn-success {
     @apply hover:bg-success/70 hover:border-success/50;
 }
+
+.btn-info {
+    @apply hover:bg-info/70 hover:border-info/50;
+}

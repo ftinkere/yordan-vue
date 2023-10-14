@@ -20,11 +20,11 @@ class PhoneticsController extends Controller
         if ($request->get('mode', 'view') !== 'add') {
             $sounds = Sound::view_sounds($language->id);
             $meta = Sound::meta($language->id, is_view: true);
-            $tables = $tableService->tables($language, $sounds, $meta);
+            $tables = $tableService->phonetic_tables($language, $sounds, $meta);
         } else {
             $sounds = Sound::sounds($language->id);
             $meta = Sound::meta($language->id);
-            $tables = $tableService->tables($language, $sounds, $meta, addMode: true);
+            $tables = $tableService->phonetic_tables($language, $sounds, $meta, addMode: true);
         }
         $sounds = array_values($sounds->toArray());
 

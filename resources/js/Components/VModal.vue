@@ -66,7 +66,7 @@ defineExpose({
         <div class="w-full flex flex-row flex-wrap justify-between">
           <h3
             :class="{
-              'flex flex-row flex-wrap items-center gap-4 text-xl font-bold': true,
+              'me-10 flex flex-row flex-wrap items-center gap-4 text-xl font-bold': true,
               'mb-4': header,
               'mb-10': !header,
             }"

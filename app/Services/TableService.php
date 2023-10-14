@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Collection;
 
 class TableService
 {
-    function tables($language, $data, $meta, $addMode = false) {
+    function phonetic_tables($language, $data, $meta, $addMode = false) {
         $tables = [];
 
 
