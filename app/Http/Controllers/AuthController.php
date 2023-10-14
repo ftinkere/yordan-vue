@@ -52,4 +52,24 @@ class AuthController extends Controller
 
         return redirect()->route('main');
     }
+
+    public function verify(Request $request) {
+        $token = VerificationToken::whereToken($request->get('token'))->first();
+        if (!$token) {
+            Session::flash('message', ['type' => 'error', 'message' => 'Токен не найден.']);
+            return redirect()->route('main');
+        }
+        if ($token->verified_at) {
+            Session::flash('message', ['type' => 'error', 'message' => 'Токен уже использован.']);
+            return redirect()->route('main');
+        }
+        $time = date('Y-m-d H:i:s');
+        $token->verified_at = $time;
+        $token->save();
+        $user = $token->user;
+        $user->email_verified_at = $time;
+        $user->save();
+        Session::flash('message', ['type' => 'success', 'message' => 'Успешно подтверждено.']);
+        return redirect()->route('login')->withInput(['email' => $user->email]);
+    }
 }
