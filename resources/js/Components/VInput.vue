@@ -41,7 +41,8 @@ const { list } = defineProps({
     placeholder: {
         type: String,
         default: null,
-    }
+    },
+    withoutLabel: Boolean
 });
 
 const listId = list !== null ? _.uniqueId('datalist_') : null;
@@ -52,6 +53,7 @@ const emits = defineEmits([ 'update:modelValue' ]);
 <template>
   <div class="form-control">
     <label
+      v-if="!withoutLabel"
       class="label flex flex-row justify-start"
       :for="id"
     >

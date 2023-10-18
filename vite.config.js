@@ -32,4 +32,9 @@ export default defineConfig({
             ziggy: 'vendor/tightenco/ziggy/dist/vue.es.js',
         },
     },
+    optimizeDeps: {
+        exclude: [
+            'verte'
+        ]
+    }
 });

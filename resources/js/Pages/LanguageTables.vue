@@ -1,7 +1,6 @@
 <script setup>
-
     import LanguageLayout from "@/Layouts/LanguageLayout.vue";
-    import { ref } from "vue";
+    import { computed, defineComponent, nextTick, onMounted, reactive, ref } from "vue";
     import EditButton from "@/Components/EditButton.vue";
     import VSaveLoader from "@/Components/VSaveLoader.vue";
     import VFlashSuccess from "@/Components/VFlashSuccess.vue";
@@ -9,8 +8,10 @@
     import route from "ziggy-js";
     import VModal from "@/Components/VModal.vue";
     import VInput from "@/Components/VInput.vue";
-    import VCheckbox from "@/Components/VCheckbox.vue";
     import _ from "lodash";
+    import TableCellSelector from "js-table-cell-selector";
+
+    import { Sketch } from '@ckpack/vue-color';
 
     const { language, editMode } = defineProps({
         language: {
@@ -95,122 +96,33 @@
         })
     }
 
-    // Add row
-    const addTableRowForm = useForm({})
-    function addTableRow(table) {
-        addTableRowForm.post(route('languages.tables.rows.store', [language.id, table.id]), {
-            onSuccess: () => {
-                flashSuccess.value?.flash()
-            }
-        })
-    }
-
-
-    // Delete row
-    const deleteTableRowModal = ref(null)
-    const deleteTableRowForm = useForm({
-        table_id: 0,
-        row_id: 0,
-    })
-    function openDeleteTableRowModal(table, row) {
-        if (!language.can_edit || !isEdit.value) {
-            return
-        }
-
-        deleteTableRowForm.table_id = table.id
-        deleteTableRowForm.row_id = row.id
-
-        deleteTableRowModal.value?.open()
-    }
-    function deleteTableRow() {
-        deleteTableRowForm.delete(route('languages.tables.rows.delete', [language.id, deleteTableRowForm.table_id, deleteTableRowForm.row_id]), {
-            onSuccess: () => {
-                deleteTableRowModal.value?.close()
-                flashSuccess.value?.flash()
-            }
-        })
-    }
-
-    // Add cell
-    const addTableCellModal = ref(null)
-    const addTableCellForm = useForm({
-        table_id: 0,
-        row_id: 0,
-        content: '',
-        is_header: false,
-    })
-    function openAddTableCellModal(table, row) {
-        if (!language.can_edit || !isEdit.value) {
-            return
-        }
-
-        addTableCellForm.table_id = table.id
-        addTableCellForm.row_id = row.id
-
-        addTableCellModal.value?.open()
-    }
-    function addTableCell() {
-          addTableCellForm.post(route('languages.tables.cells.store', [language.id, addTableCellForm.table_id, addTableCellForm.row_id]), {
-              onSuccess: () => {
-                  addTableCellModal.value?.close()
-                  flashSuccess.value?.flash()
-                  addTableCellForm.reset()
-              }
-          })
-    }
-
-    // Edit cell part
-    const editTableCellModal = ref(null)
-
-    // Delete cell
-    const deleteTableCellForm = useForm({
-        table_id: 0,
-        cell_id: 0,
-    })
-    function deleteTableCell() {
-        editTableCellForm.delete(route('languages.tables.cells.delete', [language.id, deleteTableCellForm.table_id, deleteTableCellForm.cell_id]), {
-            onSuccess: () => {
-                flashSuccess.value?.flash()
-                editTableCellModal.value?.close()
-            }
-        })
-    }
-
-
     // Edit cell
-    const editTableCellFlash = ref(null)
-    const editTableCellForm = useForm({
+    const editTableCellContentForm = useForm({
         table_id: 0,
         cell_id: 0,
         content: '',
-        is_header: false,
-        rowspan: 1,
-        colspan: 1,
     })
-    function openEditTableCellModal(table, cell) {
-        if (!language.can_edit || !isEdit.value) {
-            return
-        }
+    function prepareEditTableCell(table, cell) {
+        editTableCellContentForm.table_id = table.dataset.id
+        editTableCellContentForm.cell_id = cell.dataset.id
+        editTableCellContentForm.content = cell.innerText
 
-        editTableCellForm.table_id = table.id
-        editTableCellForm.cell_id = cell.id
-        editTableCellForm.content = cell.content
-        editTableCellForm.is_header = cell.is_header
-        editTableCellForm.rowspan = cell.rowspan
-        editTableCellForm.colspan = cell.colspan
-
-        deleteTableCellForm.table_id = table.id
-        deleteTableCellForm.cell_id = cell.id
-
-        editTableCellModal.value?.open()
+        // deleteTableCellForm.table_id = table.id
+        // deleteTableCellForm.cell_id = cell.id
     }
-    function editTableCell() {
-          editTableCellForm.post(route('languages.tables.cells.update', [language.id, editTableCellForm.table_id, editTableCellForm.cell_id]), {
-              onSuccess: () => {
-                  flashSuccess.value?.flash()
-                  editTableCellFlash.value?.flash()
-              }
-          })
+    function editTableCell(table, cell) {
+        if (table && cell) {
+            prepareEditTableCell(table, cell)
+
+            console.log(editTableCellContentForm)
+
+            editTableCellContentForm.post(route('languages.tables.cells.update_content', [language.id, editTableCellContentForm.table_id, editTableCellContentForm.cell_id]), {
+                preserveScroll: true,
+                onSuccess: () => {
+                    flashSuccess.value?.flash()
+                }
+            })
+        }
     }
 
     // styles
@@ -222,30 +134,134 @@
         }))
     }
 
-    const editStylesModal = ref(null)
-    const editStylesForm = useForm({
-        table_id: 0,
-        cell_id: 0,
-        style: '',
-        value: '',
+    // Colors
+
+    function componentToHex(c) {
+        const hex = c.toString(16)
+        return hex.length === 1 ? "0" + hex : hex
+    }
+
+    function rgbToHex(r, g, b, a = null) {
+        return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b) + (a !== null ? componentToHex(a) : '')
+    }
+
+    function strToRgb(str) {
+        const result = /^rgba?\((\d{1,3}), (\d{1,3}), (\d{1,3})(, (\d{1,3}))?\)$/i.exec(str)
+        return result ? [
+            parseInt(result[1], 10),
+            parseInt(result[2], 10),
+            parseInt(result[3], 10),
+            result[5] ? parseInt(result[5], 10) : null,
+        ] : null
+    }
+
+    function strToHex(str) {
+        const res = strToRgb(str);
+        return res ? rgbToHex(res[0], res[1], res[2], res[3]) : null
+    }
+
+
+
+    // New pane code
+
+    // Tables selection
+    const tableEls = ref(null)
+    const tableSelectors = reactive([])
+    const selectedCells = ref({})
+    const selectedTable = ref(null)
+    const lastSelectedCell = ref(null)
+    const textColor = ref({ hex: '#ffffff' })
+    const backgroundColor = ref({ hex: '#000000' })
+    const colorUpdate = ref(true)
+
+    onMounted(() => {
+        tableEls.value?.forEach(tableEl => {
+            const options = { deselectOutTableClick: false }
+            const buffer = new TableCellSelector.Buffer()
+            const tcs = new TableCellSelector(tableEl, options, buffer)
+            tcs.onStartSelect = (ev, cell) => {
+                selectedTable.value = tableEl
+                tableSelectors.forEach(selector => selector.deselect())
+                lastSelectedCell.value = cell
+                selectedCells.value = {}
+
+                textColor.value.hex = strToHex(getComputedStyle(cell).color)
+                backgroundColor.value.hex = strToHex(getComputedStyle(cell).backgroundColor)
+                colorUpdate.value = false;
+                nextTick(() => {
+                    colorUpdate.value = true;
+                })
+            }
+            tcs.onSelect = (prev, cell) => {
+                selectedCells.value[cell.dataset.id] = cell
+                lastSelectedCell.value = cell
+            }
+
+            tableSelectors.push(tcs)
+        })
     })
-    function openStylesModal() {
-        if (!language.can_edit || !isEdit.value) {
+
+    const deb = _.debounce(() => { editTableCell(selectedTable.value, lastSelectedCell.value) }, 3000)
+    const lastSelectedContent = computed({
+        get: () => {
+            return lastSelectedCell.value?.innerText
+        },
+        set: value => {
+            if (lastSelectedCell.value) {
+                lastSelectedCell.value.innerText = value
+            }
+            deb()
+        }
+    })
+
+    function toggleStyle(style, value) {
+        if (!selectedTable.value || (selectedCells.value.length !== 0 && !lastSelectedCell.value)) {
             return
         }
 
-        editStylesForm.table_id = editTableCellForm.table_id
-        editStylesForm.cell_id = editTableCellForm.cell_id
+        const cells = Object.keys(selectedCells.value)
+        if (cells.length === 0) {
+            cells.push(parseInt(lastSelectedCell.value.dataset.id))
+        }
 
-        editStylesModal.value?.open()
-    }
-    function editStyle() {
-        editStylesForm.post(route('languages.tables.cells.styles.update', [language.id, editStylesForm.table_id, editStylesForm.cell_id]), {
+        useForm({
+            cells,
+            style,
+            value,
+        }).post(route('languages.tables.cells.styles.toggle', [language.id, selectedTable.value.dataset.id]), {
+            preserveScroll: true,
             onSuccess: () => {
-                editTableCellFlash.value?.flash()
                 flashSuccess.value?.flash()
             }
         })
+    }
+    function updateStyle(style, value) {
+        if (!selectedTable.value || (selectedCells.value.length !== 0 && !lastSelectedCell.value)) {
+            return
+        }
+
+        const cells = Object.keys(selectedCells.value)
+        if (cells.length === 0) {
+            cells.push(parseInt(lastSelectedCell.value.dataset.id))
+        }
+
+        useForm({
+            cells,
+            style,
+            value,
+        }).post(route('languages.tables.cells.styles.update', [language.id, selectedTable.value.dataset.id]), {
+            preserveScroll: true,
+            onSuccess: () => {
+                flashSuccess.value?.flash()
+            }
+        })
+    }
+
+    function updateTextColor() {
+        updateStyle('color', textColor.value.hex)
+    }
+    function updateBackgroundColor() {
+        updateStyle('background-color', backgroundColor.value.hex)
     }
 
 </script>
@@ -283,11 +299,9 @@
           v-else
           class="contents"
         >
-          <VFlashSuccess ref="flashSuccess" />
-          <VSaveLoader :is-save="!editTableForm.processing && !addTableRowForm.processing" />
           <button
             class="btn btn-sm btn-info"
-            @click="isEdit = false"
+            @click="isEdit = false; tableSelectors.forEach(selector => selector.deselect())"
           >
             Посмотреть
           </button>
@@ -297,6 +311,123 @@
       <!-- End right buttons -->
     </div>
     <!-- End buttons -->
+
+    <!-- Table editor pane -->
+    <div
+      v-if="isEdit"
+      class="mb-4 sticky top-0 z-10 flex flex-col"
+    >
+      <div class="relative">
+        <div class="flex flex-row gap-1 items-center bg-neutral-800 rounded-lg rounded-b-none overflow-x-auto overflow-y-visible w-full">
+          <!-- Bold -->
+          <button
+            class="btn btn-square btn-ghost"
+            @click="toggleStyle('font-weight', '700')"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" height="1.5em" viewBox="0 0 384 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M0 64C0 46.3 14.3 32 32 32H80 96 224c70.7 0 128 57.3 128 128c0 31.3-11.3 60.1-30 82.3c37.1 22.4 62 63.1 62 109.7c0 70.7-57.3 128-128 128H96 80 32c-17.7 0-32-14.3-32-32s14.3-32 32-32H48V256 96H32C14.3 96 0 81.7 0 64zM224 224c35.3 0 64-28.7 64-64s-28.7-64-64-64H112V224H224zM112 288V416H256c35.3 0 64-28.7 64-64s-28.7-64-64-64H224 112z"/></svg>
+          </button>
+
+          <!-- Italic -->
+          <button
+            class="btn btn-square btn-ghost"
+            @click="toggleStyle('font-style', 'italic')"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" height="1.5em" viewBox="0 0 384 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M128 64c0-17.7 14.3-32 32-32H352c17.7 0 32 14.3 32 32s-14.3 32-32 32H293.3L160 416h64c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H90.7L224 96H160c-17.7 0-32-14.3-32-32z"/></svg>
+          </button>
+
+          <!-- Text align -->
+          <div class="form-control join join-horizontal border-x">
+            <!-- Align left -->
+            <button
+              class="btn btn-square btn-ghost join-item"
+              @click="updateStyle('text-align', 'left')"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" height="1.5em" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M288 64c0 17.7-14.3 32-32 32H32C14.3 96 0 81.7 0 64S14.3 32 32 32H256c17.7 0 32 14.3 32 32zm0 256c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H256c17.7 0 32 14.3 32 32zM0 192c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 448c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg>
+            </button>
+            <!-- Align center -->
+            <button
+              class="btn btn-square btn-ghost join-item"
+              @click="updateStyle('text-align', 'center')"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" height="1.5em" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M352 64c0-17.7-14.3-32-32-32H128c-17.7 0-32 14.3-32 32s14.3 32 32 32H320c17.7 0 32-14.3 32-32zm96 128c0-17.7-14.3-32-32-32H32c-17.7 0-32 14.3-32 32s14.3 32 32 32H416c17.7 0 32-14.3 32-32zM0 448c0 17.7 14.3 32 32 32H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H32c-17.7 0-32 14.3-32 32zM352 320c0-17.7-14.3-32-32-32H128c-17.7 0-32 14.3-32 32s14.3 32 32 32H320c17.7 0 32-14.3 32-32z"/></svg>
+            </button>
+            <!-- Align right -->
+            <button
+              class="btn btn-square btn-ghost join-item"
+              @click="updateStyle('text-align', 'right')"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" height="1.5em" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M448 64c0 17.7-14.3 32-32 32H192c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32zm0 256c0 17.7-14.3 32-32 32H192c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32zM0 192c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 448c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg>
+            </button>
+          </div>
+
+          <div class="static dropdown dropdown-bottom overflow-visible">
+            <label
+              tabindex="0"
+              class="btn btn-square btn-ghost join-item"
+              @click="updateStyle('text-align', 'right')"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                height="1.5em"
+                viewBox="0 0 448 512"
+              >
+                <!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. -->
+                <path d="M254 52.8C249.3 40.3 237.3 32 224 32s-25.3 8.3-30 20.8L57.8 416H32c-17.7 0-32 14.3-32 32s14.3 32 32 32h96c17.7 0 32-14.3 32-32s-14.3-32-32-32h-1.8l18-48H303.8l18 48H320c-17.7 0-32 14.3-32 32s14.3 32 32 32h96c17.7 0 32-14.3 32-32s-14.3-32-32-32H390.2L254 52.8zM279.8 304H168.2L224 155.1 279.8 304z"/>
+                <path :fill="textColor.hex" d="m32,435.16771c-17.7,0 -32,14.3 -32,32s14.3,32 32,32l384,0c17.7,0 32,-14.3 32,-32s-14.3,-32 -32,-32l-384,0z"/>
+              </svg>
+            </label>
+
+            <div class="dropdown-content">
+              <Sketch
+                v-if="colorUpdate"
+                v-model="textColor"
+                disable-alpha
+                class="text-black"
+                @update:model-value="updateTextColor"
+              />
+            </div>
+          </div>
+
+          <div class="static dropdown dropdown-bottom overflow-visible">
+            <label
+              tabindex="0"
+              class="btn btn-square btn-ghost join-item"
+              @click="updateStyle('text-align', 'right')"
+            >
+              <svg
+                class="fill-white"
+                xmlns="http://www.w3.org/2000/svg"
+                height="1.5em"
+                viewBox="0 0 448 512"
+              >
+                <!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. -->
+                <path d="M0 96C0 60.7 28.7 32 64 32H384c35.3 0 64 28.7 64 64V416c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V96z"/>
+                <path :fill="backgroundColor.hex" d="M0 96C0 60.7 28.7 32 64 32H384c35.3 0 64 28.7 64 64V416c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V96z"/>
+              </svg>
+            </label>
+
+            <div class="dropdown-content">
+              <Sketch
+                v-if="colorUpdate"
+                v-model="backgroundColor"
+                class="text-black"
+                @update:model-value="updateBackgroundColor"
+              />
+            </div>
+          </div>
+
+          <VFlashSuccess ref="flashSuccess" />
+        </div>
+      </div>
+
+      <VInput
+        v-model="lastSelectedContent"
+        class="w-full"
+        input-class="rounded-t-none"
+        without-label
+      />
+    </div>
+    <!-- End table editor pane -->
 
     <!-- Tables container -->
     <div
@@ -313,8 +444,10 @@
         class="flex flex-col gap-2"
       >
         <table
+          ref="tableEls"
           class="table table-auto border-y w-fit h-fit"
           :class="{ 'table-zebra': table.is_zebra }"
+          :data-id="table.id"
         >
           <!-- Caption with name of table -->
           <caption class="mb-1 table-caption">
@@ -346,59 +479,22 @@
               :is="cell.is_header ? 'th' : 'td'"
               class="border-x border-x-neutral-600"
               :class="{
-                'cursor-pointer hover:bg-neutral-700': isEdit,
                 'font-bold bg-neutral-800': cell.is_header,
+                'tcs-select': isEdit && lastSelectedCell?.dataset.id == cell.id,
               }"
               :colspan="cell.colspan"
               :rowspan="cell.rowspan"
               :style="good_styles(cell.styles)"
-              v-html="cell.content"
-              @click="openEditTableCellModal(table, cell)"
-            />
-
-            <!-- Last cell in row in edit mode-->
-            <td v-if="isEdit">
-              <!-- Buttons on end row -->
-              <div class="flex flex-row flex-wrap gap-4">
-                <!-- Button to add table cell -->
-                <button
-                  class="btn btn-sm btn-primary tooltip tooltip-right w-fit"
-                  data-tip="Добавить ячейку"
-                  @click="openAddTableCellModal(table, row)"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 32V224H48c-17.7 0-32 14.3-32 32s14.3 32 32 32H192V432c0 17.7 14.3 32 32 32s32-14.3 32-32V288H400c17.7 0 32-14.3 32-32s-14.3-32-32-32H256V80z"/></svg>
-                </button>
-                <!-- End button to add table cell -->
-
-                <!-- Button to delete table row -->
-                <button
-                  v-if="isEdit"
-                  class="btn btn-sm btn-error tooltip tooltip-right w-fit"
-                  data-tip="Удалить строку"
-                  @click="openDeleteTableRowModal(table, row)"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M135.2 17.7L128 32H32C14.3 32 0 46.3 0 64S14.3 96 32 96H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H320l-7.2-14.3C307.4 6.8 296.3 0 284.2 0H163.8c-12.1 0-23.2 6.8-28.6 17.7zM416 128H32L53.2 467c1.6 25.3 22.6 45 47.9 45H346.9c25.3 0 46.3-19.7 47.9-45L416 128z"/></svg>
-                </button>
-                <!-- End button to delete table row -->
-              </div>
-              <!-- End buttons on end row -->
+              :data-id="cell.id"
+            >
+              {{ cell.content }}
             </td>
-            <!-- End last cell in row in edit mode-->
           </tr>
           <!-- End rows -->
         </table>
 
         <div class="flex flex-row flex-wrap justify-between">
-          <!-- Button to add row to the table -->
-          <button
-            v-if="isEdit"
-            class="btn btn-sm btn-primary tooltip tooltip-right w-fit"
-            data-tip="Добавить строку"
-            @click="addTableRow(table)"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 32V224H48c-17.7 0-32 14.3-32 32s14.3 32 32 32H192V432c0 17.7 14.3 32 32 32s32-14.3 32-32V288H400c17.7 0 32-14.3 32-32s-14.3-32-32-32H256V80z"/></svg>
-          </button>
-          <!-- End button to add row to the table -->
+          <span />
 
           <!-- Button to delete table -->
           <button
@@ -535,207 +631,12 @@
       </template>
     </VModal>
     <!-- End delete table modal -->
-
-    <!-- Delete table row modal -->
-    <VModal
-      v-if="isEdit"
-      ref="deleteTableRowModal"
-      without-button
-      header="Удалить строку таблицы"
-      class="max-w-screen-sm w-fit"
-    >
-      <template #content>
-        <div class="flex flex-row gap-8 justify-between">
-          <button
-            class="btn btn-sm border-neutral-600"
-            @click="deleteTableRowForm.close()"
-          >
-            Отменить
-          </button>
-
-          <button
-            class="btn btn-sm btn-error w-fit"
-            @click="deleteTableRow"
-          >
-            Удалить
-          </button>
-        </div>
-      </template>
-    </VModal>
-    <!-- End delete table row modal -->
-
-    <!-- Add table cell modal -->
-    <VModal
-      v-if="isEdit"
-      ref="addTableCellModal"
-      without-button
-      header="Добавить ячейку к строке?"
-      class="max-w-screen-md"
-    >
-      <template #postHeader>
-        <button
-          class="btn btn-sm btn-success"
-          @click="addTableCell"
-        >
-          Сохранить
-        </button>
-        <VSaveLoader :is-save="!addTableCellForm.processing" />
-      </template>
-
-      <template #content>
-        <div class="flex flex-col">
-          <VInput
-            v-model="addTableCellForm.content"
-            type="textarea"
-            label="Контент ячейки"
-          />
-          <VCheckbox
-            v-model="addTableCellForm.is_header"
-            class="w-fit"
-          >
-            Это ячейка заголовка?
-          </VCheckbox>
-
-          <div class="mt-4 flex flex-row justify-between">
-            <span />
-
-            <button
-              class="btn btn-sm btn-success w-fit"
-              @click="addTableCell"
-            >
-              Сохранить
-            </button>
-          </div>
-        </div>
-      </template>
-    </VModal>
-    <!-- End add table cell modal -->
-
-    <!-- Edit table cell modal -->
-    <VModal
-      v-if="isEdit"
-      ref="editTableCellModal"
-      without-button
-      header="Редактировать ячейку"
-      class="max-w-screen-md"
-    >
-      <template #postHeader>
-        <button
-          class="btn btn-sm btn-success"
-          @click="editTableCell"
-        >
-          Сохранить
-        </button>
-        <VSaveLoader :is-save="!editTableCellForm.processing" />
-      </template>
-
-      <template #content>
-        <div class="flex flex-col">
-          <VInput
-            v-model="editTableCellForm.content"
-            type="textarea"
-            label="Контент ячейки"
-          />
-          <VCheckbox
-            v-model="editTableCellForm.is_header"
-            class="w-fit"
-          >
-            Это ячейка заголовка?
-          </VCheckbox>
-          <div class="grid grid-cols-2">
-            <VInput
-              v-model="editTableCellForm.rowspan"
-              type="number"
-              label="Количество строк"
-            />
-            <VInput
-              v-model="editTableCellForm.colspan"
-              type="number"
-              label="Количество столбцов"
-            />
-          </div>
-
-          <div class="mt-4 flex flex-row justify-between">
-            <span />
-
-            <button
-              class="btn btn-sm btn-primary"
-              @click="openStylesModal"
-            >
-              Стили
-            </button>
-          </div>
-
-          <div class="mt-4 flex flex-row justify-between">
-            <!-- Button to delete table cell -->
-            <button
-              class="inline-flex gap-2 btn btn-sm btn-error w-fit"
-              @click="deleteTableCell"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M135.2 17.7L128 32H32C14.3 32 0 46.3 0 64S14.3 96 32 96H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H320l-7.2-14.3C307.4 6.8 296.3 0 284.2 0H163.8c-12.1 0-23.2 6.8-28.6 17.7zM416 128H32L53.2 467c1.6 25.3 22.6 45 47.9 45H346.9c25.3 0 46.3-19.7 47.9-45L416 128z"/></svg>
-              Удалить
-            </button>
-            <!-- End button to delete table cell -->
-
-            <button
-              class="btn btn-sm btn-success w-fit"
-              @click="editTableCell"
-            >
-              Сохранить
-            </button>
-          </div>
-        </div>
-      </template>
-    </VModal>
-    <!-- End edit table cell modal -->
-
-    <!-- Edit table cell styles modal -->
-    <VModal
-      v-if="isEdit"
-      ref="editStylesModal"
-      without-button
-      header="Редактировать стили ячейки"
-    >
-      <template #postHeader>
-        <VSaveLoader :is-save="!editStylesForm.processing" />
-      </template>
-
-      <template #content>
-        <div class="flex flex-col">
-          <article class="alert">
-            На первое время, надеюсь не больше недели будет такой примитивный CSS применятор стилей к ячейке
-            Слева пишете css свойство, которое нагуглили, справа его значение.
-            Пока только по одной ячейке по одному свойству. Более удобный редактор как в гугл таблицах в разработке.
-          </article>
-          <div class="grid grid-cols-2">
-            <VInput
-              v-model="editStylesForm.style"
-              label="CSS стиль"
-              input-class="rounded-e-none"
-            />
-            <VInput
-              v-model="editStylesForm.value"
-              label="Значение стиля"
-              input-class="rounded-none"
-            >
-              <template #button>
-                <button
-                  class="btn btn-success rounded-s-none"
-                  @click="editStyle"
-                >
-                  Применить
-                </button>
-              </template>
-            </VInput>
-          </div>
-        </div>
-      </template>
-    </VModal>
-    <!-- End edit table cell styles modal -->
     <!-- # End modals -->
   </LanguageLayout>
 </template>
 
 <style scoped>
-
+    .tcs-select {
+        @apply bg-neutral-700
+    }
 </style>

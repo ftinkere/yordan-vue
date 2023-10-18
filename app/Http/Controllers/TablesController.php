@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class TablesController extends Controller
 {
@@ -154,7 +155,7 @@ class TablesController extends Controller
         Gate::authorize('edit-language', $language);
         $table = Table::findOrFail($table_id);
         Gate::authorize('all-is-language', $table);
-        /** @var TableCell $row */
+        /** @var TableCell $cell */
         $cell = TableCell::findOrFail($cell_id);
         Gate::authorize('all-is-language', $cell->table);
 
@@ -169,6 +170,29 @@ class TablesController extends Controller
         $data['is_header'] ??= $cell->is_header;
         $data['rowspan'] ??= $cell->rowspan;
         $data['colspan'] ??= $cell->colspan;
+
+        $cell->update($data);
+
+        $editMode = $request->has('editMode');
+        return redirect()->route('languages.tables', ['code' => $language->id, 'editMode' => $editMode]);
+    }
+
+
+    function update_cell_content(Request $request, $code, $table_id, $cell_id) {
+        /** @var Language $language */
+        $language = Language::with('tables')->findOrFail($code);
+        Gate::authorize('edit-language', $language);
+        $table = Table::findOrFail($table_id);
+        Gate::authorize('all-is-language', $table);
+        /** @var TableCell $cell */
+        $cell = TableCell::findOrFail($cell_id);
+        Gate::authorize('all-is-language', $cell->table);
+
+        $data = $request->validate([
+            'content' => 'nullable',
+        ], messages: []);
+
+        $data['content'] ??= '';
 
         $cell->update($data);
 
@@ -192,39 +216,86 @@ class TablesController extends Controller
         return redirect()->route('languages.tables', ['code' => $language->id, 'editMode' => $editMode]);
     }
 
-    function update_style(Request $request, $code, $table_id, $cell_id) {
+    function update_style(Request $request, $code, $table_id) {
         /** @var Language $language */
         $language = Language::with('tables')->findOrFail($code);
         Gate::authorize('edit-language', $language);
         $table = Table::findOrFail($table_id);
         Gate::authorize('all-is-language', $table);
-        /** @var TableCell $cell */
-        $cell = TableCell::findOrFail($cell_id);
-        Gate::authorize('all-is-language', $cell->table);
 
         $data = $request->validate([
+            'cells' => 'required|array',
             'style' => 'required',
             'value' => 'nullable',
         ], messages: [
-            'style.required' => 'Указать что за стиль обязательно.'
+            'cells.required' => 'Требуется указать ячейки.',
+            'cells.array' => 'Требуется указать ячейки массивом.',
+            'style.required' => 'Указать что за стиль обязательно.',
         ]);
 
-        /** @var TableCellStyle|null $style */
-        $style = TableCellStyle::where('cell_id', $cell->id)
-            ->where('style', $data['style'])
-            ->first();
-        if ($style) {
-            Gate::authorize('all-is-language', $style->cell->table);
-            if ($data['value']) {
-                // Если есть стиль и указано новое значение, меняем значение
-                $style->update($data);
-            } else {
-                // Если стиль указан, а новое значение нет, удаляем стиль
-                $style->delete();
+        $cells = TableCell::with(['tableRow', 'tableRow.table', 'styles'])->findOrFail($data['cells']);
+
+        foreach ($cells as $cell) {
+            Gate::authorize('all-is-language', $cell->table);
+        }
+
+        foreach ($cells as $cell) {
+            $style = $cell->styles->where('style', $data['style'])->first();
+            if ($style) {
+                if ($data['value']) {
+                    // Если есть стиль и указано новое значение, меняем значение
+                    $style->update($data);
+                } else {
+                    // Если стиль указан, а новое значение нет, удаляем стиль
+                    $style->delete();
+                }
+            } else if ($data['value']) {
+                // Если указан стиль которого нет и указано значение, добавляем стиль
+                $cell->styles()->create($data);
             }
-        } else if ($data['value']) {
-            // Если указан стиль которого нет и указано значение, добавляем стиль
-            $cell->styles()->create($data);
+        }
+
+        $editMode = $request->has('editMode');
+        return redirect()->route('languages.tables', ['code' => $language->id, 'editMode' => $editMode]);
+    }
+
+    function toggle_style(Request $request, $code, $table_id) {
+        /** @var Language $language */
+        $language = Language::with('tables')->findOrFail($code);
+        Gate::authorize('edit-language', $language);
+        $table = Table::findOrFail($table_id);
+        Gate::authorize('all-is-language', $table);
+
+        $data = $request->validate([
+            'cells' => 'required|array',
+            'style' => 'required',
+            'value' => 'nullable',
+        ], messages: [
+            'cells.required' => 'Требуется указать ячейки.',
+            'cells.array' => 'Требуется указать ячейки массивом.',
+            'style.required' => 'Указать что за стиль обязательно.',
+        ]);
+
+        $cells = TableCell::with(['tableRow', 'tableRow.table', 'styles'])->findOrFail($data['cells']);
+
+        foreach ($cells as $cell) {
+            Gate::authorize('all-is-language', $cell->table);
+        }
+
+        foreach ($cells as $cell) {
+            $style = $cell->styles->where('style', $data['style'])->first();
+            if ($style) {
+                if ($data['value'] && $style->value !== $data['value']) {
+                    // Если есть стиль и указано новое другое значение, меняем значение
+                    $style->update($data);
+                } else if ($data['value'] && $style->value === $data['value']) {
+                    // Если стиль указан, с таким же значением, удаляем стиль
+                    $style->delete();
+                }
+            } else if ($data['value']) {
+                // Если указан стиль которого нет и указано значение, добавляем стиль
+                $cell->styles()->create($data);
+            }
         }
 
         $editMode = $request->has('editMode');

@@ -87,9 +87,11 @@ Route::name('languages.')->prefix('/languages')->group(static function() {
         Route::name('rows.store')->post('/{table}/rows', [TablesController::class, 'add_row']);
         Route::name('rows.delete')->delete('/{table}/rows/{row}', [TablesController::class, 'delete_row']);
         Route::name('cells.store')->post('/{table}/rows/{row}/cells', [TablesController::class, 'add_cell']);
-        Route::name('cells.update')->post('/{table}/cells/{cell}', [TablesController::class, 'update_cell']);
-        Route::name('cells.delete')->delete('/{table}/cells/{cell}', [TablesController::class, 'delete_cell']);
-        Route::name('cells.styles.update')->post('/{table}/cells/{cell}/styles', [TablesController::class, 'update_style']);
+        Route::name('cells.update')->post('/{table}/cells/{cell}', [TablesController::class, 'update_cell'])->whereNumber('cell');
+        Route::name('cells.update_content')->post('/{table}/cells/{cell}/content', [TablesController::class, 'update_cell_content']);
+        Route::name('cells.delete')->delete('/{table}/cells/{cell}', [TablesController::class, 'delete_cell'])->whereNumber('cell');
+        Route::name('cells.styles.update')->post('/{table}/cells/styles/update', [TablesController::class, 'update_style']);
+        Route::name('cells.styles.toggle')->post('/{table}/cells/styles/toggle', [TablesController::class, 'toggle_style']);
     });
 
     Route::name('vocabulary')->get('/{code}/vocabulary', [VocabularyController::class, 'index']);
