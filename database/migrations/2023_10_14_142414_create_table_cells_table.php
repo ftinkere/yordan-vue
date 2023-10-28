@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('table_cells', static function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('row_id');
-            $table->text('content');
+            $table->text('content')->default('');
             $table->boolean('is_header')->default(false);
             $table->unsignedInteger('rowspan')->default(1);
             $table->unsignedInteger('colspan')->default(1);

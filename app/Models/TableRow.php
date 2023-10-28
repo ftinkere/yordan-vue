@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @property int $id
  * @property int $table_id
+ * @property int $order
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read  \Illuminate\Database\Eloquent\Collection<int, TableCell> $cells
@@ -28,13 +29,19 @@ class TableRow extends Model
     use HasFactory;
 
     protected $table = 'table_rows';
-    protected $fillable = ['table_id'];
+    protected $fillable = ['table_id', 'order'];
+
+    static function newOrder(Table $table) {
+        return $table->rows()->max('order') + 1;
+    }
 
     function table() {
         return $this->belongsTo(Table::class);
     }
 
     function cells() {
-        return $this->hasMany(TableCell::class, 'row_id');
+        return $this->hasMany(TableCell::class, 'row_id')
+            ->orderBy('order')
+            ->orderBy('id');
     }
 }

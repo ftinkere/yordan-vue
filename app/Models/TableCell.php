@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -14,6 +15,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $is_header
  * @property int $rowspan
  * @property int $colspan
+ * @property int $order
+ * @property int|null $merged_in
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read TableRow $tableRow
@@ -37,8 +40,12 @@ class TableCell extends Model
     use HasFactory;
 
     protected $table = 'table_cells';
-    protected $fillable = ['row_id', 'content', 'is_header', 'rowspan', 'colspan'];
+    protected $fillable = ['row_id', 'content', 'is_header', 'rowspan', 'colspan', 'order', 'merged_in'];
     protected $touches = ['tableRow', 'table'];
+
+    static function newOrder(TableRow $row) {
+        return $row->cells()->max('order') + 1;
+    }
 
     function tableRow() {
         return $this->belongsTo(TableRow::class, 'row_id');
@@ -50,5 +57,10 @@ class TableCell extends Model
 
     function styles() {
         return $this->hasMany(TableCellStyle::class, 'cell_id');
+    }
+
+    function mergedCells(): \Illuminate\Database\Eloquent\Builder
+    {
+        return self::where('merged_in', $this->id);
     }
 }

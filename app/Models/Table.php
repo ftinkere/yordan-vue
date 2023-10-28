@@ -39,7 +39,7 @@ class Table extends Model implements HasLanguage
     protected $touches = ['language'];
 
     static function newOrder(Language $language) {
-        return $language->tables->max('order') + 1;
+        return $language->tables()->max('order') + 1;
     }
 
     function language() {
@@ -47,10 +47,12 @@ class Table extends Model implements HasLanguage
     }
 
     function rows() {
-        return $this->hasMany(TableRow::class)->orderBy('id');
+        return $this->hasMany(TableRow::class)->orderBy('order')->orderBy('id');
     }
 
     function cells() {
-        return $this->hasManyThrough(TableCell::class, TableRow::class, 'table_id', 'row_id')->orderBy('id');
+        return $this->hasManyThrough(TableCell::class, TableRow::class, 'table_id', 'row_id')
+            ->orderBy('order')
+            ->orderBy('id');
     }
 }
