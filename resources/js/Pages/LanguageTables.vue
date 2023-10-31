@@ -26,8 +26,6 @@
 
     const _token = usePage().props.csrf_token
 
-    console.log(language.tables)
-
     const isEdit = ref(editMode)
     const flashSuccess = ref(null)
 
@@ -285,6 +283,7 @@
     })
     function addTable() {
         addTableForm.post(route('languages.tables.store', [language.id]), {
+            preserveScroll: true,
             onSuccess: () => {
                 addTableModal.value?.close()
                 flashSuccess.value?.flash()
@@ -310,6 +309,7 @@
         }
 
         addTableRowForm.post(route('languages.tables.rows.store', [language.id, parseInt(selectedTable.value.dataset.id)]), {
+            preserveScroll: true,
             onSuccess: () => {
                 addTableRowForm.reset()
                 flashSuccess.value?.flash()
@@ -334,6 +334,7 @@
         }
 
         addTableColumnForm.post(route('languages.tables.columns.store', [language.id, parseInt(selectedTable.value.dataset.id)]), {
+            preserveScroll: true,
             onSuccess: () => {
                 addTableColumnForm.reset()
                 flashSuccess.value?.flash()
@@ -353,6 +354,7 @@
             cells,
             _token
         }).post(route('languages.tables.cells.merge', [language.id, selectedTable.value.dataset.id]), {
+            preserveScroll: true,
             onSuccess: () => {
                 flashSuccess.value?.flash()
 
@@ -368,12 +370,40 @@
         useForm({
             _token
         }).post(route('languages.tables.cells.unmerge', [language.id, selectedTable.value.dataset.id, lastSelectedCell.value.dataset.id]), {
+            preserveScroll: true,
             onSuccess: () => {
                 flashSuccess.value?.flash()
 
                 updateTCS()
             }
         })
+    }
+
+    const borderColor = ref('#ffffff')
+    const borderStyle = ref('solid')
+    const borderSize = ref('1px')
+
+    function borderChange(type) {
+        let cells = Object.keys(selectedCells.value);
+        if (cells.length === 0) {
+            cells.push(lastSelectedCell.value.dataset.id);
+        }
+
+        useForm({
+            cells,
+            color: borderColor.value,
+            style: borderStyle.value,
+            size: borderSize.value,
+            type,
+            _token,
+        }).post(route('languages.tables.cells.styles.border', [language.id, selectedTable.value.dataset.id]), {
+            preserveScroll: true,
+            onSuccess: () => {
+                flashSuccess.value?.flash()
+
+                updateTCS()
+            }
+        });
     }
 
     // const test = ref(null)
@@ -408,6 +438,12 @@
             @click="addTableModal?.open()"
           >
             Добавить таблицу
+          </button>
+          <button
+            class="btn btn-sm btn-primary"
+            @click="test"
+          >
+            Тест
           </button>
         </div>
         <!-- End left buttons -->
@@ -590,13 +626,19 @@
               </button>
 
               <div class="dropdown-content">
-                <Sketch
-                  v-if="colorUpdate"
-                  v-model="textColor"
-                  disable-alpha
-                  class="text-black"
+                <!--<Sketch-->
+                <!--  v-if="colorUpdate"-->
+                <!--  v-model="textColor"-->
+                <!--  disable-alpha-->
+                <!--  class="text-black"-->
+                <!--  @update:model-value="updateTextColor"-->
+                <!--/>-->
+                <input
+                  v-model="textColor.hex"
+                  class="btn btn-square btn-ghost"
+                  type="color"
                   @update:model-value="updateTextColor"
-                />
+                >
               </div>
             </div>
 
@@ -623,13 +665,25 @@
                 </svg>
               </button>
 
-              <div class="dropdown-content">
-                <Sketch
-                  v-if="colorUpdate"
-                  v-model="backgroundColor"
-                  class="text-black"
+              <div class="dropdown-content flex flex-row bg-neutral-800 rounded-lg">
+                <!--<Sketch-->
+                <!--  v-if="colorUpdate"-->
+                <!--  v-model="backgroundColor"-->
+                <!--  class="text-black"-->
+                <!--  @update:model-value="updateBackgroundColor"-->
+                <!--/>-->
+                <input
+                  v-model="backgroundColor.hex"
+                  class="btn btn-square btn-ghost"
+                  type="color"
                   @update:model-value="updateBackgroundColor"
-                />
+                >
+                <button
+                  class="btn btn-ghost"
+                  @click="updateStyle('background-color', 'inherit')"
+                >
+                  Сбросить
+                </button>
               </div>
             </div>
 
@@ -677,11 +731,154 @@
                 :disabled="lastSelectedCell === null && Object.keys(selectedCells).length === 0"
                 @click="updateUnmerge"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  height="1.5em"
-                  viewBox="0 0 512 512"
-                ><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M64 32C28.7 32 0 60.7 0 96V416c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V96c0-35.3-28.7-64-64-64H64zm88 64v64H64V96h88zm56 0h88v64H208V96zm240 0v64H360V96h88zM64 224h88v64H64V224zm232 0v64H208V224h88zm64 0h88v64H360V224zM152 352v64H64V352h88zm56 0h88v64H208V352zm240 0v64H360V352h88z" /></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" height="1.5em" viewBox="0 0 512 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M64 32C28.7 32 0 60.7 0 96V416c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V96c0-35.3-28.7-64-64-64H64zm88 64v64H64V96h88zm56 0h88v64H208V96zm240 0v64H360V96h88zM64 224h88v64H64V224zm232 0v64H208V224h88zm64 0h88v64H360V224zM152 352v64H64V352h88zm56 0h88v64H208V352zm240 0v64H360V352h88z" /></svg>
+              </button>
+            </div>
+
+            <div class="join join-horizontal border-x">
+              <!-- Borders -->
+              <div class="dropdown dropdown-bottom">
+                <button
+                  class="btn btn-square btn-ghost join-item tooltip tooltip-top flex justify-center stroke-white disabled:fill-neutral-500 disabled:stroke-neutral-500"
+                  data-tip="Границы"
+                  :disabled="lastSelectedCell === null && Object.keys(selectedCells).length === 0"
+                >
+                  <svg viewBox="0 0 24 24" height="2.2em" fill="none" xmlns="http://www.w3.org/2000/svg"><g stroke-width="0"></g><g stroke-linecap="round" stroke-linejoin="round" stroke="#CCCCCC" stroke-width="0.768"></g><g> <path d="M12 4V20M4 12H20M6 20H18C19.1046 20 20 19.1046 20 18V6C20 4.89543 19.1046 4 18 4H6C4.89543 4 4 4.89543 4 6V18C4 19.1046 4.89543 20 6 20Z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
+                </button>
+
+                <div class="dropdown-content">
+                  <div class="p-1 flex flex-col bg-neutral-800 border">
+                    <!-- Первая строка-->
+                    <div class="flex flex-row items-center">
+                      <!-- All -->
+                      <button
+                        class="btn btn-square btn-ghost flex justify-center stroke-white"
+                        @click="borderChange('all')"
+                      >
+                        <svg viewBox="0 0 24 24" height="2.2em" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#ffffff"><g stroke-width="0"></g><g stroke-linecap="round" stroke-linejoin="round" stroke="#CCCCCC" stroke-width="0.768"></g><g> <path d="M12 4V20M4 12H20M6 20H18C19.1046 20 20 19.1046 20 18V6C20 4.89543 19.1046 4 18 4H6C4.89543 4 4 4.89543 4 6V18C4 19.1046 4.89543 20 6 20Z" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
+                      </button>
+                      <!-- Inner -->
+                      <button
+                        class="btn btn-square btn-ghost flex justify-center stroke-white"
+                        @click="borderChange('inner')"
+                      >
+                        <svg viewBox="0 0 24 24" height="2.2em" fill="none" xmlns="http://www.w3.org/2000/svg"><g stroke-width="0"></g><g stroke-linecap="round" stroke-linejoin="round"></g><g> <path d="M12 4V12M12 12V20M12 12H4M12 12H20M20 7.99999V7.98999M20 16V15.99M20 20V19.99M20 3.99999V3.98999M16 20V19.99M16 3.99999V3.98999M8 20V19.99M8 3.99999V3.98999M4 7.99999V7.98999M4 16V15.99M4 20V19.99M4 3.99999V3.98999" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
+                      </button>
+                      <!-- Horizontal -->
+                      <button
+                        class="btn btn-square btn-ghost flex justify-center stroke-white"
+                        @click="borderChange('horizontals')"
+                      >
+                        <svg viewBox="0 0 24 24" height="2.2em" fill="none" xmlns="http://www.w3.org/2000/svg"><g stroke-width="0"></g><g stroke-linecap="round" stroke-linejoin="round"></g><g> <path d="M16 4H16.01M12 4H12.01M12 8H12.01M12 16H12.01M12 20H12.01M16 20H16.01M8 4H8.01M4 4H4.01M4 8H4.01M4 16H4.01M4 20H4.01M8 20H8.01M20 4H20.01M20 8H20.01M20 16H20.01M20 20H20.01M20 12H4" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
+                      </button>
+                      <!-- Vertical -->
+                      <button
+                        class="btn btn-square btn-ghost justify-center stroke-white"
+                        @click="borderChange('verticals')"
+                      >
+                        <svg viewBox="0 0 24 24" height="2.2em" fill="none" xmlns="http://www.w3.org/2000/svg"><g stroke-width="0"></g><g stroke-linecap="round" stroke-linejoin="round"></g><g> <path d="M16 4H16.01M16 12H16.01M16 20H16.01M8 4H8.01M8 12H8.01M4 4H4.01M4 8H4.01M4 12H4.01M4 16H4.01M4 20H4.01M8 20H8.01M20 4H20.01M20 8H20.01M20 12H20.01M20 16H20.01M20 20H20.01M12.0117 4V20" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
+                      </button>
+                      <!-- Outer -->
+                      <button
+                        class="btn btn-square btn-ghost flex justify-center stroke-white"
+                        @click="borderChange('outer')"
+                      >
+                        <svg viewBox="0 0 24 24" height="2.2em" fill="none" xmlns="http://www.w3.org/2000/svg"><g stroke-width="0"></g><g stroke-linecap="round" stroke-linejoin="round"></g><g> <path d="M12 12H12.01M12 16H12.01M12 8H12.01M16 12H16.01M8 12H8.01M7.2 20H16.8C17.9201 20 18.4802 20 18.908 19.782C19.2843 19.5903 19.5903 19.2843 19.782 18.908C20 18.4802 20 17.9201 20 16.8V7.2C20 6.0799 20 5.51984 19.782 5.09202C19.5903 4.71569 19.2843 4.40973 18.908 4.21799C18.4802 4 17.9201 4 16.8 4H7.2C6.0799 4 5.51984 4 5.09202 4.21799C4.71569 4.40973 4.40973 4.71569 4.21799 5.09202C4 5.51984 4 6.07989 4 7.2V16.8C4 17.9201 4 18.4802 4.21799 18.908C4.40973 19.2843 4.71569 19.5903 5.09202 19.782C5.51984 20 6.07989 20 7.2 20Z" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
+                      </button>
+                    </div>
+
+                    <!-- Вторая строка-->
+                    <div class="flex flex-row items-center">
+                      <!-- Left -->
+                      <button
+                        class="btn btn-square btn-ghost flex justify-center stroke-white"
+                        @click="borderChange('left')"
+                      >
+                        <svg viewBox="0 0 24 24" height="2.2em" fill="none" xmlns="http://www.w3.org/2000/svg"><g stroke-width="0"></g><g stroke-linecap="round" stroke-linejoin="round"></g><g> <path d="M16 4H16.01M16 12H16.01M12 4H12.01M12 8H12.01M12 12H12.01M12 16H12.01M12 20H12.01M16 20H16.01M8 4H8.01M8 12H8.01M8 20H8.01M20 4H20.01M20 8H20.01M20 12H20.01M20 16H20.01M20 20H20.01M4 4V20" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
+                      </button>
+                      <!-- Top -->
+                      <button
+                        class="btn btn-square btn-ghost flex justify-center stroke-white"
+                        @click="borderChange('top')"
+                      >
+                        <svg viewBox="0 0 24 24" height="2.2em" fill="none" xmlns="http://www.w3.org/2000/svg"><g stroke-width="0"></g><g stroke-linecap="round" stroke-linejoin="round"></g><g> <path d="M16 12H16.01M12 8H12.01M12 12H12.01M12 16H12.01M12 20H12.01M16 20H16.01M8 12H8.01M4 8H4.01M4 12H4.01M4 16H4.01M4 20H4.01M8 20H8.01M20 8H20.01M20 12H20.01M20 16H20.01M20 20H20.01M20 4H4" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
+                      </button>
+                      <!-- Right -->
+                      <button
+                        class="btn btn-square btn-ghost flex justify-center stroke-white"
+                        @click="borderChange('right')"
+                      >
+                        <svg viewBox="0 0 24 24" height="2.2em" fill="none" xmlns="http://www.w3.org/2000/svg"><g stroke-width="0"></g><g stroke-linecap="round" stroke-linejoin="round"></g><g> <path d="M8.01195 4H8.00195M8.01195 12H8.00195M12.012 4H12.002M12.012 8H12.002M12.012 12H12.002M12.012 16H12.002M12.012 20H12.002M8.01195 20H8.00195M16.012 4H16.002M16.012 12H16.002M16.012 20H16.002M4.01195 4H4.00195M4.01195 8H4.00195M4.01195 12H4.00195M4.01195 16H4.00195M4.01195 20H4.00195M20.012 4V20" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
+                      </button>
+                      <!-- Bottom -->
+                      <button
+                        class="btn btn-square btn-ghost flex justify-center stroke-white"
+                        @click="borderChange('bottom')"
+                      >
+                        <svg viewBox="0 0 24 24" height="2.2em" fill="none" xmlns="http://www.w3.org/2000/svg"><g stroke-width="0"></g><g stroke-linecap="round" stroke-linejoin="round"></g><g> <path d="M20 20H4M16 4H16.01M16 12H16.01M12 4H12.01M12 8H12.01M12 12H12.01M12 16H12.01M8 4H8.01M8 12H8.01M4 4H4.01M4 8H4.01M4 12H4.01M4 16H4.01M20 4H20.01M20 8H20.01M20 12H20.01M20 16H20.01" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
+                      </button>
+                      <!-- None -->
+                      <button
+                        class="btn btn-square btn-ghost flex justify-center stroke-white"
+                        @click="borderChange('none')"
+                      >
+                        <svg viewBox="0 0 24 24" height="2.2em" fill="none" xmlns="http://www.w3.org/2000/svg"><g stroke-width="0"></g><g stroke-linecap="round" stroke-linejoin="round"></g><g> <path d="M16 4H16.01M16 12H16.01M12 4H12.01M12 8H12.01M12 12H12.01M12 16H12.01M12 20H12.01M16 20H16.01M8 4H8.01M8 12H8.01M4 4H4.01M4 8H4.01M4 12H4.01M4 16H4.01M4 20H4.01M8 20H8.01M20 4H20.01M20 8H20.01M20 12H20.01M20 16H20.01M20 20H20.01" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
+                      </button>
+                      <!-- Reset -->
+                      <button
+                        class="btn btn-ghost"
+                        @click="borderChange('reset')"
+                      >
+                        Сбросить
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- End borders -->
+
+              <!-- Color -->
+              <div class="dropdown dropdown-bottom">
+                <button
+                  class="btn btn-square btn-ghost join-item rounded-s-none tooltip tooltip-top flex justify-center stroke-white disabled:fill-neutral-500 disabled:stroke-neutral-500"
+                  data-tip="Цвет границы"
+                  :disabled="lastSelectedCell === null && Object.keys(selectedCells).length === 0"
+                >
+                  <svg class="ms-1"
+                       xmlns="http://www.w3.org/2000/svg"
+                       height="1.5em"
+                       viewBox="0 0 512 512">
+                    <!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. -->
+                    <path d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1v32c0 8.8 7.2 16 16 16h32zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z"/>
+                    <path
+                      :fill="borderColor"
+                      d="m32,435.16771c-17.7,0 -32,14.3 -32,32s14.3,32 32,32l384,0c17.7,0 32,-14.3 32,-32s-14.3,-32 -32,-32l-384,0z"
+                    />
+                  </svg>
+                </button>
+
+                <div class="dropdown-content">
+                  <!--<Sketch-->
+                  <!--  v-model="borderColor"-->
+                  <!--  disable-alpha-->
+                  <!--  class="text-black"-->
+                  <!--/>-->
+                  <input
+                    v-model="borderColor"
+                    class="btn btn-square btn-ghost"
+                    type="color"
+                  >
+                </div>
+              </div>
+              <!-- Border style -->
+              <button
+                class="btn btn-square btn-ghost join-item tooltip tooltip-top flex justify-center stroke-white disabled:fill-neutral-500 disabled:stroke-neutral-500"
+                data-tip="Стиль границы"
+                :disabled="lastSelectedCell === null && Object.keys(selectedCells).length === 0"
+              >
+                <svg class="ms-1" viewBox="0 0 20 20" height="1.5em" xmlns="http://www.w3.org/2000/svg">
+                  <g stroke-width="0"></g><g stroke-linecap="round" stroke-linejoin="round"></g><g><path d="M0 0h20v5H0V0zm0 7h20v4H0V7zm0 6h20v3H0v-3zm0 5h20v2H0v-2z"></path></g>
+                </svg>
               </button>
             </div>
 
@@ -744,7 +941,6 @@
             <tr
               v-for="row in table.rows"
               :key="row.id"
-              class="border-y"
             >
               <template
                 v-for="cell in row.cells"
@@ -753,7 +949,7 @@
                 <td
                   :is="cell.is_header ? 'th' : 'td'"
                   v-if="cell.merged_in === null || cell.merged_in === cell.id"
-                  class="border-x border-x-neutral-600"
+                  class="border-x-neutral-600 border-y-neutral-200 border"
                   :class="{
                     'font-bold bg-neutral-800': cell.is_header,
                     'tcs-select': isEdit && (lastSelectedCell?.dataset.id == cell.id || selectedCells[cell.id]),

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CellsRange;
 use App\Models\Language;
 use App\Models\Table;
 use App\Models\TableCell;
@@ -277,9 +278,10 @@ class TablesController extends Controller
 
         $cells = TableCell::with('tableRow')->findOrFail($data['cells']);
 
+        /** @var Collection $cells */
         $cells = $cells->reduce(static function(Collection $res, TableCell $val) {
             $res->push($val);
-            return $res->merge($val->mergedCells()->with('tableRow')->get());
+            return $res->merge($val->mergedCells());
         }, new Collection());
 
         // Находим левый верхний угол
@@ -299,13 +301,7 @@ class TablesController extends Controller
 
 
         // Находим задействованные строки
-//        /** @var Collection $rows */
-//        $rows = $cells->reduce(static function(Collection $min, TableCell $val) {
-//            if (!$min->contains($val->tableRow)) {
-//                $min->push($val->tableRow);
-//            }
-//            return $min;
-//        }, new Collection());
+        /** @var Collection $rows */
         $rows = $cells->reduce(static function(array $min, TableCell $val) {
             if (!array_key_exists($val->tableRow->id, $min)) {
                 $min[$val->tableRow->id] = new Collection([$val]);
@@ -347,7 +343,7 @@ class TablesController extends Controller
         $cell->merged_in = null;
         $cell->save();
 
-        foreach ($cell->mergedCells()->get() as $cell) {
+        foreach ($cell->mergedCells() as $cell) {
             $cell->merged_in = null;
             $cell->save();
         }
@@ -398,19 +394,8 @@ class TablesController extends Controller
         }
 
         foreach ($cells as $cell) {
-            $style = $cell->styles->where('style', $data['style'])->first();
-            if ($style) {
-                if ($data['value']) {
-                    // Если есть стиль и указано новое значение, меняем значение
-                    $style->update($data);
-                } else {
-                    // Если стиль указан, а новое значение нет, удаляем стиль
-                    $style->delete();
-                }
-            } else if ($data['value']) {
-                // Если указан стиль которого нет и указано значение, добавляем стиль
-                $cell->styles()->create($data);
-            }
+            /** @var TableCell $cell */
+            $cell->applyStyle($data['style'], $data['value']);
         }
 
         $editMode = $request->has('editMode');
@@ -441,20 +426,141 @@ class TablesController extends Controller
         }
 
         foreach ($cells as $cell) {
-            $style = $cell->styles->where('style', $data['style'])->first();
-            if ($style) {
-                if ($data['value'] && $style->value !== $data['value']) {
-                    // Если есть стиль и указано новое другое значение, меняем значение
-                    $style->update($data);
-                } else if ($data['value'] && $style->value === $data['value']) {
-                    // Если стиль указан, с таким же значением, удаляем стиль
-                    $style->delete();
-                }
-            } else if ($data['value']) {
-                // Если указан стиль которого нет и указано значение, добавляем стиль
-                $cell->styles()->create($data);
+            /** @var TableCell $cell */
+            $cell->toggleStyle($data['style'], $data['value']);
+        }
+
+        $editMode = $request->has('editMode');
+        return redirect()->route('languages.tables', ['code' => $language->id, 'editMode' => $editMode]);
+    }
+
+    function remove_style(Request $request, $code, $table_id) {
+        /** @var Language $language */
+        $language = Language::with('tables')->findOrFail($code);
+        Gate::authorize('edit-language', $language);
+        $table = Table::findOrFail($table_id);
+        Gate::authorize('all-is-language', $table);
+
+        $data = $request->validate([
+            'cells' => 'required|array',
+            'style' => 'required',
+        ], messages: [
+            'cells.required' => 'Требуется указать ячейки.',
+            'cells.array' => 'Требуется указать ячейки массивом.',
+            'style.required' => 'Указать что за стиль обязательно.',
+        ]);
+
+        $cells = TableCell::with(['tableRow', 'tableRow.table', 'styles'])->findOrFail($data['cells']);
+
+        foreach ($cells as $cell) {
+            Gate::authorize('all-is-language', $cell->table);
+        }
+
+        foreach ($cells as $cell) {
+            /** @var TableCell $cell */
+            $cell->removeStyle($data['style']);
+        }
+
+        $editMode = $request->has('editMode');
+        return redirect()->route('languages.tables', ['code' => $language->id, 'editMode' => $editMode]);
+    }
+
+    public function borderChange(Request $request, $code, $table_id) {
+        /** @var Language $language */
+        $language = Language::with('tables')->findOrFail($code);
+        Gate::authorize('edit-language', $language);
+        $table = Table::findOrFail($table_id);
+        Gate::authorize('all-is-language', $table);
+
+        $data = $request->validate([
+            'cells' => 'required|array',
+            'type' => 'required',
+            'color' => 'nullable',
+            'style' => 'nullable',
+            'size' => 'nullable',
+        ], messages: [
+            'cells.required' => 'Требуется указать ячейки.',
+            'cells.array' => 'Требуется указать ячейки массивом.',
+            'type.required' => 'Нужно указать какие границы изменять.',
+        ]);
+
+        $data['color'] ??= 'white';
+        $data['style'] ??= 'solid';
+        $data['size'] ??= '1px';
+
+        $cells = TableCell::with(['tableRow', 'styles'])->findOrFail($request->get('cells'));
+
+        /** @var Collection $cells */
+        $cells = $cells->reduce(static function(Collection $res, TableCell $val) {
+            $res->push($val);
+            return $res->merge($val->mergedCells());
+        }, new Collection());
+
+        $range = new CellsRange($cells);
+
+        $value = implode(' ', [$data['size'], $data['style'], $data['color']]);
+        switch ($data['type']) {
+            case 'all': {
+                $range->allCells()->applyStyle('border-bottom', $value);
+                $range->allCells()->applyStyle('border-top', $value);
+                $range->allCells()->applyStyle('border-left', $value);
+                $range->allCells()->applyStyle('border-right', $value);
+                break;
+            }
+            case 'horizontals': {
+                $range->antiTop()->applyStyle('border-top', $value);
+                $range->antiBottom()->applyStyle('border-bottom', $value);
+                break;
+            }
+            case 'verticals': {
+                $range->antiLeft()->applyStyle('border-left', $value);
+                $range->antiRight()->applyStyle('border-right', $value);
+                break;
+            }
+            case 'inner': {
+                $range->antiTop()->applyStyle('border-top', $value);
+                $range->antiBottom()->applyStyle('border-bottom', $value);
+                $range->antiLeft()->applyStyle('border-left', $value);
+                $range->antiRight()->applyStyle('border-right', $value);
+                break;
+            }
+            case 'outer': {
+                $range->topRow()->applyStyle('border-top', $value);
+                $range->bottomRow()->applyStyle('border-bottom', $value);
+                $range->leftCol()->applyStyle('border-left', $value);
+                $range->rightCol()->applyStyle('border-right', $value);
+                break;
+            }
+            case 'top': {
+                $range->topRow()->applyStyle('border-top', $value);
+                break;
+            }
+            case 'bottom': {
+                $range->bottomRow()->applyStyle('border-bottom', $value);
+                break;
+            }
+            case 'left': {
+                $range->leftCol()->applyStyle('border-left', $value);
+                break;
+            }
+            case 'right': {
+                $range->rightCol()->applyStyle('border-right', $value);
+                break;
+            }
+            case 'none': {
+                $range->allCells()->applyStyle('border-top', 'none');
+                $range->allCells()->applyStyle('border-bottom', 'none');
+                $range->allCells()->applyStyle('border-left', 'none');
+                $range->allCells()->applyStyle('border-right', 'none');
+            }
+            case 'reset': {
+                $range->allCells()->applyStyle('border-top', null);
+                $range->allCells()->applyStyle('border-bottom', null);
+                $range->allCells()->applyStyle('border-left', null);
+                $range->allCells()->applyStyle('border-right', null);
             }
         }
+        $range->saveCells();
 
         $editMode = $request->has('editMode');
         return redirect()->route('languages.tables', ['code' => $language->id, 'editMode' => $editMode]);

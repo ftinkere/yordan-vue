@@ -95,6 +95,7 @@ Route::name('languages.')->prefix('/languages')->group(static function() {
         Route::name('cells.delete')->delete('/{table}/cells/{cell}', [TablesController::class, 'delete_cell'])->whereNumber('cell');
         Route::name('cells.styles.update')->post('/{table}/cells/styles/update', [TablesController::class, 'update_style']);
         Route::name('cells.styles.toggle')->post('/{table}/cells/styles/toggle', [TablesController::class, 'toggle_style']);
+        Route::name('cells.styles.border')->post('/{table}/cells/styles/border', [TablesController::class, 'borderChange']);
     });
 
     Route::name('vocabulary')->get('/{code}/vocabulary', [VocabularyController::class, 'index']);

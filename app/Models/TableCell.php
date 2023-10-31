@@ -59,8 +59,49 @@ class TableCell extends Model
         return $this->hasMany(TableCellStyle::class, 'cell_id');
     }
 
-    function mergedCells(): \Illuminate\Database\Eloquent\Builder
-    {
-        return self::where('merged_in', $this->id);
+    function mergedCells(): Collection {
+        return self::where('merged_in', $this->id)->with('tableRow')->get();
+    }
+
+    function toggleStyle($styleName, $value) {
+        if ($this->merged_in && $this->merged_in !== $this->id) {
+            self::find($this->merged_in)->toggleStyle($styleName, $value);
+            return;
+        }
+        $style = $this->styles->where('style', $styleName)->first();
+        if ($style) {
+            if ($value && $style->value !== $value) {
+                // Если есть стиль и указано новое другое значение, меняем значение
+                $style->update(['style' => $styleName, 'value' => $value]);
+            } else if ($value && $style->value === $value) {
+                // Если стиль указан, с таким же значением, удаляем стиль
+                $style->delete();
+                $style->save();
+            }
+        } else if ($value) {
+            // Если указан стиль которого нет и указано значение, добавляем стиль
+            $this->styles()->create(['style' => $styleName, 'value' => $value]);
+        }
+    }
+
+    function applyStyle($styleName, $value) {
+        if ($this->merged_in && $this->merged_in !== $this->id) {
+            self::find($this->merged_in)->applyStyle($styleName, $value);
+            return;
+        }
+        $style = $this->styles->where('style', $styleName)->first();
+        if ($style) {
+            if ($value) {
+                // Если есть стиль и указано новое значение, меняем значение
+                $style->update(['style' => $styleName, 'value' => $value]);
+                $style->save();
+            } else {
+                // Если стиль указан, а новое значение нет, удаляем стиль
+                $style->delete();
+            }
+        } else if ($value) {
+            // Если указан стиль которого нет и указано значение, добавляем стиль
+            $this->styles()->create(['style' => $styleName, 'value' => $value]);
+        }
     }
 }
