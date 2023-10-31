@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Log;
 
 /**
  * App\Models\TableCell
@@ -90,8 +91,9 @@ class TableCell extends Model
             return;
         }
         $style = $this->styles->where('style', $styleName)->first();
+
         if ($style) {
-            if ($value) {
+            if ($value !== null) {
                 // Если есть стиль и указано новое значение, меняем значение
                 $style->update(['style' => $styleName, 'value' => $value]);
                 $style->save();

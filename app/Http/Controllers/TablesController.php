@@ -548,16 +548,18 @@ class TablesController extends Controller
                 break;
             }
             case 'none': {
-                $range->allCells()->applyStyle('border-top', 'none');
-                $range->allCells()->applyStyle('border-bottom', 'none');
-                $range->allCells()->applyStyle('border-left', 'none');
-                $range->allCells()->applyStyle('border-right', 'none');
+                $range->applyStyle('border-top', 'none');
+                $range->applyStyle('border-bottom', 'none');
+                $range->applyStyle('border-left', 'none');
+                $range->applyStyle('border-right', 'none');
+                break;
             }
             case 'reset': {
-                $range->allCells()->applyStyle('border-top', null);
-                $range->allCells()->applyStyle('border-bottom', null);
-                $range->allCells()->applyStyle('border-left', null);
-                $range->allCells()->applyStyle('border-right', null);
+                $range->applyStyle('border-top', null);
+                $range->applyStyle('border-bottom', null);
+                $range->applyStyle('border-left', null);
+                $range->applyStyle('border-right', null);
+                break;
             }
         }
         $range->saveCells();
