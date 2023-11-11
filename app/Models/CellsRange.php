@@ -12,10 +12,12 @@ class CellsRange extends Model
     protected $fillable = ['cells'];
 
     protected Collection $cells;
+    protected Collection|null $allCells;
 
-    public function __construct(Collection $cells) {
+    public function __construct(Collection $cells, Collection|null $allCells = null) {
         parent::__construct();
         $this->cells = $cells;
+        $this->allCells = $allCells;
     }
 
     public function applyStyle($styleName, $value) {
@@ -46,12 +48,24 @@ class CellsRange extends Model
         return new self($this->cells->whereNotIn('id', $this->topRow()->cells()->pluck('id')));
     }
 
+    public function topper() {
+        return new self($this->allCells->where('tableRow.order', '=', $this->cells->min('tableRow.order') - 1)
+            ->where('order', '>=', $this->cells->min('order'))
+            ->where('order', '<=', $this->cells->max('order')));
+    }
+
     public function bottomRow() {
         return new self($this->cells->where('tableRow.order', '=', $this->cells->max('tableRow.order')));
     }
 
     public function antiBottom() {
         return new self($this->cells->whereNotIn('id', $this->bottomRow()->cells()->pluck('id')));
+    }
+
+    public function botter() {
+        return new self($this->allCells->where('tableRow.order', '=', $this->cells->max('tableRow.order') + 1)
+            ->where('order', '>=', $this->cells->min('order'))
+            ->where('order', '<=', $this->cells->max('order')));
     }
 
     public function leftCol() {
@@ -62,12 +76,24 @@ class CellsRange extends Model
         return new self($this->cells->whereNotIn('id', $this->leftCol()->cells()->pluck('id')));
     }
 
+    public function lefter() {
+        return new self($this->allCells->where('order', '=', $this->cells->min('order') - 1)
+            ->where('tableRow.order', '>=', $this->cells->min('tableRow.order'))
+            ->where('tableRow.order', '<=', $this->cells->max('tableRow.order')));
+    }
+
     public function rightCol() {
         return new self( $this->cells->where('order', '=', $this->cells->max('order')));
     }
 
     public function antiRight() {
         return new self($this->cells->whereNotIn('id', $this->rightCol()->cells()->pluck('id')));
+    }
+
+    public function righter() {
+        return new self($this->allCells->where('order', '=', $this->cells->max('order') + 1)
+            ->where('tableRow.order', '>=', $this->cells->min('tableRow.order'))
+            ->where('tableRow.order', '<=', $this->cells->max('tableRow.order')));
     }
 
     public function outerCells() {

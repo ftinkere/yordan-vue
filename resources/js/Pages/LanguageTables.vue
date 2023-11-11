@@ -406,19 +406,75 @@
         });
     }
 
-    // const test = ref(null)
-    // function onPaste(event) {
-    //     console.log(event)
-    //     const clipboardData = event.clipboardData
-    //     const items = clipboardData.items
-    //     const gsheets = JSON.parse(clipboardData.getData('application/x-vnd.google-docs-embedded-grid_range_clip+wrapped'))
-    //     console.log(gsheets)
-    //     test.value.innerHTML = JSON.parse(gsheets.data).grh
-    //     for (const index in items) {
-    //         const item = items[index]
-    //         console.log(item)
-    //     }
-    // }
+    // Delete row
+    const deleteRowForm = useForm({
+        cell: null,
+        _token
+    })
+    function deleteRow() {
+        if (!selectedTable.value || !lastSelectedCell.value) {
+            return
+        }
+
+        if (lastSelectedCell.value) {
+            deleteRowForm.cell = parseInt(lastSelectedCell.value.dataset.id)
+        }
+
+        deleteRowForm.delete(route('languages.tables.rows.delete', [language.id, parseInt(selectedTable.value.dataset.id), deleteRowForm.cell]), {
+            preserveScroll: true,
+            onSuccess: () => {
+                deleteRowForm.reset()
+                flashSuccess.value?.flash()
+
+                updateTCS()
+            }
+        })
+    }
+
+    // Delete col
+    const deleteColForm = useForm({
+        cell: null,
+        _token
+    })
+    function deleteCol() {
+        if (!selectedTable.value || !lastSelectedCell.value) {
+            return
+        }
+
+        if (lastSelectedCell.value) {
+            deleteColForm.cell = parseInt(lastSelectedCell.value.dataset.id)
+        }
+
+        deleteColForm.delete(route('languages.tables.columns.delete', [language.id, parseInt(selectedTable.value.dataset.id), deleteColForm.cell]), {
+            preserveScroll: true,
+            onSuccess: () => {
+                deleteColForm.reset()
+                flashSuccess.value?.flash()
+
+                updateTCS()
+            }
+        })
+    }
+
+    function onPaste(event) {
+        if (!isEdit.value || !language.can_edit) {
+            return
+        }
+        const clipboardData = event.clipboardData
+        const gsheets = JSON.parse(clipboardData.getData('application/x-vnd.google-docs-embedded-grid_range_clip+wrapped'))
+        if (gsheets) {
+            useForm({
+                html: JSON.parse(gsheets.data).grh,
+                _token,
+            }).post(route('languages.tables.import', [language.id]), {
+                onSuccess: () => {
+                    flashSuccess.value?.flash()
+
+                    updateTCS()
+                }
+            })
+        }
+    }
 
 </script>
 
@@ -428,7 +484,7 @@
       <!-- Buttons -->
       <div class="mb-4 flex flex-row flex-wrap justify-between">
         <!-- Left buttons -->
-        <span v-if="!isEdit" />
+        <span v-if="!isEdit || !language.can_edit" />
         <div
           v-else
           class="flex flex-row flex-wrap gap-2"
@@ -439,17 +495,14 @@
           >
             Добавить таблицу
           </button>
-          <button
-            class="btn btn-sm btn-primary"
-            @click="test"
-          >
-            Тест
-          </button>
         </div>
         <!-- End left buttons -->
 
         <!-- Right buttons -->
-        <div class="flex flex-row flex-wrap items-center gap-2">
+        <div
+          v-if="language.can_edit"
+          class="flex flex-row flex-wrap items-center gap-2"
+        >
           <!-- Buttons in view mode -->
           <EditButton
             v-if="!isEdit"
@@ -609,7 +662,6 @@
                 class="btn btn-square btn-ghost join-item tooltip tooltip-top flex justify-center disabled:fill-neutral-500"
                 data-tip="Цвет текста"
                 :disabled="lastSelectedCell === null && Object.keys(selectedCells).length === 0"
-                @click="updateStyle('text-align', 'right')"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -649,7 +701,6 @@
                 class="btn btn-square btn-ghost join-item tooltip tooltip-top flex justify-center disabled:fill-neutral-500"
                 data-tip="Цвет фона"
                 :disabled="lastSelectedCell === null && Object.keys(selectedCells).length === 0"
-                @click="updateStyle('text-align', 'right')"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -713,17 +764,12 @@
             <div class="form-control join join-horizontal">
               <!-- Merge -->
               <button
-                class="btn btn-square btn-ghost join-item tooltip tooltip-top flex justify-center disabled:fill-neutral-500"
+                class="btn btn-square btn-ghost join-item tooltip tooltip-top flex justify-center fill-white disabled:fill-neutral-500"
                 data-tip="Объединить ячейки"
                 :disabled="lastSelectedCell === null && Object.keys(selectedCells).length === 0"
                 @click="updateMerge"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  height="1.5em"
-                  viewBox="0 0 448 512"
-                ><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M160 64c0-17.7-14.3-32-32-32s-32 14.3-32 32v64H32c-17.7 0-32 14.3-32 32s14.3 32 32 32h96c17.7 0 32-14.3 32-32V64zM32 320c-17.7 0-32 14.3-32 32s14.3 32 32 32H96v64c0 17.7 14.3 32 32 32s32-14.3 32-32V352c0-17.7-14.3-32-32-32H32zM352 64c0-17.7-14.3-32-32-32s-32 14.3-32 32v96c0 17.7 14.3 32 32 32h96c17.7 0 32-14.3 32-32s-14.3-32-32-32H352V64zM320 320c-17.7 0-32 14.3-32 32v96c0 17.7 14.3 32 32 32s32-14.3 32-32V384h64c17.7 0 32-14.3 32-32s-14.3-32-32-32H320z" /></svg>
-              </button>
+                <svg viewBox="0 0 24 24" height="2.3em" xmlns="http://www.w3.org/2000/svg"><g stroke-width="0"></g><g stroke-linecap="round" stroke-linejoin="round"></g><g> <path fill-rule="evenodd" clip-rule="evenodd" d="M4 4C2.34315 4 1 5.34315 1 7V17C1 18.6569 2.34315 20 4 20H20C21.6569 20 23 18.6569 23 17V7C23 5.34315 21.6569 4 20 4H4ZM3 7C3 6.44772 3.44772 6 4 6H20C20.5523 6 21 6.44772 21 7V11H17.4142L18.7071 9.70711C19.0976 9.31658 19.0976 8.68342 18.7071 8.29289C18.3166 7.90237 17.6834 7.90237 17.2929 8.29289L14.2929 11.2929C13.9024 11.6834 13.9024 12.3166 14.2929 12.7071L17.2929 15.7071C17.6834 16.0976 18.3166 16.0976 18.7071 15.7071C19.0976 15.3166 19.0976 14.6834 18.7071 14.2929L17.4142 13H21V17C21 17.5523 20.5523 18 20 18H4C3.44772 18 3 17.5523 3 17V13H6.58579L5.29289 14.2929C4.90237 14.6834 4.90237 15.3166 5.29289 15.7071C5.68342 16.0976 6.31658 16.0976 6.70711 15.7071L9.70711 12.7071C10.0976 12.3166 10.0976 11.6834 9.70711 11.2929L6.70711 8.29289C6.31658 7.90237 5.68342 7.90237 5.29289 8.29289C4.90237 8.68342 4.90237 9.31658 5.29289 9.70711L6.58579 11H3V7ZM12 9C12.5523 9 13 8.55228 13 8C13 7.44772 12.5523 7 12 7C11.4477 7 11 7.44772 11 8C11 8.55228 11.4477 9 12 9ZM13 12C13 12.5523 12.5523 13 12 13C11.4477 13 11 12.5523 11 12C11 11.4477 11.4477 11 12 11C12.5523 11 13 11.4477 13 12ZM12 17C12.5523 17 13 16.5523 13 16C13 15.4477 12.5523 15 12 15C11.4477 15 11 15.4477 11 16C11 16.5523 11.4477 17 12 17Z"></path> </g></svg>              </button>
               <!-- Unmerge -->
               <button
                 class="btn btn-square btn-ghost join-item tooltip tooltip-top flex justify-center disabled:fill-neutral-500"
@@ -737,9 +783,9 @@
 
             <div class="join join-horizontal border-x">
               <!-- Borders -->
-              <div class="dropdown dropdown-bottom">
+              <div class="dropdown dropdown-bottom join-item">
                 <button
-                  class="btn btn-square btn-ghost join-item tooltip tooltip-top flex justify-center stroke-white disabled:fill-neutral-500 disabled:stroke-neutral-500"
+                  class="btn btn-square btn-ghost tooltip tooltip-top flex justify-center stroke-white disabled:fill-neutral-500 disabled:stroke-neutral-500"
                   data-tip="Границы"
                   :disabled="lastSelectedCell === null && Object.keys(selectedCells).length === 0"
                 >
@@ -838,9 +884,9 @@
               <!-- End borders -->
 
               <!-- Color -->
-              <div class="dropdown dropdown-bottom">
+              <div class="dropdown dropdown-bottom join-item">
                 <button
-                  class="btn btn-square btn-ghost join-item rounded-s-none tooltip tooltip-top flex justify-center stroke-white disabled:fill-neutral-500 disabled:stroke-neutral-500"
+                  class="btn btn-square btn-ghost rounded-s-none tooltip tooltip-top flex justify-center stroke-white disabled:fill-neutral-500 disabled:stroke-neutral-500"
                   data-tip="Цвет границы"
                   :disabled="lastSelectedCell === null && Object.keys(selectedCells).length === 0"
                 >
@@ -870,16 +916,102 @@
                   >
                 </div>
               </div>
+
               <!-- Border style -->
+              <div class="dropdown dropdown-bottom join-item">
+                <button
+                  class="btn btn-square btn-ghost tooltip tooltip-top flex justify-center stroke-white disabled:fill-neutral-500 disabled:stroke-neutral-500"
+                  data-tip="Стиль границы"
+                  :disabled="lastSelectedCell === null && Object.keys(selectedCells).length === 0"
+                >
+                  <svg viewBox="0 0 15 15" height="1.5em" fill="none" xmlns="http://www.w3.org/2000/svg"><g stroke-width="0"></g><g stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path fill-rule="evenodd" clip-rule="evenodd" d="M1.5 3C1.22386 3 1 3.22386 1 3.5C1 3.77614 1.22386 4 1.5 4H13.5C13.7761 4 14 3.77614 14 3.5C14 3.22386 13.7761 3 13.5 3H1.5ZM1 7.5C1 7.22386 1.22386 7 1.5 7H3.5C3.77614 7 4 7.22386 4 7.5C4 7.77614 3.77614 8 3.5 8H1.5C1.22386 8 1 7.77614 1 7.5ZM1 11.5C1 11.2239 1.22386 11 1.5 11C1.77614 11 2 11.2239 2 11.5C2 11.7761 1.77614 12 1.5 12C1.22386 12 1 11.7761 1 11.5ZM3 11.5C3 11.2239 3.22386 11 3.5 11C3.77614 11 4 11.2239 4 11.5C4 11.7761 3.77614 12 3.5 12C3.22386 12 3 11.7761 3 11.5ZM5.5 11C5.22386 11 5 11.2239 5 11.5C5 11.7761 5.22386 12 5.5 12C5.77614 12 6 11.7761 6 11.5C6 11.2239 5.77614 11 5.5 11ZM7 11.5C7 11.2239 7.22386 11 7.5 11C7.77614 11 8 11.2239 8 11.5C8 11.7761 7.77614 12 7.5 12C7.22386 12 7 11.7761 7 11.5ZM9.5 11C9.22386 11 9 11.2239 9 11.5C9 11.7761 9.22386 12 9.5 12C9.77614 12 10 11.7761 10 11.5C10 11.2239 9.77614 11 9.5 11ZM11 11.5C11 11.2239 11.2239 11 11.5 11C11.7761 11 12 11.2239 12 11.5C12 11.7761 11.7761 12 11.5 12C11.2239 12 11 11.7761 11 11.5ZM13.5 11C13.2239 11 13 11.2239 13 11.5C13 11.7761 13.2239 12 13.5 12C13.7761 12 14 11.7761 14 11.5C14 11.2239 13.7761 11 13.5 11ZM6.5 7C6.22386 7 6 7.22386 6 7.5C6 7.77614 6.22386 8 6.5 8H8.5C8.77614 8 9 7.77614 9 7.5C9 7.22386 8.77614 7 8.5 7H6.5ZM11 7.5C11 7.22386 11.2239 7 11.5 7H13.5C13.7761 7 14 7.22386 14 7.5C14 7.77614 13.7761 8 13.5 8H11.5C11.2239 8 11 7.77614 11 7.5Z"></path> </g></svg>
+                </button>
+
+                <div class="dropdown-content">
+                  <select
+                    v-model="borderStyle"
+                    class="select select-bordered"
+                  >
+                    <option
+                      value="solid"
+                      selected
+                    >
+                      Solid
+                    </option>
+                    <option value="dotted">
+                      Dotted
+                    </option>
+                    <option value="dashed">
+                      Dashed
+                    </option>
+                    <option value="double">
+                      Double
+                    </option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Border size -->
+              <div class="dropdown dropdown-bottom join-item">
+                <button
+                  class="btn btn-square btn-ghost tooltip tooltip-top flex justify-center stroke-white disabled:fill-neutral-500 disabled:stroke-neutral-500"
+                  data-tip="Ширина границы"
+                  :disabled="lastSelectedCell === null && Object.keys(selectedCells).length === 0"
+                >
+                  <svg class="ms-1" viewBox="0 0 20 20" height="1.5em" xmlns="http://www.w3.org/2000/svg">
+                    <g stroke-width="0"></g><g stroke-linecap="round" stroke-linejoin="round"></g><g><path d="M0 0h20v5H0V0zm0 7h20v4H0V7zm0 6h20v3H0v-3zm0 5h20v2H0v-2z"></path></g>
+                  </svg>
+                </button>
+
+                <div class="dropdown-content">
+                  <select
+                    v-model="borderSize"
+                    class="select select-bordered"
+                  >
+                    <option
+                      value="1px"
+                      selected
+                    >
+                      1 пиксель
+                    </option>
+                    <option value="2px">
+                      2 пикселя
+                    </option>
+                    <option value="3px">
+                      3 пикселя
+                    </option>
+                    <option value="4px">
+                      4 пикселя
+                    </option>
+                    <option value="5px">
+                      5 пикселей
+                    </option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Delete row -->
+            <div>
               <button
-                class="btn btn-square btn-ghost join-item tooltip tooltip-top flex justify-center stroke-white disabled:fill-neutral-500 disabled:stroke-neutral-500"
-                data-tip="Стиль границы"
+                class="btn btn-square btn-ghost tooltip tooltip-top flex justify-center stroke-white disabled:fill-neutral-500 disabled:stroke-neutral-500"
+                data-tip="Удалить строку"
                 :disabled="lastSelectedCell === null && Object.keys(selectedCells).length === 0"
+                @click="deleteRow"
               >
-                <svg class="ms-1" viewBox="0 0 20 20" height="1.5em" xmlns="http://www.w3.org/2000/svg">
-                  <g stroke-width="0"></g><g stroke-linecap="round" stroke-linejoin="round"></g><g><path d="M0 0h20v5H0V0zm0 7h20v4H0V7zm0 6h20v3H0v-3zm0 5h20v2H0v-2z"></path></g>
-                </svg>
+                <svg height="1.5em" viewBox="0 0 1920 1920" xmlns="http://www.w3.org/2000/svg" stroke="#ffffff"><g stroke-width="0"></g><g stroke-linecap="round" stroke-linejoin="round"></g><g> <path d="M180 1800c-33 0-60-27-60-60v-420h300v-120H120V720h300V600H120V180c0-33.12 27-60 60-60h1560c33 0 60 26.88 60 60v420h-300v120h300v480h-300v120h300v420c0 33-27 60-60 60H180Zm1740-60V180c0-99.24-80.76-180-180-180H180C80.76 0 0 80.76 0 180v1560c0 99.24 80.76 180 180 180h1560c99.24 0 180-80.76 180-180ZM485.32 1265 655 1434.68l305.16-305.16 305.16 305.16L1435 1265l-305.16-305.16L1435 654.68 1265.32 485 960.16 790.16 655 485 485.32 654.68l305.16 305.16L485.32 1265Z" fill-rule="evenodd"></path> </g></svg>
               </button>
+            </div>
+
+            <!-- Delete col -->
+            <div>
+              <button
+                class="btn btn-square btn-ghost tooltip tooltip-top flex justify-center stroke-white disabled:fill-neutral-500 disabled:stroke-neutral-500"
+                data-tip="Удалить строку"
+                :disabled="lastSelectedCell === null && Object.keys(selectedCells).length === 0"
+                @click="deleteCol"
+              >
+                <svg height="1.5em" viewBox="0 0 1920 1920" xmlns="http://www.w3.org/2000/svg" stroke="#ffffff"><g stroke-width="0"></g><g stroke-linecap="round" stroke-linejoin="round"></g><g> <path d="M1800 1740c0 33-27 60-60 60h-420v-300h-120v300H720v-300H600v300H180c-33.12 0-60-27-60-60V180c0-33 26.88-60 60-60h420v300h120V120h480v300h120V120h420c33 0 60 27 60 60v1560ZM1740 0H180C80.76 0 0 80.76 0 180v1560c0 99.24 80.76 180 180 180h1560c99.24 0 180-80.76 180-180V180c0-99.24-80.76-180-180-180Zm-305.16 654.84-169.68-169.68L960 790.32 654.84 485.16 485.16 654.84 790.32 960l-305.16 305.16 169.68 169.68L960 1129.68l305.16 305.16 169.68-169.68L1129.68 960l305.16-305.16Z" fill-rule="evenodd"></path> </g></svg>              </button>
             </div>
 
             <VFlashSuccess ref="flashSuccess" />

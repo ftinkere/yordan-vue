@@ -8,12 +8,17 @@ use App\Models\Table;
 use App\Models\TableCell;
 use App\Models\TableCellStyle;
 use App\Models\TableRow;
+use DOMDocument;
+use DOMElement;
+use DOMXPath;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Throwable;
 
 class TablesController extends Controller
 {
@@ -102,6 +107,88 @@ class TablesController extends Controller
         return redirect()->route('languages.tables', ['code' => $language->id, 'editMode' => $editMode]);
     }
 
+    function import(Request $request, $code) {
+        /** @var Language $language */
+        $language = Language::with('tables')->findOrFail($code);
+        Gate::authorize('edit-language', $language);
+
+        ['html' => $html] = $request->validate([
+            'html' => 'required'
+        ]);
+
+        libxml_use_internal_errors(true);
+        $document = new DOMDocument();
+        $document->loadHTML('<meta charset="utf8">' . $html);
+        libxml_use_internal_errors(false);
+
+        $xpath = new DOMXPath($document);
+
+        DB::beginTransaction();
+        try {
+            /** @var Table $table_model */
+            $table_model = $language->tables()->create(['name' => '']);
+
+            /** @var \DOMElement $rows */
+            $rows = $xpath->query('//table//tr');
+
+            foreach ($rows as $row) {
+                /** @var DOMElement $row */
+                /** @var TableRow $row_model */
+                $row_model = $table_model->rows()->create([
+                    'order' => TableRow::newOrder($table_model),
+                ]);
+
+                $dom = new DOMDocument();
+                $dom->appendChild($dom->importNode($row->cloneNode(true), true));
+                $cells = (new DOMXPath($dom))->query('//td|th');
+
+                foreach ($cells as $cell) {
+                    /** @var DOMElement $cell */
+                    /** @var TableCell $cell_model */
+                    $cell_model = $row_model->cells()->create([
+                        'order' => TableCell::newOrder($row_model),
+                        'content' => $cell->textContent,
+                        'colspan' => $cell->hasAttribute('colspan') ? $cell->getAttribute('colspan') : 1,
+                        'rowspan' => $cell->hasAttribute('rowspan') ? $cell->getAttribute('rowspan') : 1,
+                    ]);
+
+                    if ($cell->hasAttribute('style')){
+                        $styles = $cell->getAttribute('style');
+                        $styles = explode(';', $styles);
+                        $styles = array_map(static function($el) { return explode(':', $el); }, $styles);
+
+                        $cell_model->applyStyle('color', 'black');
+                        foreach ($styles as $pair) {
+                            if (in_array($pair[0], [
+                                'vertical-align',
+                                'background-color',
+                                'font-style',
+                                'font-weight',
+                                'text-align',
+                                'color',
+                                'border',
+                                'border-top',
+                                'border-bottom',
+                                'border-left',
+                                'border-right',
+                            ])) {
+                               $cell_model->applyStyle($pair[0], $pair[1]);
+                            }
+                        }
+                    }
+                }
+            }
+            DB::commit();
+        } catch (Throwable $e) {
+            DB::rollBack();
+            throw $e;
+        }
+
+
+        $editMode = $request->has('editMode');
+        return redirect()->route('languages.tables', ['code' => $language->id, 'editMode' => $editMode]);
+    }
+
     function add_row(Request $request, $code, $table_id) {
         /** @var Language $language */
         $language = Language::with('tables')->findOrFail($code);
@@ -168,17 +255,50 @@ class TablesController extends Controller
         return redirect()->route('languages.tables', ['code' => $language->id, 'editMode' => $editMode]);
     }
 
-    function delete_row(Request $request, $code, $table_id, $row_id) {
+    function delete_row(Request $request, $code, $table_id, $cell_id) {
         /** @var Language $language */
         $language = Language::with('tables')->findOrFail($code);
         Gate::authorize('edit-language', $language);
         $table = Table::findOrFail($table_id);
         Gate::authorize('all-is-language', $table);
-        /** @var TableRow $row */
-        $row = TableRow::findOrFail($row_id);
-        Gate::authorize('all-is-language', $row->table);
+        /** @var TableCell $cell */
+        $cell = TableCell::findOrFail($cell_id);
+        Gate::authorize('all-is-language', $cell->tableRow->table);
 
-        $row->delete();
+
+        $deleted_row = $cell->tableRow;
+        $deleted_row->delete();
+        foreach ($table->rows as $row) {
+            if ($row->order > $deleted_row->order) {
+                $row->order = $row->order - 1;
+                $row->save();
+            }
+        }
+
+        $editMode = $request->has('editMode');
+        return redirect()->route('languages.tables', ['code' => $language->id, 'editMode' => $editMode]);
+    }
+
+    function delete_col(Request $request, $code, $table_id, $cell_id) {
+        /** @var Language $language */
+        $language = Language::with('tables')->findOrFail($code);
+        Gate::authorize('edit-language', $language);
+        $table = Table::findOrFail($table_id);
+        Gate::authorize('all-is-language', $table);
+        /** @var TableCell $cell */
+        $cell = TableCell::findOrFail($cell_id);
+        Gate::authorize('all-is-language', $cell->tableRow->table);
+
+        foreach ($table->rows as $row) {
+            foreach ($row->cells as $ccell) {
+                if ($ccell->order === $cell->order) {
+                    $ccell->delete();
+                } else if ($ccell->order > $cell->order) {
+                    $ccell->order = $ccell->order - 1;
+                    $ccell->save();
+                }
+            }
+        }
 
         $editMode = $request->has('editMode');
         return redirect()->route('languages.tables', ['code' => $language->id, 'editMode' => $editMode]);
@@ -496,15 +616,23 @@ class TablesController extends Controller
             return $res->merge($val->mergedCells());
         }, new Collection());
 
-        $range = new CellsRange($cells);
+        $range = new CellsRange($cells, $table->cells);
 
         $value = implode(' ', [$data['size'], $data['style'], $data['color']]);
         switch ($data['type']) {
             case 'all': {
                 $range->allCells()->applyStyle('border-bottom', $value);
+                $range->topper()->applyStyle('border-bottom', $value);
+
                 $range->allCells()->applyStyle('border-top', $value);
+                $range->botter()->applyStyle('border-top', $value);
+
                 $range->allCells()->applyStyle('border-left', $value);
+                $range->righter()->applyStyle('border-left', $value);
+
                 $range->allCells()->applyStyle('border-right', $value);
+                $range->lefter()->applyStyle('border-right', $value);
+
                 break;
             }
             case 'horizontals': {
@@ -526,39 +654,65 @@ class TablesController extends Controller
             }
             case 'outer': {
                 $range->topRow()->applyStyle('border-top', $value);
+                $range->botter()->applyStyle('border-top', $value);
+
                 $range->bottomRow()->applyStyle('border-bottom', $value);
+                $range->topper()->applyStyle('border-bottom', $value);
+
                 $range->leftCol()->applyStyle('border-left', $value);
+                $range->righter()->applyStyle('border-left', $value);
+
                 $range->rightCol()->applyStyle('border-right', $value);
+                $range->lefter()->applyStyle('border-right', $value);
                 break;
             }
             case 'top': {
                 $range->topRow()->applyStyle('border-top', $value);
+                $range->topper()->applyStyle('border-bottom', $value);
                 break;
             }
             case 'bottom': {
                 $range->bottomRow()->applyStyle('border-bottom', $value);
+                $range->botter()->applyStyle('border-top', $value);
                 break;
             }
             case 'left': {
                 $range->leftCol()->applyStyle('border-left', $value);
+                $range->lefter()->applyStyle('border-right', $value);
                 break;
             }
             case 'right': {
                 $range->rightCol()->applyStyle('border-right', $value);
+                $range->righter()->applyStyle('border-left', $value);
                 break;
             }
             case 'none': {
                 $range->applyStyle('border-top', 'none');
+                $range->topper()->applyStyle('border-bottom', 'none');
+
                 $range->applyStyle('border-bottom', 'none');
+                $range->botter()->applyStyle('border-top', 'none');
+
                 $range->applyStyle('border-left', 'none');
+                $range->lefter()->applyStyle('border-right', 'none');
+
                 $range->applyStyle('border-right', 'none');
+                $range->righter()->applyStyle('border-left', 'none');
+
                 break;
             }
             case 'reset': {
                 $range->applyStyle('border-top', null);
+                $range->topper()->applyStyle('border-bottom', null);
+
                 $range->applyStyle('border-bottom', null);
+                $range->botter()->applyStyle('border-top', null);
+
                 $range->applyStyle('border-left', null);
+                $range->lefter()->applyStyle('border-right', null);
+
                 $range->applyStyle('border-right', null);
+                $range->righter()->applyStyle('border-left', null);
                 break;
             }
         }

@@ -82,11 +82,13 @@ Route::name('languages.')->prefix('/languages')->group(static function() {
     Route::name('tables')->get('/{code}/tables', [TablesController::class, 'index']);
     Route::name('tables.')->prefix('/{code}/tables')->group(static function() {
         Route::name('store')->post('', [TablesController::class, 'store']);
+        Route::name('import')->post('/import', [TablesController::class, 'import']);
         Route::name('update')->post('/{table}', [TablesController::class, 'update']);
         Route::name('delete')->delete('/{table}', [TablesController::class, 'delete']);
         Route::name('rows.store')->post('/{table}/rows', [TablesController::class, 'add_row']);
         Route::name('rows.delete')->delete('/{table}/rows/{row}', [TablesController::class, 'delete_row']);
         Route::name('columns.store')->post('/{table}/columns', [TablesController::class, 'add_column']);
+        Route::name('columns.delete')->delete('/{table}/columns/{column}', [TablesController::class, 'delete_col']);
         Route::name('cells.store')->post('/{table}/rows/{row}/cells', [TablesController::class, 'add_cell']);
         Route::name('cells.update')->post('/{table}/cells/{cell}', [TablesController::class, 'update_cell'])->whereNumber('cell');
         Route::name('cells.update_content')->post('/{table}/cells/{cell}/content', [TablesController::class, 'update_cell_content'])->whereNumber('cell');
