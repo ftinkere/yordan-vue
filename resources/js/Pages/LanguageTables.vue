@@ -10,8 +10,8 @@
     import VInput from "@/Components/VInput.vue";
     import _ from "lodash";
     import TableCellSelector from "js-table-cell-selector";
+    import Color from 'colorjs.io'
 
-    import { Sketch } from '@ckpack/vue-color';
 
     const { language, editMode } = defineProps({
         language: {
@@ -75,6 +75,7 @@
     }
     function deleteTable() {
         deleteTableForm.delete(route('languages.tables.delete', [language.id, deleteTableForm.table_id]), {
+            preserveScroll: true,
             onSuccess: () => {
                 deleteTableModal.value?.close()
                 flashSuccess.value?.flash()
@@ -112,15 +113,6 @@
         }
     }
 
-    // styles
-    function good_styles(styles) {
-        return _.merge(... _.map(styles, style => {
-            let obj = {}
-            obj[style.style] = style.value
-            return obj
-        }))
-    }
-
     // Colors
 
     function componentToHex(c) {
@@ -147,7 +139,15 @@
         return res ? rgbToHex(res[0], res[1], res[2], res[3]) : null
     }
 
-
+    // styles
+    function good_styles(styles) {
+        return _.merge(... _.map(styles, style => {
+            let obj = {}
+            obj[style.style] = style.value
+            // obj[style.style] = style.style.includes('color') ? shadow(style.value) : style.value
+            return obj
+        }))
+    }
 
     // New pane code
 
@@ -195,6 +195,13 @@
     onMounted(updateTCS)
     onUpdated(updateTCS)
 
+    function deselect() {
+        selectedTable.value = null
+        lastSelectedCell.value = null
+        selectedCells.value = {}
+        tableSelectors.value.forEach(selector => selector.deselect())
+    }
+
     const debs = ref({})
 
     function newDeb() {
@@ -221,12 +228,20 @@
     })
 
     function toggleStyle(style, value) {
-        if (!selectedTable.value || (selectedCells.value.length !== 0 && !lastSelectedCell.value)) {
+        if (!isEdit.value || !language.can_edit) {
+            return
+        }
+
+        if (!selectedTable.value) {
             return
         }
 
         const cells = Object.keys(selectedCells.value)
         if (cells.length === 0) {
+            if (!lastSelectedCell.value) {
+                return;
+            }
+
             cells.push(parseInt(lastSelectedCell.value.dataset.id))
         }
 
@@ -243,13 +258,21 @@
         })
     }
     function updateStyle(style, value) {
-        if (!selectedTable.value || (selectedCells.value.length !== 0 && !lastSelectedCell.value)) {
+        if (!isEdit.value || !language.can_edit) {
+            return
+        }
+
+        if (!selectedTable.value) {
             return
         }
 
         const cells = Object.keys(selectedCells.value)
         if (cells.length === 0) {
-            cells.push(parseInt(lastSelectedCell.value.dataset.id))
+            if (!lastSelectedCell.value) {
+                return
+            }
+
+            cells.push(lastSelectedCell.value.dataset.id)
         }
 
         useForm({
@@ -266,9 +289,17 @@
     }
 
     function updateTextColor() {
+        if (!isEdit.value || !language.can_edit) {
+            return
+        }
+
         updateStyle('color', textColor.value.hex)
     }
     function updateBackgroundColor() {
+        if (!isEdit.value || !language.can_edit) {
+            return
+        }
+
         updateStyle('background-color', backgroundColor.value.hex)
     }
 
@@ -282,6 +313,10 @@
         _token
     })
     function addTable() {
+        if (!isEdit.value || !language.can_edit) {
+            return
+        }
+
         addTableForm.post(route('languages.tables.store', [language.id]), {
             preserveScroll: true,
             onSuccess: () => {
@@ -300,6 +335,10 @@
         _token
     })
     function addTableRow() {
+        if (!isEdit.value || !language.can_edit) {
+            return
+        }
+
         if (!selectedTable.value || !lastSelectedCell.value) {
             return
         }
@@ -325,6 +364,10 @@
         _token
     })
     function addTableColumn() {
+        if (!isEdit.value || !language.can_edit) {
+            return
+        }
+
         if (!selectedTable.value || !lastSelectedCell.value) {
             return
         }
@@ -345,6 +388,14 @@
     }
 
     function updateMerge() {
+        if (!isEdit.value || !language.can_edit) {
+            return
+        }
+
+        if (!selectedTable.value) {
+            return
+        }
+
         const cells = Object.keys(selectedCells.value)
         if (cells.length === 0) {
             return
@@ -363,7 +414,11 @@
         })
     }
     function updateUnmerge() {
-        if (!lastSelectedCell.value) {
+        if (!isEdit.value || !language.can_edit) {
+            return
+        }
+
+        if (!selectedTable.value || !lastSelectedCell.value) {
             return
         }
 
@@ -384,8 +439,20 @@
     const borderSize = ref('1px')
 
     function borderChange(type) {
+        if (!isEdit.value || !language.can_edit) {
+            return
+        }
+
+        if (!selectedTable.value) {
+            return
+        }
+
         let cells = Object.keys(selectedCells.value);
         if (cells.length === 0) {
+            if (!lastSelectedCell.value) {
+                return
+            }
+
             cells.push(lastSelectedCell.value.dataset.id);
         }
 
@@ -412,6 +479,10 @@
         _token
     })
     function deleteRow() {
+        if (!isEdit.value || !language.can_edit) {
+            return
+        }
+
         if (!selectedTable.value || !lastSelectedCell.value) {
             return
         }
@@ -437,6 +508,10 @@
         _token
     })
     function deleteCol() {
+        if (!isEdit.value || !language.can_edit) {
+            return
+        }
+
         if (!selectedTable.value || !lastSelectedCell.value) {
             return
         }
@@ -456,17 +531,42 @@
         })
     }
 
+    function move(direction, table) {
+        if (!isEdit.value || !language.can_edit) {
+            return
+        }
+
+        useForm({
+            direction,
+            _token,
+        }).post(route('languages.tables.move', [language.id, table.id]), {
+            preserveScroll: true,
+            onSuccess: () => {
+                flashSuccess.value?.flash()
+
+                updateTCS()
+            }
+        })
+    }
+
     function onPaste(event) {
         if (!isEdit.value || !language.can_edit) {
             return
         }
         const clipboardData = event.clipboardData
-        const gsheets = JSON.parse(clipboardData.getData('application/x-vnd.google-docs-embedded-grid_range_clip+wrapped'))
+        try {
+            const gsheets = JSON.parse(clipboardData.getData('application/x-vnd.google-docs-embedded-grid_range_clip+wrapped'))
+        } catch (e) {
+            return
+        }
+
         if (gsheets) {
             useForm({
                 html: JSON.parse(gsheets.data).grh,
                 _token,
             }).post(route('languages.tables.import', [language.id]), {
+                preserveScroll: true,
+
                 onSuccess: () => {
                     flashSuccess.value?.flash()
 
@@ -474,6 +574,26 @@
                 }
             })
         }
+    }
+
+    function shadowTable() {
+        if (!isEdit.value || !language.can_edit) {
+            return
+        }
+
+        if (!selectedTable.value) {
+            return
+        }
+
+        useForm({
+            _token,
+        }).post(route('languages.tables.shadow', [language.id, selectedTable.value.dataset.id]), {
+            preserveScroll: true,
+
+            onSuccess: () => {
+                flashSuccess.value?.flash()
+            }
+        })
     }
 
 </script>
@@ -495,6 +615,31 @@
           >
             Добавить таблицу
           </button>
+
+          <VModal
+            button-class="btn btn-sm btn-primary"
+            header="Импорт из Google Sheets"
+            @paste="onPaste"
+          >
+            Импортировать
+
+            <template #content>
+              <article @paste="onPaste">
+                <p>
+                  Чтобы импортировать таблицу из Google Sheets:
+                </p>
+                <p>
+                  - Откройте нужную таблицу в Google Sheets.
+                </p>
+                <p>
+                  - Выделите необходимый кусок, который хотите импортировать и скопируйте его.
+                </p>
+                <p>
+                  - Вернитесь на эту страницу и вставьте сочетанием ctrl+V (cmd+V).
+                </p>
+              </article>
+            </template>
+          </VModal>
         </div>
         <!-- End left buttons -->
 
@@ -1014,6 +1159,19 @@
                 <svg height="1.5em" viewBox="0 0 1920 1920" xmlns="http://www.w3.org/2000/svg" stroke="#ffffff"><g stroke-width="0"></g><g stroke-linecap="round" stroke-linejoin="round"></g><g> <path d="M1800 1740c0 33-27 60-60 60h-420v-300h-120v300H720v-300H600v300H180c-33.12 0-60-27-60-60V180c0-33 26.88-60 60-60h420v300h120V120h480v300h120V120h420c33 0 60 27 60 60v1560ZM1740 0H180C80.76 0 0 80.76 0 180v1560c0 99.24 80.76 180 180 180h1560c99.24 0 180-80.76 180-180V180c0-99.24-80.76-180-180-180Zm-305.16 654.84-169.68-169.68L960 790.32 654.84 485.16 485.16 654.84 790.32 960l-305.16 305.16 169.68 169.68L960 1129.68l305.16 305.16 169.68-169.68L1129.68 960l305.16-305.16Z" fill-rule="evenodd"></path> </g></svg>              </button>
             </div>
 
+
+            <!-- Shadow table -->
+            <!--<div>-->
+            <!--  <button-->
+            <!--    class="btn btn-square btn-ghost tooltip tooltip-top flex justify-center stroke-white disabled:fill-neutral-500 disabled:stroke-neutral-500"-->
+            <!--    data-tip="Затемнить таблицу"-->
+            <!--    :disabled="lastSelectedCell === null && Object.keys(selectedCells).length === 0"-->
+            <!--    @click="shadowTable"-->
+            <!--  >-->
+            <!--    <svg xmlns="http://www.w3.org/2000/svg" height="1.5em" viewBox="0 0 512 512">&lt;!&ndash;! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. &ndash;&gt;<path d="M448 256c0-106-86-192-192-192V448c106 0 192-86 192-192zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256z"/></svg>-->
+            <!--  </button>-->
+            <!--</div>-->
+
             <VFlashSuccess ref="flashSuccess" />
           </div>
         </div>
@@ -1029,23 +1187,27 @@
 
       <!-- Tables container -->
       <div
+        id="tables"
         class="flex gap-4"
         :class="{
           'flex-row flex-wrap': !isEdit,
           'flex-col': isEdit,
         }"
+        @click="deselect"
       >
         <!-- Table -->
         <div
           v-for="table in language.tables"
           :key="table.id"
-          class="flex flex-col gap-2"
+          class="flex flex-col gap-2 overflow-x-auto"
         >
           <table
             ref="tableEls"
             class="table table-auto border-y w-fit h-fit"
             :class="{ 'table-zebra': table.is_zebra }"
             :data-id="table.id"
+            :data-order="table.order"
+            @click.stop
           >
             <!-- Caption with name of table -->
             <caption class="mb-1 table-caption">
@@ -1084,7 +1246,7 @@
                   class="border-x-neutral-600 border-y-neutral-200 border"
                   :class="{
                     'font-bold bg-neutral-800': cell.is_header,
-                    'tcs-select': isEdit && (lastSelectedCell?.dataset.id == cell.id || selectedCells[cell.id]),
+                    'tcs-select': isEdit && selectedCells[cell.id],
                   }"
                   :colspan="cell.colspan"
                   :rowspan="cell.rowspan"
@@ -1092,6 +1254,8 @@
                   :data-id="cell.id"
                   :data-order="cell.order"
                   :data-row-order="row.order"
+                  :contenteditable="isEdit && lastSelectedCell?.dataset.id == cell.id"
+                  @paste.stop
                 >
                   {{ cell.content }}
                 </td>
@@ -1100,12 +1264,30 @@
             <!-- End rows -->
           </table>
 
-          <div class="flex flex-row flex-wrap justify-between">
-            <span />
+          <div
+            v-if="isEdit"
+            class="flex flex-row flex-wrap justify-between"
+          >
+            <div class="flex flex-row gap-2 items-center">
+              <button
+                class="btn btn-sm btn-warning tooltip tooltip-top w-fit"
+                data-tip="Переместить вверх"
+                @click="move('up', table)"
+              >
+                Up
+              </button>
+
+              <button
+                class="btn btn-sm btn-warning tooltip tooltip-top w-fit"
+                data-tip="Переместить вниз"
+                @click="move('down', table)"
+              >
+                Down
+              </button>
+            </div>
 
             <!-- Button to delete table -->
             <button
-              v-if="isEdit"
               class="btn btn-sm btn-error tooltip tooltip-left w-fit"
               data-tip="Удалить таблицу"
               @click="openDeleteTableModal(table)"

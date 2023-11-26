@@ -26,6 +26,7 @@
         "@toast-ui/editor": "^3.2.2",
         "@toast-ui/editor-plugin-color-syntax": "^3.1.0",
         "@toast-ui/editor-plugin-table-merged-cell": "^3.1.0",
+        "colorjs.io": "^0.4.5",
         "js-table-cell-selector": "^0.6.0",
         "lodash": "^4.17.21",
         "sortablejs": "^1.15.0",

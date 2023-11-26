@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Controllers\UserController;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
 use Tightenco\Ziggy\Ziggy;
 
 /*
@@ -15,3 +17,19 @@ use Tightenco\Ziggy\Ziggy;
 |
 */
 
+Route::name('api')->group(static function () {
+    Route::get('/sanctum/csrf-cookie', static function() {
+        return redirect('/sanctum/csrf-cookie');
+    });
+
+    Route::get('/user', static function(Request $request) {
+        return $request->user() ?? 'null';
+    });
+
+    Route::name('login')->post('/login', [\App\Http\Controllers\Api\AuthController::class, 'login']);
+    Route::name('logout')->post('/logout', [\App\Http\Controllers\Api\AuthController::class, 'logout']);
+
+    Route::middleware('auth:sanctum')->group(static function () {
+
+    });
+});

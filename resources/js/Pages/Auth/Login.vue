@@ -2,13 +2,16 @@
 import Layout from "@/Layouts/Layout.vue";
 import VCheckbox from "@/Components/VCheckbox.vue";
 import VInput from "@/Components/VInput.vue";
-import { useForm } from "@inertiajs/vue3";
+import { useForm, usePage } from "@inertiajs/vue3";
 import route from "ziggy-js";
+
+const _token = usePage().props.csrf_token
 
 const form = useForm({
     email: '',
     password: '',
     remember: true,
+    _token
 });
 
 </script>

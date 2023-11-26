@@ -2,7 +2,9 @@
 import Layout from "@/Layouts/Layout.vue";
 import VCheckbox from "@/Components/VCheckbox.vue";
 import VInput from "@/Components/VInput.vue";
-import { useForm } from "@inertiajs/vue3";
+import { useForm, usePage } from "@inertiajs/vue3";
+
+const _token = usePage().props.csrf_token
 
 const form = useForm({
     name: '',
@@ -10,6 +12,7 @@ const form = useForm({
     password: '',
     password_confirmation: '',
     check: false,
+    _token,
 });
 
 </script>

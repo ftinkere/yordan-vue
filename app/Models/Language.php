@@ -146,7 +146,7 @@ class Language extends Model
 
     public function tables() {
         return $this->hasMany(Table::class)
-            ->orderBy('order');
+            ->orderBy('order', 'desc');
     }
 
     public function get_action() {

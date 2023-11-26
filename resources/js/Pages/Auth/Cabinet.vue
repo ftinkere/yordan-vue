@@ -1,7 +1,7 @@
 <script setup>
 import Layout from "@/Layouts/Layout.vue";
 import { useForm, usePage } from "@inertiajs/vue3";
-import { computed, ref, watch } from "vue";
+import { computed, ref } from "vue";
 import VInput from "@/Components/VInput.vue";
 import VModal from "@/Components/VModal.vue";
 import VInputFile from "@/Components/VInputFile.vue";

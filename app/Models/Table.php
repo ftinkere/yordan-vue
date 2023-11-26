@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $name
  * @property string|null $caption
  * @property int $is_zebra
+ * @property int $order
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read  \Illuminate\Database\Eloquent\Collection<int, TableRow> $rows

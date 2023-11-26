@@ -17,6 +17,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
+use OzdemirBurak\Iris\Color\Hex;
+use OzdemirBurak\Iris\Color\Hsv;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
 
@@ -126,7 +128,10 @@ class TablesController extends Controller
         DB::beginTransaction();
         try {
             /** @var Table $table_model */
-            $table_model = $language->tables()->create(['name' => '']);
+            $table_model = $language->tables()->create([
+                'name' => '',
+                'order' =>Table::newOrder($language),
+                ]);
 
             /** @var \DOMElement $rows */
             $rows = $xpath->query('//table//tr');
@@ -184,6 +189,88 @@ class TablesController extends Controller
             throw $e;
         }
 
+
+        $editMode = $request->has('editMode');
+        return redirect()->route('languages.tables', ['code' => $language->id, 'editMode' => $editMode]);
+    }
+
+    function move(Request $request, $code, $table_id) {
+        /** @var Language $language */
+        $language = Language::with('tables')->findOrFail($code);
+        Gate::authorize('edit-language', $language);
+        /** @var Table $table */
+        $table = Table::findOrFail($table_id);
+        Gate::authorize('all-is-language', $table);
+
+        ['direction' => $direction] = $request->validate([
+            'direction' => 'required',
+        ], messages: [
+            'direction.required' => 'Направление обязательно.'
+        ]);
+
+        if ($direction === 'up') {
+            /** @var Table $upper */
+            $upper = $language->tables()->where('order', '=', $table->order + 1)->first();
+            if ($upper) {
+                $upper->order = $table->order;
+                $table->order = $table->order + 1;
+                $upper->save();
+                $table->save();
+            }
+        } else if ($direction === 'down') {
+            /** @var Table $botter */
+            $botter = $language->tables()->where('order', '=', $table->order - 1)->first();
+            if ($botter) {
+                $botter->order = $table->order;
+                $table->order = $table->order - 1;
+                $botter->save();
+                $table->save();
+            }
+        }
+
+        $editMode = $request->has('editMode');
+        return redirect()->route('languages.tables', ['code' => $language->id, 'editMode' => $editMode]);
+    }
+
+    function shadow(Request $request, $code, $table_id) {
+        /** @var Language $language */
+        $language = Language::with('tables')->findOrFail($code);
+        Gate::authorize('edit-language', $language);
+        /** @var Table $table */
+        $table = Table::findOrFail($table_id);
+        Gate::authorize('all-is-language', $table);
+
+        Db::beginTransaction();
+        try {
+            foreach ($table->cells as $cell) {
+                $styles = $cell->styles()->where('style', 'LIKE', '%color%')->get();
+
+                foreach ($styles as $style) {
+                    /** @var TableCellStyle $style */
+                    $hsv = (new Hex($style->value))->toHsv();
+                    $hsv->value(100 - $hsv->value());
+                    $style->value = (string)$hsv->toHex();
+                    $style->save();
+                }
+
+                $styles = $cell->styles()->where('style', 'LIKE', '%border%')->get();
+
+                foreach ($styles as $style) {
+                    /** @var TableCellStyle $style */
+                    [$a, $b, $color] = explode(' ', $style->value);
+
+                    $hsv = (new Hex($color))->toHsv();
+                    $hsv->value(100 - $hsv->value());
+                    $style->value = implode(' ', [$a, $b, (string)$hsv->toHex()]);
+                    $style->save();
+                }
+            }
+
+            Db::commit();
+        } catch (\Exception $e) {
+            dd($e);
+            DB::rollBack();
+        }
 
         $editMode = $request->has('editMode');
         return redirect()->route('languages.tables', ['code' => $language->id, 'editMode' => $editMode]);

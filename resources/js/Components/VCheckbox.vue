@@ -1,5 +1,4 @@
 <script setup>
-import { computed, onUpdated, ref } from "vue";
 
 const { name, modelValue, value, required, errors } = defineProps({
     name: {

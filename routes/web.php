@@ -84,7 +84,9 @@ Route::name('languages.')->prefix('/languages')->group(static function() {
         Route::name('store')->post('', [TablesController::class, 'store']);
         Route::name('import')->post('/import', [TablesController::class, 'import']);
         Route::name('update')->post('/{table}', [TablesController::class, 'update']);
+        Route::name('shadow')->post('/{table}/shadow', [TablesController::class, 'shadow']);
         Route::name('delete')->delete('/{table}', [TablesController::class, 'delete']);
+        Route::name('move')->post('/{table}/move', [TablesController::class, 'move']);
         Route::name('rows.store')->post('/{table}/rows', [TablesController::class, 'add_row']);
         Route::name('rows.delete')->delete('/{table}/rows/{row}', [TablesController::class, 'delete_row']);
         Route::name('columns.store')->post('/{table}/columns', [TablesController::class, 'add_column']);
