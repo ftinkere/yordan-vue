@@ -56,7 +56,11 @@ class LanguagesController extends Controller
     public function view($code)
     {
         /** @var Language $language */
-        $language = Language::with(['base_articles', 'user'])->findOrFail($code);
+        $language = Language::with([
+            'base_articles',
+            'user',
+        ])->findOrFail($code);
+
         return Inertia::render('LanguageView', [
             ...compact('language'),
             'action' => $language->get_action(),

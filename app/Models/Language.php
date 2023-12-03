@@ -69,12 +69,28 @@ class Language extends Model
 
     protected $table = 'languages';
     protected $fillable = ['name', 'user_id', 'autonym', 'autonym_transcription', 'type'];
-    protected $appends = ['can_edit'];
+    protected $appends = ['can_edit', 'shows'];
 
     public function canEdit(): Attribute {
         return Attribute::make(
             get: function () {
                 return Gate::allows('edit-language', $this);
+            }
+        );
+    }
+
+    public function shows(): Attribute {
+        return Attribute::make(
+            get: function () {
+                $shows = [];
+                $shows['articles'] = $this->articles()->count() > 0;
+                $shows['tables'] = $this->tables()->count() > 0;
+                $shows['vocabulary'] = $this->vocables()->count() > 0;
+                $shows['phonetics'] = $this->language_sounds()->count() > 0 || $this->base_articles?->phonetic;
+                $shows['orthography'] = $this->orthographemes()->count() > 0;
+                $shows['grammatics'] = $this->grammatics()->count() > 0;
+
+                return $shows;
             }
         );
     }

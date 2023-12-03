@@ -4,8 +4,6 @@ import VModal from "@/Components/VModal.vue";
 import LanguageFlag from "@/Components/LanguageFlag.vue";
 import route from "ziggy-js";
 
-/* global route */
-
 const { language } = defineProps({
     language: {
         type: Object,
@@ -14,13 +12,13 @@ const { language } = defineProps({
 });
 
 const tabs = [
-    { name: 'О языке', url: route("languages.view", language.id), active: 'languages.view' },
-    { name: 'Статьи', url: route("languages.articles", language.id), active: 'languages.articles*' },
-    { name: 'Таблицы', url: route("languages.tables", language.id), active: 'languages.tables*' },
-    { name: 'Словарь', url: route("languages.vocabulary", language.id), active: 'languages.vocabulary*' },
-    { name: 'Фонетика', url: route("languages.phonetic", language.id), active: 'languages.phonetic' },
-    { name: 'Орфография', url: route("languages.orthography", language.id), active: 'languages.orthography' },
-    { name: 'Грамматика', url: route("languages.grammatics", language.id), active: 'languages.grammatics' },
+    { name: 'О языке', url: route("languages.view", language.id), active: 'languages.view', shows: true },
+    { name: 'Статьи', url: route("languages.articles", language.id), active: 'languages.articles*', shows: language.shows.articles },
+    { name: 'Таблицы', url: route("languages.tables", language.id), active: 'languages.tables*', shows: language.shows.tables },
+    { name: 'Словарь', url: route("languages.vocabulary", language.id), active: 'languages.vocabulary*', shows: language.shows.vocabulary },
+    { name: 'Фонетика', url: route("languages.phonetic", language.id), active: 'languages.phonetic', shows: language.shows.phonetics },
+    { name: 'Орфография', url: route("languages.orthography", language.id), active: 'languages.orthography', shows: language.shows.orthography },
+    { name: 'Грамматика', url: route("languages.grammatics", language.id), active: 'languages.grammatics', shows: language.shows.grammatics },
 ];
 
 if (language.can_edit) {
@@ -66,15 +64,19 @@ if (language.can_edit) {
       </span>
     </h1>
     <div class="tab tab-lg h-fit p-0">
-      <Link
+      <template
         v-for="tab in tabs"
         :key="tab.name"
-        class="tab tab-bordered"
-        :class="{ 'tab-active': route().current(tab.active) }"
-        :href="tab.url"
       >
-        {{ tab.name }}
-      </Link>
+        <Link
+          v-if="tab.shows || language.can_edit"
+          class="tab tab-bordered"
+          :class="{ 'tab-active': route().current(tab.active) }"
+          :href="tab.url"
+        >
+          {{ tab.name }}
+        </Link>
+      </template>
     </div>
   </div>
 </template>
