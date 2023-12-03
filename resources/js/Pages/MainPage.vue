@@ -51,15 +51,26 @@ const ownedLanguages = computed(function () {
         <p>На данном сайте вы можете создавать свои конланги. И делиться ими с другими людьми.</p>
       </div>
     </article>
+    <!-- Блок если почта не подтверждена-->
+    <article
+      v-if="$page.props.auth.user && !$page.props.auth.user.email_verified_at"
+      class="mx-auto alert alert-warning"
+    >
+      <p>Подтвердите вашу почту, чтобы добавить свой язык</p>
+    </article>
+    <!-- Конец блока если почта не подтверждена-->
 
     <!--  Блок со списками языков  -->
     <div
       class="mt-4 mx-auto grid grid-cols-1"
-      :class="{ 'md:grid-cols-2': $page.props.auth.user, 'max-w-md': !$page.props.auth.user }"
+      :class="{
+        'md:grid-cols-2': $page.props.auth.user && $page.props.auth.user.email_verified_at,
+        'max-w-md': !($page.props.auth.user && $page.props.auth.user.email_verified_at)
+    }"
     >
       <!--  Блок языков пользователя, если тот залогинен  -->
       <div
-        v-if="$page.props.auth.user"
+        v-if="$page.props.auth.user && $page.props.auth.user.email_verified_at"
         class="flex flex-col gap-2 max-w-screen-xs"
       >
         <h4 class="self-center">

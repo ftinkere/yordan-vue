@@ -32,7 +32,7 @@ const avatar_path = user?.avatar;
     <!-- TODO: Component VDropdown -->
     <div
       v-else
-      class="dropdown dropdown-end"
+      class="dropdown dropdown-end z-20"
     >
       <label tabindex="0">
         <!-- Аватар-->

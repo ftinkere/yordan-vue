@@ -26,7 +26,7 @@ function submit() {
 <template>
   <Layout title="Все языки">
     <div
-      v-if="$page.props.auth.user"
+      v-if="$page.props.auth.user && $page.props.auth.user.email_verified_at"
       class="mb-4"
     >
       <VModal

@@ -279,7 +279,7 @@
           </VModal>
         </div>
 
-        <div class="flex flex-col-reverse md:flex-row flex-wrap gap-2 items-center">
+        <div class="flex flex-row flex-wrap-reverse gap-2 items-center justify-end">
           <VSaveLoader :is-save="isSave" />
           <EditButton
             v-if="language.can_edit && !isEdit"
@@ -612,7 +612,7 @@
         </ul>
       </div>
 
-      <div class="flex flex-col sm:flex-row sm:justify-between">
+      <div class="flex flex-row flex-wrap-reverse justify-between">
         <button
           v-if="isEdit"
           class="mt-4 btn btn-sm btn-error self-start w-fit"
@@ -654,11 +654,13 @@
                     v-model="lexemeForms[0].group_number"
                     label="Номер группы"
                     type="number"
+                    input-class="min-w-0"
                   />
                   <VInput
                     v-model="lexemeForms[0].lexeme_number"
                     label="Номер лексемы"
                     type="number"
+                    input-class="min-w-0"
                   />
                 </div>
 
@@ -676,9 +678,9 @@
                 />
               </div>
 
-              <div class="flex flex-col sm:flex-row flex-wrap justify-between">
+              <div class="flex flex-row flex-wrap justify-between">
                 <button
-                  class="btn btn-sm btn-success"
+                  class="btn btn-sm btn-success w-fit"
                   @click="createLexeme"
                 >
                   Добавить
