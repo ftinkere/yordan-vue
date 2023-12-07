@@ -554,8 +554,9 @@
             return
         }
         const clipboardData = event.clipboardData
+        let gsheets;
         try {
-            const gsheets = JSON.parse(clipboardData.getData('application/x-vnd.google-docs-embedded-grid_range_clip+wrapped'))
+            gsheets = JSON.parse(clipboardData.getData('application/x-vnd.google-docs-embedded-grid_range_clip+wrapped'))
         } catch (e) {
             return
         }
