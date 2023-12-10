@@ -64,6 +64,7 @@ Route::name('languages.')->prefix('/languages')->group(static function() {
     Route::name('flag')->post('/{code}/flag', [LanguagesController::class, 'pushFlag']);
     Route::name('image')->post('/{code}/image', [LanguagesController::class, 'pushImage']);
     Route::name('action')->get('/{code}/action', [LanguagesController::class, 'action']);
+    Route::name('hide')->post('/{code}/hide', [LanguagesController::class, 'hiddenChange']);
 
     Route::name('settings')->get('/{code}/settings', [LanguagesController::class, 'settings']);
 

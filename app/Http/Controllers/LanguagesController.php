@@ -204,4 +204,21 @@ class LanguagesController extends Controller
 
         return Inertia::render('LanguageSettings', compact('language'));
     }
+
+    public function hiddenChange(Request $request, $code) {
+        $language = Language::findOrFail($code);
+        Gate::authorize('edit-language', $language);
+
+        ['value' => $value] = $request->validate([
+            'value' => 'required|boolean'
+        ], messages: [
+            'value.required' => 'Значение обязательно.',
+            'value.boolean' => 'Значение обязательно должно быть булевым.',
+        ]);
+
+        $language->hidden = $value;
+        $language->save();
+
+        return redirect()->route('languages.settings', ['code' => $language->id]);
+    }
 }

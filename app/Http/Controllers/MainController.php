@@ -11,7 +11,10 @@ use Inertia\Inertia;
 class MainController extends Controller
 {
     public function index() {
-        $lasts = Language::orderBy('updated_at', 'desc')->limit(15)->get();
+        $lasts = Language::where('hidden', false)
+            ->orderBy('updated_at', 'desc')
+            ->limit(15)
+            ->get();
         $owned = Auth::user()?->languages ?: [];
         return Inertia::render('MainPage', compact('lasts', 'owned'));
     }

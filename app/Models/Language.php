@@ -24,6 +24,7 @@ use Illuminate\Support\Facades\Gate;
  * @property string $status
  * @property string|null $flag
  * @property int|null $user_id
+ * @property boolean $hidden
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\BaseArticles|null $base_articles
@@ -70,6 +71,10 @@ class Language extends Model
     protected $table = 'languages';
     protected $fillable = ['name', 'user_id', 'autonym', 'autonym_transcription', 'type'];
     protected $appends = ['can_edit', 'shows'];
+
+    protected $casts = [
+        'hidden' => 'boolean'
+    ];
 
     public function canEdit(): Attribute {
         return Attribute::make(
