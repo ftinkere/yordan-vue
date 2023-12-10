@@ -102,7 +102,7 @@ const pushAvatar = function () {
         <template #content>
           <img
             v-if="avatarPreview"
-            class="rounded-full h-[10em]"
+            class="rounded-full object-cover h-[15em] w-[15em]"
             alt="Аватар"
             :src="avatarPreview"
           >

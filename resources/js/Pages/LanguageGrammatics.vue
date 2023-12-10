@@ -41,6 +41,7 @@ const deleteGrammaticForm = useForm({
 
 const deleteGrammatic = function () {
     deleteGrammaticForm.delete(route('languages.grammatics.delete', [language.id, deleteGrammaticForm.id]), {
+        preserveScroll: true,
         onSuccess: () => editGrammaticModal.value?.close(),
     })
 }
@@ -56,6 +57,7 @@ const editGrammaticForm = useForm({
 
 const applyEditGrammatic = function () {
     editGrammaticForm.post(route('languages.grammatics.update', [language.id, editGrammaticForm.id]), {
+        preserveScroll: true,
         onSuccess: () => editGrammaticFlash.value?.flash(),
     })
 }
@@ -97,6 +99,7 @@ const addGrammaticForm = useForm({
 
 const addGrammatic = function () {
     addGrammaticForm.post(route('languages.grammatics.store', language.id), {
+        preserveScroll: true,
         onSuccess: () => {
             addGrammaticModal.value?.close()
             addGrammaticForm.reset()
@@ -127,6 +130,7 @@ const deleteValueForm = useForm({
 
 const deleteValue = function () {
     deleteValueForm.delete(route('languages.grammatics.values.delete', [language.id, deleteValueForm.grammatic_id, deleteValueForm.id]), {
+        preserveScroll: true,
         onSuccess: () => editValueModal.value?.close(),
     })
 }
@@ -143,6 +147,7 @@ const editValueForm = useForm({
 
 const applyEditValue = function () {
     editValueForm.post(route('languages.grammatics.values.update', [language.id, editValueForm.grammatic_id, editValueForm.id]), {
+        preserveScroll: true,
         onSuccess: () => editValueFlash.value?.flash(),
     })
 }
@@ -193,6 +198,7 @@ const openAddValueModal = function (grammatic) {
 
 const addValue = function () {
     addValueForm.post(route('languages.grammatics.values.store', [language.id, addValueForm.grammatic_id]), {
+        preserveScroll: true,
         onSuccess: () => {
             addValueModal.value?.close()
             addValueForm.reset()

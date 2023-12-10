@@ -11,6 +11,7 @@ use App\Models\Vocabula;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Session;
 use Inertia\Inertia;
@@ -116,41 +117,48 @@ class VocabularyController extends Controller
         ]
         );
 
-        $vocabula = Vocabula::create([
-            ...$data,
-            'language_id' => $language->id,
-        ]);
-
-        $lexeme0 = Lexeme::create([
-            'vocabula_id' => $vocabula->id,
-            'short' => '',
-            'article' => '',
-            'group_number' => 0,
-            'lexeme_number' => 0,
+        DB::beginTransaction();
+        try {
+            $vocabula = Vocabula::create([
+                ...$data,
+                'language_id' => $language->id,
             ]);
 
-        $lexeme1 = null;
-        if ($data['lexeme'] && ($data['lexeme']['short'] || $data['lexeme']['article'])) {
-            $lexeme1 = Lexeme::create([
+            $lexeme0 = Lexeme::create([
                 'vocabula_id' => $vocabula->id,
-                'short' => $data['lexeme']['short'] ?? '',
-                'article' => $data['lexeme']['article'] ?? '',
+                'short' => '',
+                'article' => '',
+                'group_number' => 0,
+                'lexeme_number' => 0,
             ]);
+
+            $lexeme1 = null;
+            if ($data['lexeme'] && ($data['lexeme']['short'] || $data['lexeme']['article'])) {
+                $lexeme1 = Lexeme::create([
+                    'vocabula_id' => $vocabula->id,
+                    'short' => $data['lexeme']['short'] ?? '',
+                    'article' => $data['lexeme']['article'] ?? '',
+                ]);
+            }
+
+            foreach ($data['grammatics'] as $gram) {
+                $grammatic = GrammaticValue::findOrFail($gram);
+                Gate::authorize('grammatic-value-is-language', $grammatic);
+
+                $new = LexemeGrammatic::create([
+                    'lexeme_id' => (($data['grammatics_general'] ?? true) && $lexeme1 !== null) ? $lexeme0->id : ($lexeme1?->id ?? $lexeme0->id),
+                    'grammatic_value_id' => $grammatic->id,
+                    'is_variable' => is_array($data['grammatics_variables']) && in_array($gram, $data['grammatics_variables']),
+                ]);
+            }
+
+            $language->updateTimestamps();
+            $language->save();
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
         }
-
-        foreach ($data['grammatics'] as $gram) {
-            $grammatic = GrammaticValue::findOrFail($gram);
-            Gate::authorize('grammatic-value-is-language', $grammatic);
-
-            $new = LexemeGrammatic::create([
-                'lexeme_id' => (($data['grammatics_general'] ?? true) && $lexeme1 !== null) ? $lexeme0->id : $lexeme1->id,
-                'grammatic_value_id' => $grammatic->id,
-                'is_variable' => is_array($data['grammatics_variables']) && in_array($gram, $data['grammatics_variables']),
-            ]);
-        }
-
-        $language->updateTimestamps();
-        $language->save();
+        DB::commit();
 
         return redirect()->route('languages.vocabulary.view', ['code' => $language->id, 'vocabula' => $vocabula->id, 'editMode' => true]);
     }

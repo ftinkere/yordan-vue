@@ -48,7 +48,9 @@
 
     const applyVocabula = function () {
         vocabulaForm.post(route('languages.vocabulary.update', { code: language.id, vocabula: vocabula.id }), {
-            onSuccess: () => { vocabulaModal.value?.close() }
+            onSuccess: () => {
+                vocabulaModal.value?.close()
+            }
         })
     }
 
@@ -195,7 +197,6 @@
             lexeme: lexeme.id
         }), {
             onSuccess: () => {
-                linkForm.reset()
                 linksModal.forEach(modal => {
                     try {
                         modal.close()

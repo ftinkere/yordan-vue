@@ -19,7 +19,7 @@ defineProps({
 <template>
   <img
     v-if="avatar"
-    class="rounded-full"
+    class="rounded-full object-cover"
     :alt="alt"
     :src="avatar"
     :style="{ width: size, height: size }"

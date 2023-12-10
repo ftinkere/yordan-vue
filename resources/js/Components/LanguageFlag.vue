@@ -16,7 +16,7 @@ const { language } = defineProps({
 <template>
   <img
     v-if="preview ? preview : language.flag"
-    class="rounded-full"
+    class="rounded-full object-cover"
     alt="Флаг"
     :src="preview ? preview : language.flag"
     :style="{ height: size, width: size }"
