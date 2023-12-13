@@ -16,6 +16,7 @@ import VInput from "@/Components/VInput.vue";
 import VCheckbox from "@/Components/VCheckbox.vue";
 import VFlashSuccess from "@/Components/VFlashSuccess.vue";
 import SoundString from "@/Components/SoundString.vue";
+import TranscriptionConverter from "@/Components/TranscriptionConverter.vue";
 
 const { language, sounds, tables, ...props } = defineProps({
     language: {
@@ -280,6 +281,7 @@ const deleteSound = function (sound) {
                 :errors="addSoundForm.errors.sound"
                 required
               />
+              <TranscriptionConverter v-model="addSoundForm.sound" />
               <VInput
                 v-model="addSoundForm.table"
                 label="Таблица"
