@@ -1,6 +1,6 @@
 <script setup>
     import LanguageLayout from "@/Layouts/LanguageLayout.vue";
-    import { computed, nextTick, onMounted, onUpdated, ref } from "vue";
+    import { computed, nextTick, onMounted, onUpdated, ref, watch } from "vue";
     import EditButton from "@/Components/EditButton.vue";
     import VSaveLoader from "@/Components/VSaveLoader.vue";
     import VFlashSuccess from "@/Components/VFlashSuccess.vue";
@@ -10,7 +10,8 @@
     import VInput from "@/Components/VInput.vue";
     import _ from "lodash";
     import TableCellSelector from "js-table-cell-selector";
-    import Color from 'colorjs.io'
+    import VMarkdownViewer from "@/Components/VMarkdownViewer.vue";
+    import VMarkdownEditor from "@/Components/VMarkdownEditor.vue";
 
 
     const { language, editMode } = defineProps({
@@ -29,6 +30,8 @@
     const isEdit = ref(editMode)
     const flashSuccess = ref(null)
 
+    const updateVar = ref(true);
+
     // Edit table header
     const editTableModal = ref(null)
     const editTableFlash = ref(null)
@@ -36,6 +39,7 @@
         id: 0,
         name: '',
         caption: '',
+        comments: '',
         _token
     })
     function openEditTableModal(table) {
@@ -46,9 +50,14 @@
         editTableForm.id = table.id
         editTableForm.name = table.name
         editTableForm.caption = table.caption
+        editTableForm.comments = table.comments
+
+        updateVar.value = false;
+        nextTick(() => updateVar.value = true)
 
         editTableModal.value?.open()
     }
+
     function editTable() {
         editTableForm.post(route('languages.tables.update', [language.id, editTableForm.id]), {
             onSuccess: () => {
@@ -57,6 +66,8 @@
             }
         })
     }
+
+    // watch(() => editTableForm.comments, _.debounce(editTable, 1500))
 
     // Delete table
     const deleteTableModal = ref(null)
@@ -1201,6 +1212,7 @@
           v-for="table in language.tables"
           :key="table.id"
           class="flex flex-col gap-2 overflow-x-auto"
+          :class="{ 'items-center': !isEdit }"
         >
           <table
             ref="tableEls"
@@ -1264,6 +1276,10 @@
             </tr>
             <!-- End rows -->
           </table>
+
+          <article v-if="table.comments && updateVar">
+            <VMarkdownViewer :content="table.comments" />
+          </article>
 
           <div
             v-if="isEdit"
@@ -1394,6 +1410,13 @@
               v-model="editTableForm.caption"
               type="textarea"
               label="Описание таблицы"
+            />
+
+            <VMarkdownEditor
+              v-if="updateVar"
+              v-model="editTableForm.comments"
+              label="Комментарии"
+              :language="language"
             />
 
             <div class="mt-4 flex flex-row justify-between">

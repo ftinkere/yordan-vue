@@ -11,6 +11,7 @@ use App\Models\Vocabula;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Session;
@@ -22,7 +23,20 @@ class VocabularyController extends Controller
         $language = Language::with('grammatics', 'grammatics.grammatic_values')->findOrFail($code);
 
         $vocables = $language->vocables()
-            ->with(['lexemes', 'lexemes.links', 'lexemes.links.to', 'lexemes.links.to.grammatics', 'lexemes.links.to.grammatics.grammatic_value', 'lexemes.links.to.vocabula', 'lexemes.grammatics', 'lexemes.grammatics.grammatic_value'])
+            ->with([
+                'lexemes',
+                'lexemes.links',
+                'lexemes.links.to',
+                'lexemes.links.to.grammatics' => static function ($query) {
+                    $query->orderBy('id');
+                },
+                'lexemes.links.to.grammatics.grammatic_value',
+                'lexemes.links.to.vocabula',
+                'lexemes.grammatics' => static function ($query) {
+                    $query->orderBy('id');
+                },
+                'lexemes.grammatics.grammatic_value'
+            ])
             ->select('vocables.*')
             ->where('language_id', '=', $code);
 
@@ -218,7 +232,7 @@ class VocabularyController extends Controller
         ]);
         $file = $request->file('image');
 
-        if ($file !== null) {
+        if ($file !== null && $file instanceof UploadedFile) {
             $path = $file->storeAs('/images/' . $language->id . '/vocables', (string)$vocabula->id . '.' . $file->getClientOriginalExtension(), 'public');
             $path = '/storage/' . $path;
             $vocabula->image = $path;
@@ -402,7 +416,7 @@ class VocabularyController extends Controller
             'from_lexeme_id' => $lexeme->id,
         ]);
 
-        if ($data['reverse'] && $data['reverse']['type']) {
+        if (isset($data['reverse']['type'])) {
             Link::create([
                 ...$data['reverse'],
                 'to_lexeme_id' => $lexeme->id,

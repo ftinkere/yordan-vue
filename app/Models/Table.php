@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $language_id
  * @property string $name
  * @property string|null $caption
+ * @property string|null $comments
  * @property int $is_zebra
  * @property int $order
  * @property \Illuminate\Support\Carbon|null $created_at
@@ -36,7 +37,7 @@ class Table extends Model implements HasLanguage
     use HasFactory;
 
     protected $table = 'tables';
-    protected $fillable = ['language_id', 'name', 'caption', 'is_zebra', 'order'];
+    protected $fillable = ['language_id', 'name', 'caption', 'comments', 'is_zebra', 'order'];
     protected $touches = ['language'];
 
     static function newOrder(Language $language) {

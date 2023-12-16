@@ -17,6 +17,8 @@
     import LexemeLink from "@/Components/LexemeLink.vue";
     import VInputLexeme from "@/Components/VInputLexeme.vue";
     import VCheckbox from "@/Components/VCheckbox.vue";
+    import FlashMessage from "@/Layouts/partials/FlashMessage.vue";
+    import VFlashSuccess from "@/Components/VFlashSuccess.vue";
 
     const { language, vocabula, editMode } = defineProps({
         language: {
@@ -184,6 +186,7 @@
         type: null,
         comment: null,
     })
+    const successFlash = ref(null)
 
     const addLink = function (lexeme) {
         linkForm.transform(data => {
@@ -197,6 +200,7 @@
             lexeme: lexeme.id
         }), {
             onSuccess: () => {
+                successFlash.value.forEach(e => e?.flash())
                 linksModal.forEach(modal => {
                     try {
                         modal.close()
@@ -518,6 +522,8 @@
                                       >
                                         Добавить
                                       </button>
+
+                                      <VFlashSuccess ref="successFlash" />
                                     </template>
 
                                     <template #content>

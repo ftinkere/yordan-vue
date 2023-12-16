@@ -85,10 +85,12 @@ class TablesController extends Controller
         $data = $request->validate([
             'name' => 'nullable',
             'caption' => 'nullable',
+            'comments' => 'nullable',
         ], messages: []);
 
         $data['name'] ??= '';
         $data['caption'] ??= '';
+        $data['comments'] ??= '';
 
         $table->update($data);
 

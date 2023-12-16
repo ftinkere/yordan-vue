@@ -41,9 +41,9 @@
     margin: unset !important;
 }
 
-article p {
-    @apply indent-4;
-}
+/*article p {*/
+/*    @apply indent-4;*/
+/*}*/
 
 article hr {
     @apply mt-2;
