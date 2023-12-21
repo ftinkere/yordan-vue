@@ -559,7 +559,7 @@ class VocabularyController extends Controller {
                     ]);
                 }
 
-                if ($group_number === 1) {
+                if (isset($vocabula_model)) {
                     $zero_lexeme_model = Lexeme::create([
                         'vocabula_id' => $vocabula_model->id,
                         'short' => '',
