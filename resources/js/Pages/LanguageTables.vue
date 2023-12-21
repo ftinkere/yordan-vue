@@ -1200,19 +1200,14 @@
       <!-- Tables container -->
       <div
         id="tables"
-        class="flex gap-4"
-        :class="{
-          'flex-row flex-wrap': !isEdit,
-          'flex-col': isEdit,
-        }"
+        class="flex flex-col gap-4"
         @click="deselect"
       >
         <!-- Table -->
         <div
           v-for="table in language.tables"
           :key="table.id"
-          class="flex flex-col gap-2 overflow-x-auto"
-          :class="{ 'items-center': !isEdit }"
+          class="flex flex-col gap-2 overflow-x-auto items-center"
         >
           <table
             ref="tableEls"

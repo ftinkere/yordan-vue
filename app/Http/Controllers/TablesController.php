@@ -164,7 +164,8 @@ class TablesController extends Controller
                         $styles = explode(';', $styles);
                         $styles = array_map(static function($el) { return explode(':', $el); }, $styles);
 
-                        $cell_model->applyStyle('color', 'black');
+
+                        $cell_model->applyStyle('color', 'white');
                         foreach ($styles as $pair) {
                             if (in_array($pair[0], [
                                 'vertical-align',

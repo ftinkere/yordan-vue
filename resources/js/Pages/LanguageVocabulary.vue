@@ -295,6 +295,17 @@ const pushVocabula = function() {
       </div>
 
       <VPaginator :paginator="vocables" />
+
+      <div class="flex flex-row justify-between">
+        <span></span>
+
+        <Link
+          :href="route('languages.vocabulary.import', language.id)"
+          class="btn btn-primary w-fit"
+        >
+          Импортировать
+        </Link>
+      </div>
     </div>
   </LanguageLayout>
 </template>

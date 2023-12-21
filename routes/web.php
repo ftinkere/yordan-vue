@@ -112,6 +112,9 @@ Route::name('languages.')->prefix('/languages')->group(static function() {
         Route::name('image')->post('/{vocabula}/image', [VocabularyController::class, 'pushImage'])->whereNumber('vocabula');
         Route::name('image')->delete('/{vocabula}/image', [VocabularyController::class, 'deleteImage'])->whereNumber('vocabula');
 
+        Route::name('import')->get('/import', [VocabularyController::class, 'importPage']);
+        Route::name('import')->post('/import', [VocabularyController::class, 'importTable']);
+
         Route::name('lexemes.search')->get('/search', [VocabularyController::class, 'searchLexemes']);
         Route::name('lexemes.')->prefix('/{vocabula}/lexemes')->group(static function () {
             Route::name('store')->post('', [VocabularyController::class, 'lexemeStore']);

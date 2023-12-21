@@ -8,6 +8,9 @@ use App\Models\Lexeme;
 use App\Models\LexemeGrammatic;
 use App\Models\Link;
 use App\Models\Vocabula;
+use DOMDocument;
+use DOMElement;
+use DOMXPath;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Http\Request;
@@ -17,8 +20,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Session;
 use Inertia\Inertia;
 
-class VocabularyController extends Controller
-{
+class VocabularyController extends Controller {
     public function index(Request $request, $code) {
         $language = Language::with('grammatics', 'grammatics.grammatic_values')->findOrFail($code);
 
@@ -103,7 +105,7 @@ class VocabularyController extends Controller
                 $query->orderBy('id');
             },
             'lexemes.grammatics.grammatic_value',
-            ])
+        ])
             ->findOrFail($vocabula);
 
         return Inertia::render('VocabularyView', [
@@ -489,7 +491,7 @@ class VocabularyController extends Controller
              * @var Lexeme $lexeme
              */
             $item = []; // $lexeme->vocabula->language->name . ': ' .
-            $item['view'] = $lexeme->vocabula->vocabula . ' ' . $lexeme->group_number . '.' . $lexeme->lexeme_number . ' (' . $lexeme->short . ')' ;
+            $item['view'] = $lexeme->vocabula->vocabula . ' ' . $lexeme->group_number . '.' . $lexeme->lexeme_number . ' (' . $lexeme->short . ')';
             $item['id'] = $lexeme->id;
             $list[] = $item;
         }
@@ -502,5 +504,88 @@ class VocabularyController extends Controller
         }
 
         return $list;
+    }
+
+    public function importPage(Request $request, $code) {
+        /** @var Language $language */
+        $language = Language::with('tables')->findOrFail($code);
+        Gate::authorize('edit-language', $language);
+
+        return Inertia::render('VocabularyImport', compact('language'));
+    }
+
+    public function importTable(Request $request, $code) {
+        /** @var Language $language */
+        $language = Language::with('tables')->findOrFail($code);
+        Gate::authorize('edit-language', $language);
+
+        ['html' => $html] = $request->validate([
+            'html' => 'required'
+        ]);
+
+        libxml_use_internal_errors(true);
+        $document = new DOMDocument();
+        $document->loadHTML('<meta charset="utf8">' . $html);
+        libxml_use_internal_errors(false);
+
+        $xpath = new DOMXPath($document);
+
+        DB::beginTransaction();
+        try {
+            /** @var \DOMElement $rows */
+            $rows = $xpath->query('//table//tr');
+
+            foreach ($rows as $row) {
+                /** @var DOMElement $row */
+
+                $dom = new DOMDocument();
+                $dom->appendChild($dom->importNode($row->cloneNode(true), true));
+                $cells = (new DOMXPath($dom))->query('//td|th');
+
+                $vocabula = $cells[0]->textContent;
+                $short = $cells[1]->textContent;
+
+                $group_number = 1;
+                $exists_vocabula = Vocabula::where('language_id', $language->id)
+                    ->where('vocabula', $vocabula)
+                    ->first();
+                if ($exists_vocabula) {
+                    $group_number = $exists_vocabula->lexemes()->max('group_number') + 1;
+                } else {
+                    $vocabula_model = Vocabula::create([
+                        'language_id' => $language->id,
+                        'vocabula' => $vocabula,
+                        'transcription' => ' ',
+                    ]);
+                }
+
+                if ($group_number === 1) {
+                    $zero_lexeme_model = Lexeme::create([
+                        'vocabula_id' => $vocabula_model->id,
+                        'short' => '',
+                        'article' => '',
+                        'group_number' => 0,
+                        'lexeme_number' => 0,
+                    ]);
+                }
+
+                $exists_lexeme = $exists_vocabula?->lexemes()->where('short', $short)->first();
+
+                if (!$exists_lexeme) {
+                    $first_lexeme_model = Lexeme::create([
+                        'vocabula_id' => $vocabula_model->id,
+                        'short' => $short,
+                        'article' => '',
+                        'group_number' => $group_number,
+                        'lexeme_number' => 1,
+                    ]);
+                }
+            }
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
     }
 }
