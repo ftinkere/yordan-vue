@@ -19,6 +19,8 @@
     import VCheckbox from "@/Components/VCheckbox.vue";
     import FlashMessage from "@/Layouts/partials/FlashMessage.vue";
     import VFlashSuccess from "@/Components/VFlashSuccess.vue";
+    import BackButton from "@/Components/buttons/BackButton.vue";
+    import VocabulaEditModal from "@/Components/modals/VocabulaEditModal.vue";
 
     const { language, vocabula, editMode } = defineProps({
         language: {
@@ -237,14 +239,7 @@
 <template>
   <LanguageLayout :language="language">
     <div class="card flex flex-col">
-      <div>
-        <button
-          class="btn btn-sm"
-          onclick="history.back()"
-        >
-          Назад
-        </button>
-      </div>
+      <BackButton />
 
       <div class="flex flex-row justify-between items-end md:items-center">
         <div class="flex flex-row flex-wrap gap-2 items-center">
@@ -253,53 +248,16 @@
             <span class="font-normal text-md">/{{ vocabula.transcription }}/</span>
           </h4>
 
-          <VModal
+          <VocabulaEditModal
             v-if="isEdit"
-            ref="vocabulaModal"
-            header="Изменить вокабулу"
-            button-class="btn btn-sm btn-warning"
-            class="max-w-screen-sm"
+            v-model:vocabula-form="vocabulaForm"
+            :loader="isSave"
             @close="vocabulaForm.reset()"
+            @click-submit="applyVocabula"
+            @click-reset="vocabulaForm.reset()"
           >
             <span>Изменить вокабулу</span>
-
-            <template #postHeader>
-              <button
-                class="btn btn-sm btn-success"
-                @click="applyVocabula"
-              >
-                Сохранить
-              </button>
-              <button
-                class="btn btn-sm btn-warning"
-                @click="vocabulaForm.reset()"
-              >
-                Сбросить
-              </button>
-              <VSaveLoader :is-save="isSave" />
-            </template>
-
-            <template #content>
-              <div class="flex flex-col">
-                <VInput
-                  v-model="vocabulaForm.vocabula"
-                  label="Вокабула"
-                  class="w-full"
-                  :errors="vocabulaForm.errors.vocabula"
-                  required
-                />
-                <div class="w-full">
-                  <VInput
-                    v-model="vocabulaForm.transcription"
-                    label="Транскрипция"
-                    :errors="vocabulaForm.errors.transcription"
-                    required
-                  />
-                  <TranscriptionConverter v-model="vocabulaForm.transcription" />
-                </div>
-              </div>
-            </template>
-          </VModal>
+          </VocabulaEditModal>
         </div>
 
         <div class="flex flex-row flex-wrap-reverse gap-2 items-center justify-end">
