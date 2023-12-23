@@ -17,6 +17,12 @@ const { lexeme } = defineProps({
       <span v-if="lexeme.lexeme_number !== 0 && !one">.{{ lexeme.lexeme_number }}</span>
       &thinsp;
     </span>
+    <span
+      v-if="lexeme.style"
+      class="italic"
+    >
+      ({{ lexeme.style }})
+    </span>
     <span>{{ lexeme.short }}</span>
     <i class="inline">
       <span v-if="lexeme.grammatics?.filter(grammatic => grammatic.is_variable == false).length > 0">

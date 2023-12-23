@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $lexeme_number
  * @property string $short
  * @property string $article
+ * @property string|null $style
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\LexemeGrammatic> $grammatics
@@ -42,7 +43,7 @@ class Lexeme extends Model
     use HasFactory;
 
     protected $table = 'lexemes';
-    protected $fillable = ['vocabula_id', 'meaning_id', 'group_number', 'lexeme_number', 'short', 'article', 'image', 'grammar'];
+    protected $fillable = ['vocabula_id', 'meaning_id', 'group_number', 'lexeme_number', 'short', 'article', 'style', 'image', 'grammar'];
 
     public function vocabula(): BelongsTo {
         return $this->belongsTo(Vocabula::class, 'vocabula_id');

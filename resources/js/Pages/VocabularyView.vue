@@ -98,6 +98,7 @@
             grammatics_variables: [],
             short: '',
             article: '',
+            style: '',
             _token,
         })
 
@@ -110,6 +111,7 @@
                 grammatics_variables: lexeme?.grammatics?.filter(g => g.is_variable === 1).map(g => `${g.grammatic_value_id}`),
                 short: lexeme.short,
                 article: lexeme.article,
+                style: lexeme.style,
                 _token,
             })
         })
@@ -125,6 +127,16 @@
 
     const createModal = ref(null)
 
+    function styles() {
+        let res = {}
+
+        res[0] = false
+        vocabula.lexemes.forEach(e => res[e.id] = !!e.style)
+        return res
+    }
+
+    const isStyleAdd = ref(styles())
+
     const createLexeme = function () {
         lexemeForms[0]
             .transform(data => {
@@ -133,6 +145,9 @@
                 }
                 if (data.grammatics_variables) {
                     data.grammatics_variables = data.grammatics_variables.map(g => parseInt(g))
+                }
+                if (!isStyleAdd.value[0]) {
+                    data.style = null
                 }
                 return data
             })
@@ -151,6 +166,9 @@
                 }
                 if (data.grammatics_variables) {
                     data.grammatics_variables = data.grammatics_variables.map(g => parseInt(g))
+                }
+                if (!isStyleAdd.value[id]) {
+                    data.style = null
                 }
                 return data
             }).post(route('languages.vocabulary.lexemes.update', { code: language, vocabula: vocabula.id, lexeme: id }), {
@@ -452,9 +470,35 @@
                           <VInput
                             v-model="lexemeForms[lexeme.id].short"
                             label="Короткое значение"
-                            :errors="lexemeForms[0].errors.short"
+                            :errors="lexemeForms[lexeme.id].errors.short"
                             :required="lexeme.group_number !== 0 || lexeme.lexeme_number !== 0"
                           />
+
+                          <div>
+                            <div v-if="!isStyleAdd[lexeme.id]">
+                              <button
+                                class="link link-info"
+                                @click="isStyleAdd[lexeme.id] = true"
+                              >
+                                Добавить стилистическую пометку
+                              </button>
+                            </div>
+                            <div v-else>
+                              <VInput
+                                v-model="lexemeForms[lexeme.id].style"
+                                label="Стилистическая пометка"
+                                :errors="lexemeForms[lexeme.id].errors.style"
+                              />
+                              <div class="flex flex-row justify-end">
+                                <button
+                                  class="link link-error"
+                                  @click="isStyleAdd[lexeme.id] = false"
+                                >
+                                  Убрать стилистическую пометку
+                                </button>
+                              </div>
+                            </div>
+                          </div>
 
                           <VMarkdownEditor
                             v-model="lexemeForms[lexeme.id].article"
@@ -677,6 +721,32 @@
                   :errors="lexemeForms[0].errors.short"
                   required
                 />
+
+                <div>
+                  <div v-if="!isStyleAdd[0]">
+                    <button
+                      class="link link-info"
+                      @click="isStyleAdd[0] = true"
+                    >
+                      Добавить стилистическую пометку
+                    </button>
+                  </div>
+                  <div v-else>
+                    <VInput
+                      v-model="lexemeForms[0].style"
+                      label="Стилистическая пометка"
+                      :errors="lexemeForms[0].errors.style"
+                    />
+                    <div class="flex flex-row justify-end">
+                      <button
+                        class="link link-error"
+                        @click="isStyleAdd[0] = false"
+                      >
+                        Убрать стилистическую пометку
+                      </button>
+                    </div>
+                  </div>
+                </div>
 
                 <VMarkdownEditor
                   v-model="lexemeForms[0].article"

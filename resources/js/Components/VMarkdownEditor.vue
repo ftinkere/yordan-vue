@@ -1,6 +1,6 @@
 <script setup>
 import Editor from '@toast-ui/editor';
-import { onMounted, ref, defineEmits, onUpdated, nextTick } from "vue";
+import { onMounted, ref, defineEmits, onUpdated, nextTick, watch } from "vue";
 import tableMergedCell from '@toast-ui/editor-plugin-table-merged-cell';
 import colorSyntax from '@toast-ui/editor-plugin-color-syntax';
 

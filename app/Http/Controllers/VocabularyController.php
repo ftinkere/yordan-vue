@@ -284,6 +284,7 @@ class VocabularyController extends Controller {
             'grammatics_variables' => 'nullable|array',
             'short' => 'required',
             'article' => 'nullable',
+            'style' => 'nullable',
         ], messages: [
             'short.required' => 'Короткое значение обязательно.'
         ]);
@@ -294,6 +295,7 @@ class VocabularyController extends Controller {
             'article' => $data['article'] ?? '',
             'group_number' => $data['group_number'] ?? $vocabula->lexemes()->max('group_number') + 1,
             'lexeme_number' => $data['lexeme_number'] ?? $vocabula->lexemes()->where('group_number', '=', $data['group_number'])->max('lexeme_number') + 1,
+            'style' => $data['style'] ?? null,
         ]);
 
         foreach ($data['grammatics'] as $gram) {
@@ -331,6 +333,7 @@ class VocabularyController extends Controller {
             'grammatics_variables' => 'nullable|array',
             'short' => $lexeme->group_number !== 0 || $lexeme->lexeme_number !== 0 ? 'required' : '',
             'article' => 'nullable',
+            'style' => 'nullable',
         ], messages: [
             'short.required' => 'Короткое значение обязательно.'
         ]);
@@ -340,6 +343,7 @@ class VocabularyController extends Controller {
             'article' => $data['article'] ?? '',
             'group_number' => $data['group_number'] ?? $vocabula->lexemes()->max('group_number') + 1,
             'lexeme_number' => $data['lexeme_number'] ?? $vocabula->lexemes()->where('group_number', '=', $data['group_number'])->max('lexeme_number') + 1,
+            'style' => $data['style'] ?? null,
         ]);
 
         $grammatics = $lexeme->grammatics;
