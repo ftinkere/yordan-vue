@@ -4,7 +4,7 @@ import { computed, ref, toRef, watch } from "vue";
 import { useForm, usePage } from "@inertiajs/vue3";
 import VModal from "@/Components/VModal.vue";
 import SoundSelector from "@/Components/SoundSelector.vue";
-import EditButton from "@/Components/EditButton.vue";
+import EditButton from "@/Components/buttons/EditButton.vue";
 import route from "ziggy-js";
 import { router } from '@inertiajs/vue3'
 import VMarkdownViewer from "@/Components/VMarkdownViewer.vue";

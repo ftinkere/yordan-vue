@@ -1,6 +1,6 @@
 <script setup>
 import LanguageLayout from "@/Layouts/LanguageLayout.vue";
-import EditButton from "@/Components/EditButton.vue";
+import EditButton from "@/Components/buttons/EditButton.vue";
 import { computed, ref } from "vue";
 import VSaveLoader from "@/Components/VSaveLoader.vue";
 import VSortable from "@/Components/VSortable.vue";

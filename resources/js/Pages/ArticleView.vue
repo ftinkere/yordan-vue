@@ -8,7 +8,7 @@ import { computed, ref, watch } from "vue";
 import VSaveLoader from "@/Components/VSaveLoader.vue";
 import VMarkdownEditor from "@/Components/VMarkdownEditor.vue";
 import _ from "lodash";
-import EditButton from "@/Components/EditButton.vue";
+import EditButton from "@/Components/buttons/EditButton.vue";
 import route from "ziggy-js";
 import VFlashSuccess from "@/Components/VFlashSuccess.vue";
 

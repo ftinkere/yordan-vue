@@ -1,7 +1,7 @@
 <script setup>
     import LanguageLayout from "@/Layouts/LanguageLayout.vue";
     import { computed, nextTick, onMounted, onUpdated, ref, watch } from "vue";
-    import EditButton from "@/Components/EditButton.vue";
+    import EditButton from "@/Components/buttons/EditButton.vue";
     import VSaveLoader from "@/Components/VSaveLoader.vue";
     import VFlashSuccess from "@/Components/VFlashSuccess.vue";
     import { useForm, usePage } from "@inertiajs/vue3";

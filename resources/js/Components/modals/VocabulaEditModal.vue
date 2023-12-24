@@ -1,70 +1,83 @@
 <script setup>
-import TranscriptionConverter from "@/Components/TranscriptionConverter.vue";
-import VSaveLoader from "@/Components/VSaveLoader.vue";
-import VModal from "@/Components/VModal.vue";
-import VInput from "@/Components/VInput.vue";
-import { defineModel } from 'vue'
+import { inject, ref } from 'vue'
+import VModalN from "@/Components/VModalN.vue";
+import { useForm } from "@inertiajs/vue3";
+import route from "ziggy-js";
+import VLoader from "@/Components/VLoader.vue";
+import VFlashSuccess from "@/Components/VFlashSuccess.vue";
+import VocabulaForm from "@/Components/forms/VocabulaForm.vue";
 
-const { loader } = defineProps({
-    loader: {
-        type: Boolean,
-        default: true,
+const { vocabula, show } = defineProps({
+    vocabula: {
+        type: Object,
+        required: true,
     },
 })
 
-const vocabulaForm = defineModel('vocabulaForm')
+const language = inject('language')
 
-const emits = defineEmits(['close', 'click-submit', 'click-reset', 'update:vocabula-form'])
+const vocabulaModal = ref(null)
+const flashSuccess = ref(null)
+
+const vocabulaForm = useForm({
+    vocabula: vocabula.vocabula,
+    transcription: vocabula.transcription,
+})
+
+function applyVocabula() {
+    vocabulaForm.post(route('languages.vocabulary.update', { code: language.id, vocabula: vocabula.id }), {
+        onSuccess: () => {
+            vocabulaForm.defaults()
+
+            flashSuccess.value?.flash()
+            vocabulaModal.value?.close()
+        }
+    })
+}
+
+function close() {
+    vocabulaModal.value?.close()
+}
+function open() {
+    vocabulaModal.value?.open()
+}
+
+defineExpose({ close, open })
+
+const emits = defineEmits(['close'])
 </script>
 
 <template>
-  <VModal
+  <VModalN
     ref="vocabulaModal"
     header="Изменить вокабулу"
-    button-class="btn btn-sm btn-warning"
     class="max-w-screen-sm"
-    @close="emits('close')"
+    @close="vocabulaForm.reset(); emits('close')"
   >
-    <slot />
-
     <template #postHeader>
       <button
         class="btn btn-sm btn-success"
-        @click="emits('click-submit')"
+        @click="applyVocabula"
       >
         Сохранить
       </button>
+
       <button
         class="btn btn-sm btn-warning"
-        @click="emits('click-reset')"
+        @click="vocabulaForm.reset()"
       >
         Сбросить
       </button>
-      <VSaveLoader :is-save="loader" />
+
+      <VLoader :loading="vocabulaForm.processing" />
+
+      <VFlashSuccess ref="flashSuccess" />
     </template>
 
     <template #content>
-      <div class="flex flex-col">
-        <VInput
-          v-model="vocabulaForm.vocabula"
-          label="Вокабула"
-          class="w-full"
-          :errors="vocabulaForm.errors.vocabula"
-          required
-        />
-        <div class="w-full">
-          <VInput
-            v-model="vocabulaForm.transcription"
-            label="Транскрипция"
-            :errors="vocabulaForm.errors.transcription"
-            required
-          />
-          <TranscriptionConverter v-model="vocabulaForm.transcription" />
-        </div>
-      </div>
+      <VocabulaForm v-model="vocabulaForm" />
     </template>
-  </VModal>
-
+  </VModalN>
 </template>
 
 <style scoped>

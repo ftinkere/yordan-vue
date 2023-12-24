@@ -13,7 +13,7 @@ import UserShort from "@/Components/UserShort.vue";
 import VInputFile from "@/Components/VInputFile.vue";
 import LanguageFlag from "@/Components/LanguageFlag.vue";
 import VSaveLoader from "@/Components/VSaveLoader.vue";
-import EditButton from "@/Components/EditButton.vue";
+import EditButton from "@/Components/buttons/EditButton.vue";
 import route from "ziggy-js";
 import VFlashSuccess from "@/Components/VFlashSuccess.vue";
 

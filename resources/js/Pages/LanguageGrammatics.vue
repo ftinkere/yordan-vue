@@ -1,7 +1,7 @@
 <script setup>
 import LanguageLayout from "@/Layouts/LanguageLayout.vue";
 import VSaveLoader from "@/Components/VSaveLoader.vue";
-import EditButton from "@/Components/EditButton.vue";
+import EditButton from "@/Components/buttons/EditButton.vue";
 import VFlashSuccess from "@/Components/VFlashSuccess.vue";
 import { nextTick, ref } from "vue";
 import VMarkdownViewer from "@/Components/VMarkdownViewer.vue";

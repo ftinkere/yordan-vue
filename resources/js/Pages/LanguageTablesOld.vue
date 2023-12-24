@@ -2,7 +2,7 @@
 
     import LanguageLayout from "@/Layouts/LanguageLayout.vue";
     import { ref } from "vue";
-    import EditButton from "@/Components/EditButton.vue";
+    import EditButton from "@/Components/buttons/EditButton.vue";
     import VSaveLoader from "@/Components/VSaveLoader.vue";
     import VFlashSuccess from "@/Components/VFlashSuccess.vue";
     import { useForm } from "@inertiajs/vue3";

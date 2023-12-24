@@ -2,7 +2,7 @@
     import LanguageLayout from "@/Layouts/LanguageLayout.vue";
     import LexemeShort from "@/Components/LexemeShort.vue";
     import LexemeArticle from "@/Components/LexemeArticle.vue";
-    import EditButton from "@/Components/EditButton.vue";
+    import EditButton from "@/Components/buttons/EditButton.vue";
     import { computed, nextTick, reactive, ref, watch } from "vue";
     import VSaveLoader from "@/Components/VSaveLoader.vue";
     import { useForm, usePage } from "@inertiajs/vue3";
@@ -43,23 +43,8 @@
 
     const update = ref(true)
 
-    const vocabulaModal = ref(null)
-
-    const vocabulaForm = useForm({
-        vocabula: vocabula.vocabula,
-        transcription: vocabula.transcription,
-    })
-
-    const applyVocabula = function () {
-        vocabulaForm.post(route('languages.vocabulary.update', { code: language.id, vocabula: vocabula.id }), {
-            onSuccess: () => {
-                vocabulaModal.value?.close()
-            }
-        })
-    }
-
     const deleteVocabula = function () {
-        vocabulaForm.delete(route('languages.vocabulary.delete', { code: language.id, vocabula: vocabula.id }))
+        useForm({}).delete(route('languages.vocabulary.delete', { code: language.id, vocabula: vocabula.id }))
     }
 
     const imageModal = ref(null)
@@ -122,10 +107,6 @@
     }
 
     let lexemeForms = updateLexemeForms(vocabula.lexemes)
-
-    const isSave = computed(() => {
-        return !vocabulaForm.isDirty && !_.some(lexemeForms, l => l.isDirty)
-    })
 
     const createModal = ref(null)
 
@@ -234,6 +215,7 @@
         linkForm.delete(route('languages.vocabulary.lexemes.links.delete', { code: language.id, vocabula: vocabula.id, lexeme: lexeme.id, link: link.id }))
     }
 
+    const vocabulaEditModal = ref(null)
 </script>
 
 <template>
@@ -248,20 +230,16 @@
             <span class="font-normal text-md">/{{ vocabula.transcription }}/</span>
           </h4>
 
-          <VocabulaEditModal
+          <button
             v-if="isEdit"
-            v-model:vocabula-form="vocabulaForm"
-            :loader="isSave"
-            @close="vocabulaForm.reset()"
-            @click-submit="applyVocabula"
-            @click-reset="vocabulaForm.reset()"
+            class="btn btn-sm btn-warning"
+            @click="vocabulaEditModal?.open()"
           >
-            <span>Изменить вокабулу</span>
-          </VocabulaEditModal>
+            Изменить вокабулу
+          </button>
         </div>
 
         <div class="flex flex-row flex-wrap-reverse gap-2 items-center justify-end">
-          <VSaveLoader :is-save="isSave" />
           <EditButton
             v-if="language.can_edit && !isEdit"
             @click="isEdit = true"
@@ -269,14 +247,13 @@
           <button
             v-if="isEdit"
             class="btn btn-sm btn-success"
-            @click="applyVocabula"
           >
             Сохранить
           </button>
           <button
             v-if="isEdit"
             class="btn btn-sm btn-primary"
-            @click="applyVocabula(); isEdit = false"
+            @click="isEdit = false"
           >
             Посмотреть
           </button>
@@ -403,7 +380,6 @@
                       >
                         Сохранить
                       </button>
-                      <VSaveLoader :is-save="isSave" />
                     </template>
 
                     <template #content>
@@ -592,7 +568,6 @@
                                 >
                                   Применить
                                 </button>
-                                <VSaveLoader :is-save="isSave" />
                               </template>
 
                               <template #content>
@@ -742,6 +717,12 @@
         </VModal>
       </div>
     </div>
+
+    <VocabulaEditModal
+      v-if="isEdit"
+      ref="vocabulaEditModal"
+      :vocabula="vocabula"
+    />
   </LanguageLayout>
 </template>
 
