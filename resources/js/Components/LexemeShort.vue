@@ -5,7 +5,6 @@ const { lexeme } = defineProps({
         type: Object,
         required: true,
     },
-    one: Boolean,
 })
 
 </script>
@@ -14,7 +13,7 @@ const { lexeme } = defineProps({
   <div class="inline">
     <span class="inline gap-0">
       <span v-if="lexeme.group_number !== 0">{{ lexeme.group_number }}</span>
-      <span v-if="lexeme.lexeme_number !== 0 && !one">.{{ lexeme.lexeme_number }}</span>
+      <span v-if="lexeme.lexeme_number !== 0 && !lexeme.one_in_group">.{{ lexeme.lexeme_number }}</span>
       &thinsp;
     </span>
     <span

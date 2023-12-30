@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -44,6 +45,15 @@ class Lexeme extends Model
 
     protected $table = 'lexemes';
     protected $fillable = ['vocabula_id', 'meaning_id', 'group_number', 'lexeme_number', 'short', 'article', 'style', 'image', 'grammar'];
+    protected $appends = ['one_in_group'];
+
+    public function oneInGroup(): Attribute {
+        return Attribute::make(
+            get: function () {
+                return $this->vocabula->lexemes()->where('group_number', $this->group_number)->count() === 1;
+            }
+        );
+    }
 
     public function vocabula(): BelongsTo {
         return $this->belongsTo(Vocabula::class, 'vocabula_id');

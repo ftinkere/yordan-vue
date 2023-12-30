@@ -21,6 +21,9 @@
     import VFlashSuccess from "@/Components/VFlashSuccess.vue";
     import BackButton from "@/Components/buttons/BackButton.vue";
     import VocabulaEditModal from "@/Components/modals/VocabulaEditModal.vue";
+    import OpenableImage from "@/Components/OpenableImage.vue";
+    import UploadableImage from "@/Components/UploadableImage.vue";
+    import VModalN from "@/Components/VModalN.vue";
 
     const { language, vocabula, editMode } = defineProps({
         language: {
@@ -46,34 +49,6 @@
     const deleteVocabula = function () {
         useForm({}).delete(route('languages.vocabulary.delete', { code: language.id, vocabula: vocabula.id }))
     }
-
-    const imageModal = ref(null)
-
-    const imageForm = useForm({
-        image: null,
-        _token,
-    })
-
-    const pushImage = function() {
-        imageForm.post(route('languages.vocabulary.image', { code: language.id, vocabula: vocabula.id}), {
-            onSuccess: () => { imageModal.value?.close() }
-        })
-    }
-
-    const deleteImage = function() {
-        imageForm.delete(route('languages.vocabulary.image', { code: language.id, vocabula: vocabula.id}), {
-            onSuccess: () => { imageModal.value?.close() }
-        })
-    }
-
-    const imagePreview = computed(() => {
-        if (imageForm.image) {
-            return URL.createObjectURL(imageForm.image)
-        } else if (vocabula.image) {
-            return vocabula.image
-        }
-        return null
-    })
 
     const updateLexemeForms = function (lexemes) {
         let forms = {}
@@ -261,93 +236,32 @@
       </div>
 
       <div class="flex flex-row flex-wrap gap-2">
-        <VModal
-          v-if="vocabula.image && !isEdit"
-          :button-class="{'my-4 btn btn-sm btn-primary': !vocabula.image, '': vocabula.image}"
-          class="max-w-screen-sm"
-          header="Изображение вокабулы"
-        >
-          <img
-            class="mb-4 max-h-[10em]"
-            :src="vocabula.image"
-            :alt="vocabula.vocabula"
-          >
+        <OpenableImage
+          v-if="!isEdit && vocabula.image"
+          :image="vocabula.image"
+          :alt="vocabula.vocabula"
+        />
 
-          <template #content>
-            <img
-              class="mt-4 max-h-[100em]"
-              :src="vocabula.image"
-              :alt="vocabula.vocabula"
-            >
-          </template>
-        </VModal>
-        <VModal
+        <UploadableImage
           v-else-if="isEdit"
-          ref="imageModal"
-          :button-class="{'my-4 btn btn-sm btn-primary': !vocabula.image, '': vocabula.image}"
-          class="max-w-screen-sm"
-        >
-          <img
-            v-if="vocabula.image"
-            class="mb-4 max-h-[10em]"
-            :src="vocabula.image"
-            :alt="vocabula.vocabula"
-          >
-          <span
-            v-else-if="isEdit && !vocabula.image"
-          >
-            Загрузить изображение
-          </span>
-
-          <template #content>
-            <div class="flex flex-col items-center">
-              <img
-                v-if="imagePreview"
-                class="h-[10em]"
-                alt="Аватар"
-                :src="imagePreview"
-              >
-
-              <VInputFile
-                v-model="imageForm.image"
-                label="Аватар"
-                class="w-full"
-                input-class="file-input file-input-bordered rounded-e-none"
-                :errors="imageForm.errors.image"
-              >
-                <template #button>
-                  <button
-                    class="btn btn-success rounded-s-none"
-                    type="submit"
-                    @click="pushImage"
-                  >
-                    Отправить
-                  </button>
-                </template>
-              </VInputFile>
-
-              <button
-                v-if="vocabula.image"
-                class="mt-4 btn btn-sm btn-error self-start"
-                @click="deleteImage"
-              >
-                Удалить
-              </button>
-            </div>
-          </template>
-        </VModal>
+          :image="vocabula.image"
+          :alt="vocabula.vocabula"
+          label="Изображение вокабулы"
+          :push-url="route('languages.vocabulary.image', { code: language.id, vocabula: vocabula.id})"
+          :delete-url="route('languages.vocabulary.image', { code: language.id, vocabula: vocabula.id})"
+        />
       </div>
 
       <div class="ms-6">
         <ul class="divide-y divide-neutral-700">
           <li class="mb-6 flex flex-col">
-            <LexemeShort
-              v-if="update"
-              v-for="lexeme in vocabula.lexemes"
-              :key="lexeme.id"
-              :lexeme="lexeme"
-              :one="vocabula.lexemes.filter(lx => lx.group_number === lexeme.group_number).length === 1"
-            />
+            <template v-if="update">
+              <LexemeShort
+                v-for="lexeme in vocabula.lexemes"
+                :key="lexeme.id"
+                :lexeme="lexeme"
+              />
+            </template>
           </li>
 
           <li
