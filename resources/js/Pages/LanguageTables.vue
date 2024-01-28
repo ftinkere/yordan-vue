@@ -608,11 +608,19 @@
         })
     }
 
+    document.body.addEventListener('paste', onPaste)
 </script>
 
 <template>
   <LanguageLayout :language="language">
-    <div @paste="onPaste">
+    <div>
+      <div
+        v-if="isEdit"
+        class="mb-2 alert alert-warning"
+      >
+        Извините, на данный момент есть проблемы с сохранением данных при ручном изменении данных в ячейках.
+        Пользуйтесь пока импортом из гугл таблиц, пока это не будет поправлено.
+      </div>
       <!-- Buttons -->
       <div class="mb-4 flex flex-row flex-wrap justify-between">
         <!-- Left buttons -->
