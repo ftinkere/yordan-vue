@@ -66,7 +66,7 @@ const ownedLanguages = computed(function () {
       :class="{
         'md:grid-cols-2': $page.props.auth.user && $page.props.auth.user.email_verified_at,
         'max-w-md': !($page.props.auth.user && $page.props.auth.user.email_verified_at)
-    }"
+      }"
     >
       <!--  Блок языков пользователя, если тот залогинен  -->
       <div

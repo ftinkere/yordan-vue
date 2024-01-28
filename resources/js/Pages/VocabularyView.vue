@@ -274,7 +274,6 @@
                   <LexemeShort
                     v-if="update"
                     :lexeme="lexeme"
-                    :one="vocabula.lexemes.filter(lx => lx.group_number === lexeme.group_number).length === 1"
                   />
 
                   <VModal

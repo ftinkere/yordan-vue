@@ -6,14 +6,13 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
-class LoginRequest extends FormRequest
-{
+class LoginRequest extends FormRequest {
     /**
      * Determine if the user is authorized to make this request.
      */
-    public function authorize(): bool
-    {
+    public function authorize(): bool {
         return !Auth::check();
+//        return true;
     }
 
     /**
@@ -21,8 +20,7 @@ class LoginRequest extends FormRequest
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array|string>
      */
-    public function rules(): array
-    {
+    public function rules(): array {
         return [
             'email' => 'required|email|exists:users,email',
             'password' => 'required|min:8',
@@ -32,11 +30,11 @@ class LoginRequest extends FormRequest
 
     public function messages() {
         return [
-          'email.required' => 'Укажите почту',
-          'email.email' => 'Неправильная почта',
-          'email.exists' => 'Почта не зарегистрирована',
-          'password.required' => 'Укажите пароль',
-          'password.min' => 'Минимальная длина пароля 8 символов'
+            'email.required' => 'Укажите почту',
+            'email.email' => 'Неправильная почта',
+            'email.exists' => 'Почта не зарегистрирована',
+            'password.required' => 'Укажите пароль',
+            'password.min' => 'Минимальная длина пароля 8 символов'
         ];
     }
 }

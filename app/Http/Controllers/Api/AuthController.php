@@ -11,8 +11,9 @@ use Illuminate\Support\Facades\Auth;
 class AuthController extends Controller {
     function login(LoginRequest $request) {
         $data = $request->validated();
-
-        return Auth::attempt($data, $data['remember']);
+        $remember = $data['remember'];
+        unset($data['remember']);
+        return Auth::attempt($data, $remember);
     }
 
     function logout(LogoutRequest $request) {
