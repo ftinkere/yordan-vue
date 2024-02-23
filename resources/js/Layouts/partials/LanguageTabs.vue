@@ -63,7 +63,7 @@ if (language.can_edit) {
         /{{ language.autonym_transcription }}/
       </span>
     </h1>
-    <div class="tab tab-lg h-fit p-0">
+    <div class="tabs tab tab-lg tabs-bordered h-fit p-0">
       <template
         v-for="tab in tabs"
         :key="tab.name"

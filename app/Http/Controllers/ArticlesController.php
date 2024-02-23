@@ -99,7 +99,7 @@ class ArticlesController extends Controller
             'tag.required' => 'Тег не может быть пустым.'
         ]);
 
-        if (ArticleTag::where('tag', '=', $data['tag'])->count() === 0) {
+        if ($article->tags()->where('tag', '=', $data['tag'])->count() === 0) {
             ArticleTag::create([
                 ...$data,
                 'article_id' => $article->id,
