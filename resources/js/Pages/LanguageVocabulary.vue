@@ -248,7 +248,12 @@ const pushVocabula = function() {
         <Link :href="route('languages.vocabulary.view', { code: language.id, vocabula: vocabula.id })">
           <h4 class="card-title m-2">
             <span>{{ vocabula.vocabula }}</span>
-            <span class="font-normal text-md">/{{ vocabula.transcription }}/</span>
+            <span
+              v-if="vocabula.transcription"
+              class="font-normal text-md"
+            >
+              /{{ vocabula.transcription }}/
+            </span>
           </h4>
         </Link>
         <div class="ms-6">

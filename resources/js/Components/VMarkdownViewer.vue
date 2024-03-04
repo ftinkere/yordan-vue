@@ -33,7 +33,7 @@ onMounted(function () {
 })
 
 onUpdated(function () {
-    viewer.value.setMarkdown(content)
+    viewer.value?.setMarkdown(content)
 })
 </script>
 

@@ -118,8 +118,10 @@ Route::name('languages.')->prefix('/languages')->group(static function() {
         Route::name('lexemes.search')->get('/search', [VocabularyController::class, 'searchLexemes']);
         Route::name('lexemes.')->prefix('/{vocabula}/lexemes')->group(static function () {
             Route::name('store')->post('', [VocabularyController::class, 'lexemeStore']);
-            Route::name('update')->post('/{lexeme}', [VocabularyController::class, 'lexemeUpdate']);
-            Route::name('delete')->delete('/{lexeme}', [VocabularyController::class, 'lexemeDelete']);
+            Route::name('update')->post('/{lexeme}', [VocabularyController::class, 'lexemeUpdate'])->whereNumber('lexeme');
+            Route::name('delete')->delete('/{lexeme}', [VocabularyController::class, 'lexemeDelete'])->whereNumber('lexeme');
+
+            Route::name('grammatics.update')->post('/{lexeme}/grammatics', [VocabularyController::class, 'lexemeUpdateGrammatics']);
 
             Route::name('links.')->prefix('/{lexeme}/links')->group(static function () {
                 Route::name('store')->post('', [VocabularyController::class, 'linkStore']);

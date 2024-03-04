@@ -120,7 +120,7 @@ class VocabularyController extends Controller {
 
         $data = $request->validate([
             'vocabula' => 'required',
-            'transcription' => 'required',
+            'transcription' => 'nullable',
             'grammatics' => 'nullable|array',
             'grammatics_variables' => 'nullable|array',
             'grammatics_general' => 'nullable|boolean',
@@ -129,7 +129,6 @@ class VocabularyController extends Controller {
             'lexeme.article' => 'nullable',
         ], messages: [
             'vocabula.required' => 'Вокабула не может быть пустой.',
-            'transcription.required' => 'Транскрипция не может быть пустой.',
         ]
         );
 
@@ -187,10 +186,9 @@ class VocabularyController extends Controller {
 
         $data = $request->validate([
             'vocabula' => 'required',
-            'transcription' => 'required',
+            'transcription' => 'nullable',
         ], messages: [
             'vocabula.required' => 'Вокабула не может быть пустой.',
-            'transcription.required' => 'Транскрипция не может быть пустой.',
         ]
         );
 
@@ -294,7 +292,7 @@ class VocabularyController extends Controller {
             'short' => $data['short'],
             'article' => $data['article'] ?? '',
             'group_number' => $data['group_number'] ?? $vocabula->lexemes()->max('group_number') + 1,
-            'lexeme_number' => $data['lexeme_number'] ?? $vocabula->lexemes()->where('group_number', '=', $data['group_number'])->max('lexeme_number') + 1,
+            'lexeme_number' => $data['lexeme_number'] ?? $vocabula->lexemes()->where('group_number', '=', ($data['group_number'] ?? $vocabula->lexemes()->max('group_number') + 1))->max('lexeme_number') + 1,
             'style' => $data['style'] ?? null,
         ]);
 
@@ -329,8 +327,6 @@ class VocabularyController extends Controller {
         $data = $request->validate([
             'group_number' => 'nullable|integer',
             'lexeme_number' => 'nullable|integer',
-            'grammatics' => 'nullable|array',
-            'grammatics_variables' => 'nullable|array',
             'short' => $lexeme->group_number !== 0 || $lexeme->lexeme_number !== 0 ? 'required' : '',
             'article' => 'nullable',
             'style' => 'nullable',
@@ -342,8 +338,35 @@ class VocabularyController extends Controller {
             'short' => $data['short'] ?? '',
             'article' => $data['article'] ?? '',
             'group_number' => $data['group_number'] ?? $vocabula->lexemes()->max('group_number') + 1,
-            'lexeme_number' => $data['lexeme_number'] ?? $vocabula->lexemes()->where('group_number', '=', $data['group_number'])->max('lexeme_number') + 1,
+            'lexeme_number' => $data['lexeme_number'] ?? $vocabula->lexemes()->where('group_number', '=', ($data['group_number'] ?? $vocabula->lexemes()->max('group_number') + 1))->max('lexeme_number') + 1,
             'style' => $data['style'] ?? null,
+        ]);
+
+        $lexeme->save();
+
+        $lexeme->updateTimestamps();
+        $lexeme->save();
+
+        $vocabula->updateTimestamps();
+        $vocabula->save();
+
+        $language->updateTimestamps();
+        $language->save();
+
+        return redirect()->route('languages.vocabulary.view', ['code' => $language->id, 'vocabula' => $vocabula->id, 'editMode' => true]);
+    }
+
+    public function lexemeUpdateGrammatics(Request $request, $code, $vocabula_id, $lexeme_id) {
+        $language = Language::findOrFail($code);
+        Gate::authorize('edit-language', $language);
+        $vocabula = Vocabula::findOrFail($vocabula_id);
+        Gate::authorize('vocabula-is-language', $vocabula);
+        $lexeme = Lexeme::findOrFail($lexeme_id);
+        Gate::authorize('lexeme-is-language', $lexeme);
+
+        $data = $request->validate([
+            'grammatics' => 'nullable|array',
+            'grammatics_variables' => 'nullable|array',
         ]);
 
         $grammatics = $lexeme->grammatics;

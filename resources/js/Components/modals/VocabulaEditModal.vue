@@ -1,19 +1,19 @@
 <script setup>
 import { inject, ref } from 'vue'
 import VModalN from "@/Components/VModalN.vue";
-import { useForm } from "@inertiajs/vue3";
+import { useForm, usePage } from "@inertiajs/vue3";
 import route from "ziggy-js";
 import VLoader from "@/Components/VLoader.vue";
 import VFlashSuccess from "@/Components/VFlashSuccess.vue";
 import VocabulaForm from "@/Components/forms/VocabulaForm.vue";
 
-const { vocabula, show } = defineProps({
+const { vocabula } = defineProps({
     vocabula: {
         type: Object,
         required: true,
     },
 })
-
+const _token = usePage().props.csrf_token
 const language = inject('language')
 
 const vocabulaModal = ref(null)
@@ -22,15 +22,20 @@ const flashSuccess = ref(null)
 const vocabulaForm = useForm({
     vocabula: vocabula.vocabula,
     transcription: vocabula.transcription,
+    _token,
 })
+
+const emits = defineEmits(['close', 'success'])
 
 function applyVocabula() {
     vocabulaForm.post(route('languages.vocabulary.update', { code: language.id, vocabula: vocabula.id }), {
+        preserveScroll: true,
         onSuccess: () => {
             vocabulaForm.defaults()
 
             flashSuccess.value?.flash()
             vocabulaModal.value?.close()
+            emits('success')
         }
     })
 }
@@ -44,7 +49,6 @@ function open() {
 
 defineExpose({ close, open })
 
-const emits = defineEmits(['close'])
 </script>
 
 <template>

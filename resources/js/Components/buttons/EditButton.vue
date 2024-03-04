@@ -1,11 +1,13 @@
 <script setup>
-
 import PencilIcon from "@/Components/icons/PencilIcon.vue";
+
 </script>
 
 <template>
   <button class="btn btn-warning btn-sm">
-    <PencilIcon />
+    <slot>
+      <PencilIcon />
+    </slot>
   </button>
 </template>
 

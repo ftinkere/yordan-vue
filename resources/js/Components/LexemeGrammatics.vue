@@ -1,9 +1,9 @@
 <script setup>
     import VCheckbox from "@/Components/VCheckbox.vue";
-    import { ref } from "vue";
+    import { inject, ref } from "vue";
     import _ from "lodash";
 
-    const { modelValue, variables, language } = defineProps({
+    const { modelValue, variables } = defineProps({
         modelValue: {
             type: Array,
             default: () => [],
@@ -12,11 +12,8 @@
             type: Array,
             default: null,
         },
-        language: {
-            type: Object,
-            required: true,
-        },
     })
+    const language = inject('language')
 
     const model = ref(modelValue)
     const variablesModel = ref(variables)

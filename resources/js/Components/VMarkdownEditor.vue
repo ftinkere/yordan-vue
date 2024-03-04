@@ -1,6 +1,6 @@
 <script setup>
 import Editor from '@toast-ui/editor';
-import { onMounted, ref, defineEmits, onUpdated, nextTick, watch } from "vue";
+import { onMounted, ref, defineEmits, onUpdated, nextTick, watch, inject } from "vue";
 import tableMergedCell from '@toast-ui/editor-plugin-table-merged-cell';
 import colorSyntax from '@toast-ui/editor-plugin-color-syntax';
 
@@ -12,20 +12,17 @@ import '@toast-ui/editor/dist/theme/toastui-editor-dark.css';
 
 /* global route */
 
-const { modelValue, language, label } = defineProps({
+const { modelValue, label } = defineProps({
     modelValue: {
         type: [String, null],
         default: '',
-    },
-    language: {
-        type: Object,
-        required: true,
     },
     label: {
         type: String,
         default: null,
     },
 });
+const language = inject('language')
 
 const el = ref(null);
 

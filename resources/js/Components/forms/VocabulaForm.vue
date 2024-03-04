@@ -21,7 +21,6 @@ const vocabulaForm = defineModel()
         v-model="vocabulaForm.transcription"
         label="Транскрипция"
         :errors="vocabulaForm.errors.transcription"
-        required
       />
       <TranscriptionConverter v-model="vocabulaForm.transcription" />
     </div>
