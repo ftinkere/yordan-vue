@@ -9,6 +9,7 @@ use App\Http\Controllers\OrthographyController;
 use App\Http\Controllers\PhoneticsController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TablesController;
+use App\Http\Controllers\TablesNewController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VocabularyController;
 use Illuminate\Support\Facades\Route;
@@ -84,6 +85,7 @@ Route::name('languages.')->prefix('/languages')->group(static function() {
     Route::name('tables.')->prefix('/{code}/tables')->group(static function() {
         Route::name('store')->post('', [TablesController::class, 'store']);
         Route::name('import')->post('/import', [TablesController::class, 'import']);
+        Route::name('import.update')->post('/import/{id}', [TablesController::class, 'import']);
         Route::name('update')->post('/{table}', [TablesController::class, 'update']);
         Route::name('shadow')->post('/{table}/shadow', [TablesController::class, 'shadow']);
         Route::name('delete')->delete('/{table}', [TablesController::class, 'delete']);

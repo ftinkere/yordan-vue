@@ -1280,9 +1280,7 @@
             <!-- End rows -->
           </table>
 
-          <article v-if="table.comments && updateVar">
-            <VMarkdownViewer :content="table.comments" />
-          </article>
+
 
           <div
             v-if="isEdit"

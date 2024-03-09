@@ -34,7 +34,7 @@ class TablesController extends Controller
 
         $editMode = $request->has('editMode');
 
-        return Inertia::render('LanguageTables', compact('language', 'editMode'));
+        return Inertia::render('LanguageTablesNew', compact('language', 'editMode'));
     }
 
     function store(Request $request, $code) {
@@ -56,8 +56,8 @@ class TablesController extends Controller
         $data['caption'] ??= '';
         $data['order'] = Table::newOrder($language);
 
-        $data['height'] ??= 2;
-        $data['width'] ??= 2;
+        $data['height'] ??= 3;
+        $data['width'] ??= 3;
 
         /** @var Table $table */
         $table = $language->tables()->create($data);
@@ -111,7 +111,7 @@ class TablesController extends Controller
         return redirect()->route('languages.tables', ['code' => $language->id, 'editMode' => $editMode]);
     }
 
-    function import(Request $request, $code) {
+    function import(Request $request, $code, $id = null) {
         /** @var Language $language */
         $language = Language::with('tables')->findOrFail($code);
         Gate::authorize('edit-language', $language);
@@ -130,11 +130,16 @@ class TablesController extends Controller
         DB::beginTransaction();
         try {
             /** @var Table $table_model */
-            $table_model = $language->tables()->create([
-                'name' => '',
-                'order' =>Table::newOrder($language),
+            $table_model = null;
+            if ($id) {
+                $table_model = Table::findOrFail($id);
+                $table_model->rows()->delete();
+            } else {
+                $table_model = $language->tables()->create([
+                    'name' => '',
+                    'order' => Table::newOrder($language),
                 ]);
-
+            }
             /** @var \DOMElement $rows */
             $rows = $xpath->query('//table//tr');
 
@@ -158,16 +163,17 @@ class TablesController extends Controller
                         'colspan' => $cell->hasAttribute('colspan') ? $cell->getAttribute('colspan') : 1,
                         'rowspan' => $cell->hasAttribute('rowspan') ? $cell->getAttribute('rowspan') : 1,
                     ]);
+                    $cell_model->save();
 
                     if ($cell->hasAttribute('style')){
                         $styles = $cell->getAttribute('style');
                         $styles = explode(';', $styles);
                         $styles = array_map(static function($el) { return explode(':', $el); }, $styles);
 
-
-                        $cell_model->applyStyle('color', 'white');
+                        $cell_model->applyStyle('color', 'black');
+                        $cell_model->applyStyle('background-color', 'white');
                         foreach ($styles as $pair) {
-                            if (in_array($pair[0], [
+                            if (in_array(trim($pair[0]), [
                                 'vertical-align',
                                 'background-color',
                                 'font-style',
@@ -180,7 +186,7 @@ class TablesController extends Controller
                                 'border-left',
                                 'border-right',
                             ])) {
-                               $cell_model->applyStyle($pair[0], $pair[1]);
+                               $cell_model->applyStyle(trim($pair[0]), trim($pair[1]));
                             }
                         }
                     }
