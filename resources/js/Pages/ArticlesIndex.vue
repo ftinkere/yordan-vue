@@ -34,6 +34,13 @@ const newArticle = function () {
     }
     articleForm.post(route('languages.articles.store', { code: language.id }))
 };
+
+function getArticles(articles) {
+    if (language.can_edit) {
+        return articles.data
+    }
+    return articles.data.filter(article => article.published_at)
+}
 </script>
 
 <template>
@@ -93,7 +100,7 @@ const newArticle = function () {
 
     <div class="flex flex-col gap-2">
       <div
-        v-for="article in articles.data"
+        v-for="article in getArticles(articles)"
         :key="article.id"
         class="flex flex-row gap-2"
       >
