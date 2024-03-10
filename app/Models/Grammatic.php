@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $name
  * @property int $language_id
  * @property string|null $article
+ * @property int $order
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\GrammaticValue> $grammatic_values
@@ -34,10 +35,11 @@ class Grammatic extends Model
 
     protected $table = 'grammatics';
 
-    protected $fillable = ['name', 'language_id', 'article'];
+    protected $fillable = ['name', 'language_id', 'article', 'order'];
 
     public function grammatic_values() {
-        return $this->hasMany(GrammaticValue::class, 'grammatic_id', 'id');
+        return $this->hasMany(GrammaticValue::class, 'grammatic_id', 'id')
+            ->orderBy('order');
     }
 
     public function language() {

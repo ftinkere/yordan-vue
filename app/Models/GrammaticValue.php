@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $value
  * @property string|null $article
  * @property string $short
+ * @property int $order
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Grammatic $grammatic
@@ -34,7 +35,7 @@ class GrammaticValue extends Model
 
     protected $table = 'grammatic_values';
 
-    protected $fillable = ['grammatic_id', 'value', 'short', 'article'];
+    protected $fillable = ['grammatic_id', 'value', 'short', 'article', 'order'];
 
     public function grammatic() {
         return $this->belongsTo(Grammatic::class);

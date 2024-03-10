@@ -109,7 +109,8 @@ class Language extends Model
     }
 
     public function grammatics() {
-        return $this->hasMany(Grammatic::class, 'language_id', 'id');
+        return $this->hasMany(Grammatic::class, 'language_id', 'id')
+            ->orderBy('order');
     }
 
     public function sounds() {

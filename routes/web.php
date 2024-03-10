@@ -160,11 +160,13 @@ Route::name('languages.')->prefix('/languages')->group(static function() {
         Route::name('store')->post('', [GrammaticsController::class, 'store']);
         Route::name('update')->post('/{grammatics}', [GrammaticsController::class, 'update']);
         Route::name('delete')->delete('/{grammatics}', [GrammaticsController::class, 'delete']);
+        Route::name('move')->post('/{grammatics}/move', [GrammaticsController::class, 'move']);
 
         Route::name('values.')->prefix('/{grammatics}/values')->group(static function () {
             Route::name('store')->post('', [GrammaticsController::class, 'value_store']);
             Route::name('update')->post('/{value}', [GrammaticsController::class, 'value_update']);
             Route::name('delete')->delete('/{value}', [GrammaticsController::class, 'value_delete']);
+            Route::name('move')->post('/{value}/move', [GrammaticsController::class, 'moveValue']);
         });
     });
 
