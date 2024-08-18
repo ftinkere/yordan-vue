@@ -42,6 +42,10 @@ class Grammatic extends Model
             ->orderBy('order');
     }
 
+    public function valueOrder() {
+        return $this->grammatic_values()->max('order') + 1;
+    }
+
     public function language() {
         return $this->belongsTo(Language::class);
     }

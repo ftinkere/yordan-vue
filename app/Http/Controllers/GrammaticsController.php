@@ -104,6 +104,7 @@ class GrammaticsController extends Controller
 
         $value = GrammaticValue::create([
             ...$data,
+            'order' => $grammatic->valueOrder(),
             'grammatic_id' => $grammatic->id,
         ]);
 
